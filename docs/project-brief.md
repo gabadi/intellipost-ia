@@ -1,8 +1,8 @@
-# Intelligent Publisher Project - Project Brief
+# IntelliPost AI - Project Brief
 
-## 1. Project Name (Provisional)
+## 1. Project Name (Final)
 
-Intelligent Publisher Project
+IntelliPost AI
 
 ## 2. Introduction / Problem Statement
 
@@ -60,7 +60,7 @@ An automated or semi-automated publishing system, as proposed, directly addresse
 
 ## 4. Target Audience / Users - Refined Version
 
-The primary target audience for the initial version (MVP) of the "Intelligent Publisher Project" ranges from **individual sellers (such as sole proprietors/freelancers) to Small and Medium-sized Enterprises (SMEs)** who actively manage their product catalog on **MercadoLibre**. The common denominator is the pressing need for a tool that not only dramatically simplifies an inherently complex process but also enables them to create and maintain high-quality, competitive listings with drastically reduced effort.
+The primary target audience for the initial version (MVP) of "IntelliPost AI" ranges from **individual sellers (such as sole proprietors/freelancers) to Small and Medium-sized Enterprises (SMEs)** who actively manage their product catalog on **MercadoLibre**. The common denominator is the pressing need for a tool that not only dramatically simplifies an inherently complex process but also enables them to create and maintain high-quality, competitive listings with drastically reduced effort.
 
 **Key Characteristics and Motivations of the Target Audience:**
 
@@ -97,7 +97,7 @@ The primary target audience for the initial version (MVP) of the "Intelligent Pu
 
 ## 7. Relevant Research (Optional) - Ultra-Refined Version with Focus on Source Quality
 
-While the MVP vision and scope are clearly defined, it is considered fundamental that the team, during the subsequent detailed design (PRD elaboration by the Product Manager) and technical development (by the Architect and Developers) phases, undertakes a process of **exhaustive, continuous, updated, and multifaceted research, prioritizing high-credibility sources and proven experience**, to ensure the maximum effectiveness, innovation, and viability of the "Intelligent Publisher Project."
+While the MVP vision and scope are clearly defined, it is considered fundamental that the team, during the subsequent detailed design (PRD elaboration by the Product Manager) and technical development (by the Architect and Developers) phases, undertakes a process of **exhaustive, continuous, updated, and multifaceted research, prioritizing high-credibility sources and proven experience**, to ensure the maximum effectiveness, innovation, and viability of "IntelliPost AI."
 
 The recommended research areas include, but are not strictly limited to:
 
@@ -137,10 +137,10 @@ The team is encouraged to maintain a stance of curiosity and continuous learning
 
 **To the Product Manager (John):**
 
-This Project Brief details the vision, strategic objectives, target audience, MVP scope, and initial guidelines (including technical preferences and recommended research areas) for the **"Intelligent Publisher Project"**.
+This Project Brief details the vision, strategic objectives, target audience, MVP scope, and initial guidelines (including technical preferences and recommended research areas) for **"IntelliPost AI"**.
 
 **Your Primary Mission:**
-Utilize this report as the fundamental and unquestionable basis to research, define, and develop an **exhaustive, clear, and actionable Product Requirements Document (PRD)**. This PRD must break down the needs into epics, detailed user stories, and precise acceptance criteria that will guide the design and construction of the Minimum Viable Product (MVP) of the "Intelligent Publisher Project."
+Utilize this report as the fundamental and unquestionable basis to research, define, and develop an **exhaustive, clear, and actionable Product Requirements Document (PRD)**. This PRD must break down the needs into epics, detailed user stories, and precise acceptance criteria that will guide the design and construction of the Minimum Viable Product (MVP) of "IntelliPost AI."
 
 **Central Focus of the MVP (Key Reminder):**
 The MVP must enable users (with an initial focus on SMEs and sole proprietors) to transform, **with the minimum possible manual intervention and starting from truly "raw" inputs**, into an **individual MercadoLibre listing that is professional in its content and presentation, complete in its essential information, and optimized for said platform's algorithm.**
