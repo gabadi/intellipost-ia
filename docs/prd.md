@@ -78,7 +78,43 @@
 * FR6.6: It will facilitate review and approval (or tracking in automated mode) of generated content.
 * FR6.7: It will clearly display any system feedback or error messages.
 
-## 4. Non-Functional Requirements (MVP)
+## 4. UX-Driven Success Metrics and Design Requirements
+
+### **4.1 User Experience Metrics (UX-Established)**
+* **UXM1: Time to Approval Performance**
+  * UXM1.1: High-confidence content (>85%): User approval in <30 seconds
+  * UXM1.2: Detailed review workflow: Complete review in <3 minutes
+* **UXM2: Mobile Completion Rate**
+  * UXM2.1: Target: >80% of workflows completed without desktop handoff
+  * UXM2.2: Mobile-complete capability for majority use cases
+* **UXM3: User Satisfaction**
+  * UXM3.1: Net Promoter Score >50 for mobile experience
+  * UXM3.2: User satisfaction with AI confidence accuracy
+
+### **4.2 Business Impact Metrics (UX-Established)**
+* **BIM1: Listing Completion Rate**
+  * BIM1.1: >90% of started listings successfully published
+  * BIM1.2: Minimize abandonment during review phase
+* **BIM2: Time Savings Achievement**
+  * BIM2.1: 50% reduction in total listing creation time vs manual methods
+  * BIM2.2: Measurable efficiency gains from auto-reprocessing
+* **BIM3: User Retention**
+  * BIM3.1: >70% weekly active users after first successful listing
+  * BIM3.2: Repeat usage indicating value realization
+
+### **4.3 Design System Requirements (UX-Established)**
+* **DSR1: Confidence-Based Visual System**
+  * DSR1.1: **Color coding:** Green (>85% confidence), Yellow (70-85%), Red (<70%)
+  * DSR1.2: **Visual indicators:** Prominent confidence score display with color coding
+  * DSR1.3: **Consistency:** Color system applied across mobile and desktop interfaces
+* **DSR2: Typography Hierarchical System**
+  * DSR2.1: **Mobile-optimized:** Clear hierarchy for mobile-first reading
+  * DSR2.2: **Desktop-enhanced:** Extended typography options for detailed editing
+* **DSR3: AI vs User Content Iconography**
+  * DSR3.1: **Clear differentiation:** Visual indicators for AI-generated vs user-edited content
+  * DSR3.2: **Interaction patterns:** Swipe, tap, auto-processing behavior indicators
+
+## 5. Non-Functional Requirements (MVP)
 
 * **NFR1: Usability**
     * NFR1.1: The Control Panel user interface must be perceived by target users as **100% intuitive, modern and professional.**
@@ -107,7 +143,7 @@
 * **NFR8: Quality Gate for Story Completion (Definition of Done):**
     * NFR8.1: Before any development story is considered 'complete', it must successfully pass all automated quality checks (linting, formatting, types, architecture) and all relevant automated tests.
 
-## 5. User Interaction and Design Goals
+## 6. User Interaction and Design Goals
 
 This section describes the high-level vision and objectives for the User Experience (UX) and User Interface (UI) of the "IntelliPost AI" MVP. It will serve as a fundamental brief for the subsequent work of the Design Architect.
 
@@ -124,22 +160,104 @@ This section describes the high-level vision and objectives for the User Experie
 5.  **Branding Considerations (High Level for MVP):**
     * The MVP will establish the **distinctive visual identity of "IntelliPost AI"**. It will not incorporate user brand customization in this version.
 6.  **Target Devices/Platforms (Web UI for MVP):**
-    * **Initial Input Loading (Prompt and Images):** Optimized for **mobile devices.**
-    * **Complete Control Panel Functionality (Review, Editing, State Management):** Optimized for **desktop and tablet environments**, with basic responsive accessibility on mobile.
-7.  **Additional Design Principle (Future Vision):**
+    * **Mobile-Complete Workflow Strategy:** The system is designed with a **mobile-complete, desktop-optional** approach. Mobile users can complete the entire workflow (input, review, basic editing, and approval) without requiring desktop access. This ensures 90% of use cases can be resolved on mobile devices where SMEs primarily operate.
+    * **Mobile Capabilities:** 
+      - **Input and Upload:** Fully optimized for mobile devices with camera integration
+      - **Content Review:** Complete review interface with confidence scoring and preview
+      - **Basic Editing:** Essential editing capabilities for titles, descriptions, and key attributes
+      - **Final Approval:** One-tap approval for high-confidence content (>85% confidence score)
+    * **Desktop as Image Management Hub:** Desktop provides comprehensive **Image Management Hub** capabilities including:
+      - **Full Image CRUD Operations:** Add, delete, reorder all product images
+      - **Main Image Selection:** Select and designate primary image for MercadoLibre
+      - **Auto-Reprocessing Management:** Automatic AI reprocessing when inputs change
+      - **Advanced Content Editing:** Live preview with before/after image comparison
+      - **Complex Editing:** Detailed fine-tuning and advanced configuration
+      - Desktop is used when:
+        - AI confidence score is below 85%
+        - User explicitly chooses detailed editing
+        - Complex technical attribute management is needed
+        - Advanced image management is required
+    * **Cross-Platform Sync:** Real-time state synchronization ensures seamless handoff between mobile and desktop when users choose to switch platforms.
+    * **Account-Based Synchronization:** Simple account-based sync without complex handoff mechanisms (no QR codes, email links)
+    * **Desktop Dashboard Filtering:** Desktop shows products needing attention with status-based filtering
+    * **Real-time State Updates:** Instantaneous synchronization via user account across all platforms
+7.  **Cross-Platform Decision Matrix:**
+    * **Automatic Platform Routing:**
+      - **High Confidence (>85%):** System defaults to mobile-complete workflow with one-tap approval
+      - **Medium Confidence (70-85%):** Mobile presents limited editing options with desktop suggestion
+      - **Low Confidence (<70%):** System recommends desktop review but maintains mobile override capability
+    * **User-Driven Platform Choice:**
+      - Users can always choose desktop for any confidence level
+      - Mobile users can request "detailed view" which opens desktop-optimized interface
+      - Desktop users can switch to "mobile view" for simplified interface
+    * **State Persistence Rules:**
+      - All changes sync in real-time across platforms
+      - Draft states maintained for 24 hours across platform switches  
+      - Approval actions are platform-agnostic and immediately reflected everywhere
+
+8.  **Additional Design Principle (Future Vision):**
     * Although the MVP focuses on individual products, the Control Panel design and information presentation should **be conceived considering future incorporation of batch management and variant functionalities**, favoring adaptable UI structures.
 
-## 6. Technical Assumptions (Final Updated Version)
+## 7. Auto-Reprocessing Technical Specifications
+
+Based on UX design decisions, the system requires comprehensive auto-reprocessing capabilities that automatically trigger AI content regeneration when user inputs change. This section defines the technical requirements for seamless automatic reprocessing.
+
+### **6.1 Auto-Reprocessing Trigger Conditions**
+
+**AR1: Image-Based Triggers**
+* AR1.1: **Add Image Trigger:** When user adds new images to a product, system automatically reprocesses all content (title, category, attributes, description) and image processing
+* AR1.2: **Delete Image Trigger:** When user removes images, system automatically reprocesses remaining images and regenerates content based on updated image set
+* AR1.3: **Reorder Image Trigger:** When user changes image sequence, system re-evaluates main image selection and may trigger content updates if primary image changes
+
+**AR2: Content-Based Triggers**
+* AR2.1: **Prompt Edit Trigger:** When user modifies the textual prompt, system automatically regenerates all AI content while preserving user-edited fields where possible
+* AR2.2: **Category Override Trigger:** When user manually selects different category, system regenerates category-specific attributes and optimizes content for new category
+
+**AR3: Processing Chain Logic**
+* AR3.1: **Sequential Processing:** Image processing completes before content generation to ensure content AI has access to final processed images
+* AR3.2: **Dependency Management:** Content regeneration uses latest processed images and current prompt as inputs
+* AR3.3: **Incremental Updates:** System attempts to preserve user manual edits when possible during auto-reprocessing
+
+### **6.2 User Experience During Auto-Reprocessing**
+
+**AR4: Progress Feedback**
+* AR4.1: **Visual Indicators:** Clear progress indicators show reprocessing status (processing, generating content, completing)
+* AR4.2: **Status Messages:** Contextual messages explain what triggered reprocessing and what's being updated
+* AR4.3: **Completion Notifications:** System notifies user when auto-reprocessing completes with confidence score update
+
+**AR5: User Control Mechanisms**
+* AR5.1: **No Manual Buttons:** System eliminates need for manual "reprocess" buttons through intelligent automatic triggers
+* AR5.2: **Override Capability:** Desktop interface provides option to temporarily disable auto-reprocessing for bulk editing scenarios
+* AR5.3: **Rollback Options:** User can revert to previous version if auto-reprocessing results are unsatisfactory
+
+### **6.3 Technical Implementation Requirements**
+
+**AR6: Performance Specifications**
+* AR6.1: **Processing Time:** Auto-reprocessing should complete within 30-90 seconds for typical image sets (3-5 images)
+* AR6.2: **Queue Management:** Multiple simultaneous triggers are queued and processed efficiently to avoid system overload
+* AR6.3: **Resource Optimization:** System optimizes AI API calls to minimize costs while maintaining quality
+
+**AR7: Error Handling and Recovery**
+* AR7.1: **Graceful Degradation:** If auto-reprocessing fails, system maintains previous valid state and notifies user
+* AR7.2: **Retry Logic:** Intelligent retry mechanism for temporary failures (network, API limits, service unavailability)
+* AR7.3: **Fallback Mechanisms:** System provides alternative processing paths if primary AI services are unavailable
+
+**AR8: State Management**
+* AR8.1: **State Preservation:** User manual edits are preserved during auto-reprocessing where technically feasible
+* AR8.2: **Version Control:** Each auto-reprocessing cycle creates new version while maintaining edit history
+* AR8.3: **Conflict Resolution:** System handles conflicts between user edits and AI regeneration through configurable precedence rules
+
+## 8. Technical Assumptions (Final Updated Version)
 
 This section describes the high-level technical decisions, fundamental assumptions, architectural preferences, and initial identified risks that will guide the design and development of the "IntelliPost AI" MVP.
 
-**5.1. Fundamental Architectural Decisions:**
+**8.1. Fundamental Architectural Decisions:**
 * **5.1.1. Code Repository Structure:** **Monorepo**.
     * *Reason:* Simplify dependency management, facilitate atomic commits, consistency in tools, beneficial for "Agent Coding First".
 * **5.1.2. High-Level Service Architecture:** **Modular Monolith (designed with Hexagonal Principles).**
     * *Reason:* Aligned with preference for modular and decoupled components. Initial simplicity for MVP, facilitates future evolution. Hexagonal architecture, implemented with 'ports' and 'adapters' (or 'resources') by statically validated structural convention, will mitigate risks of dependency on specific AI components by facilitating their replacement.
 
-**5.2. Technology Stack Preferences and Directions (MVP):**
+**8.2. Technology Stack Preferences and Directions (MVP):**
 * **5.2.1. Backend Language & Framework:** **Python** with **FastAPI**.
     * *Reason:* AI/ML ecosystem, FastAPI performance, type hints. Python is a language in which LLMs are usually very well trained, favoring "Agent Coding First".
 * **5.2.2. Frontend Control Panel Technology:** **Svelte** (with SvelteKit).
@@ -152,7 +270,7 @@ This section describes the high-level technical decisions, fundamental assumptio
 * **5.2.4. Database:** **PostgreSQL** and **Object Storage**.
     * *Reason:* PostgreSQL for structured/semi-structured data (JSONB). Object Storage for images.
 
-**5.3. General Development and Architecture Principles (Refined):**
+**8.3. General Development and Architecture Principles (Refined):**
 * **5.3.1. Fundamental Modularity and Hexagonal Design:** Strong reference to Hexagonal Architecture (Ports and Adapters) per functionality module, as illustrated by the user example (to be shared with Architect). Internal 'adapters' will be favored to comply with 'ports' (`typing.Protocol`) by validated structural convention (e.g., Pyright).
 * **5.3.2. Decoupled Inter-Module Communication:** Pattern with consumer-defined ports and shared DTOs (minimal and necessary Shared Kernel from DDD). Platform modules (e.g., `mercadolibre_manager`) will use specialized services (e.g., `image_engine`).
 * **5.3.3. "Agent Coding First", Code Quality, Rigorous Static Typing and Architectural Boundary Maintenance:** Optimize collaboration with LLMs and ensure high quality. This includes:
@@ -163,17 +281,31 @@ This section describes the high-level technical decisions, fundamental assumptio
 * **5.3.4. Cost Management:** Openness to reasonable paid services.
 * **5.3.5. Test-Driven Development (TDD) Methodology: Test-Driven Development (TDD) methodology will be adopted mandatorily.** Tests (unit and relevant integration) will be written *before* the functionality code to guide implementation and ensure correctness, coverage, and inherently testable design from the start.
 
-**5.4. Key Technical and Operational Assumptions:**
+**8.4. Key Technical and Operational Assumptions:**
 * Users can capture basic images with mobile phones.
 * MercadoLibre APIs are capable and reliable for the MVP.
 * Viable AI technologies exist and are accessible.
 
-**5.5. Identified Technical Risks (Initial List):**
-* Integration Complexity (ML API, third-party AI).
-* AI Performance and Quality (especially images and data extraction).
-    * *Architectural Mitigation:* Hexagonal architecture with interchangeable "adapters/resources" will facilitate replacement or updating of AI services.
+**8.5. Identified Technical Risks (UX-Informed Risk Assessment):**
 
-## 7. Epic Overview
+**High Priority Risks (UX-Identified):**
+* **Auto-reprocessing complexity:** May be technically challenging to implement seamlessly within 30-90 second targets
+* **Mobile editing performance:** Comprehensive editing capabilities on mobile may impact performance and user experience
+* **Desktop scope expansion:** Image Management Hub functionality may impact MVP timeline and complexity
+
+**Medium Priority Risks:**
+* **Cross-platform sync complexity:** Real-time state synchronization requirements may be technically complex
+* **Image management technical complexity:** Full CRUD operations add significant backend and frontend complexity
+* **Integration Complexity:** ML API, third-party AI integration challenges
+* **AI Performance and Quality:** Especially images and data extraction consistency
+
+**Risk Mitigation Strategies:**
+* **Technical validation:** Confirm auto-reprocessing feasibility with Architecture team before implementation
+* **Performance testing:** Plan comprehensive mobile editing performance validation during development
+* **Scope management:** Consider phased implementation for desktop Image Management Hub features
+* **Architectural Mitigation:** Hexagonal architecture with interchangeable "adapters/resources" will facilitate replacement or updating of AI services
+
+## 9. Epic Overview
 
 ### **Epic 1: Base Platform and Initial Control Panel (The Smart Foundation)**
 
@@ -209,54 +341,54 @@ This section describes the high-level technical decisions, fundamental assumptio
   - Base component structure defined
   - Build and dev scripts working
 
-**Historia 1.4: Definición y Configuración Inicial de la Base de Datos (PostgreSQL)**
+**Story 1.4: Initial Database Definition and Configuration (PostgreSQL)**
 - **Description:** Configure PostgreSQL with initial schema including user model and base structure for products.
-- **Criterios de Aceptación:**
-  - PostgreSQL configurado y funcional
-  - Migraciones iniciales creadas
-  - Modelo de Usuario definido
-  - Modelo de Producto base definido
-  - Pool de conexiones configurado
-  - Scripts de setup de BD documentados
+- **Acceptance Criteria:**
+  - PostgreSQL configured and functional
+  - Initial migrations created
+  - User model defined
+  - Base product model defined
+  - Connection pool configured
+  - DB setup scripts documented
 
-**Historia 1.5: Implementación de Autenticación de Usuario Básica en el Backend**
+**Story 1.5: Basic User Authentication Implementation in Backend**
 - **Description:** Implement basic authentication system with JWT for secure system access.
-- **Criterios de Aceptación:**
-  - Endpoints de login/registro funcionales
-  - JWT tokens generados y validados correctamente
-  - Middleware de autenticación implementado
-  - Manejo seguro de contraseñas (hashing)
-  - Refresh token functionality básica
-  - Validación de entrada robusta
+- **Acceptance Criteria:**
+  - Functional login/registration endpoints
+  - JWT tokens generated and validated correctly
+  - Authentication middleware implemented
+  - Secure password handling (hashing)
+  - Basic refresh token functionality
+  - Robust input validation
 
-**Historia 1.6: Implementación del Marco del Panel de Control Básico con Flujo de Login**
-- **Descripción:** Crear la UI base del panel de control con flujo de autenticación integrado.
-- **Criterios de Aceptación:**
-  - Página de login funcional
-  - Dashboard base implementado
-  - Navegación principal establecida
-  - Estado de autenticación manejado correctamente
-  - Logout funcional
-  - Redirecciones apropiadas implementadas
+**Story 1.6: Basic Control Panel Framework Implementation with Login Flow**
+- **Description:** Create base control panel UI with integrated authentication flow.
+- **Acceptance Criteria:**
+  - Functional login page
+  - Base dashboard implemented
+  - Main navigation established
+  - Authentication state handled correctly
+  - Functional logout
+  - Appropriate redirects implemented
 
-**Historia 1.7: Establecimiento del Pipeline Inicial de CI/CD**
-- **Descripción:** Configurar pipeline de integración continua y despliegue continuo para automatizar testing y deployment.
-- **Criterios de Aceptación:**
-  - CI pipeline ejecuta linting, type checking y tests
-  - Build process automatizado
-  - Deploy pipeline básico configurado
-  - Quality gates implementados (NFR8.1)
-  - Notificaciones de status configuradas
+**Story 1.7: Initial CI/CD Pipeline Setup**
+- **Description:** Configure continuous integration and continuous deployment pipeline to automate testing and deployment.
+- **Acceptance Criteria:**
+  - CI pipeline executes linting, type checking and tests
+  - Automated build process
+  - Basic deploy pipeline configured
+  - Quality gates implemented (NFR8.1)
+  - Status notifications configured
 
-**Historia 1.8: Configuración de credenciales MercadoLibre API**
-- **Descripción:** Sistema para configurar y gestionar credenciales de API de MercadoLibre necesarias para categorización y publicación, diseñado considerando futuro soporte multi-cuenta.
-- **Criterios de Aceptación:**
-  - Interfaz para configurar credenciales ML (App ID, Secret Key, Access Token)
-  - Almacenamiento seguro y encriptado de credenciales
-  - Validación de credenciales contra API de ML
-  - Estructura de BD preparada para futuro multi-cuenta (sin implementar)
-  - Renovación automática de tokens cuando sea posible
-  - Gestión de errores de credenciales inválidas/expiradas
+**Story 1.8: MercadoLibre API Credentials Configuration**
+- **Description:** System to configure and manage MercadoLibre API credentials necessary for categorization and publication, designed considering future multi-account support.
+- **Acceptance Criteria:**
+  - Interface to configure ML credentials (App ID, Secret Key, Access Token)
+  - Secure and encrypted credential storage
+  - Credential validation against ML API
+  - DB structure prepared for future multi-account (not implemented)
+  - Automatic token renewal when possible
+  - Invalid/expired credential error management
 
 ### **Epic 2: Complete ML Content Generation**
 
@@ -274,74 +406,101 @@ This section describes the high-level technical decisions, fundamental assumptio
   - Progress indicators during upload
   - Error handling with specific messages per validation
 
-**Historia 2.2: Almacenamiento Seguro de los Inputs Crudos del Producto**
+**Story 2.2: Secure Storage of Raw Product Inputs**
 - **Description:** Implement secure storage system for images in object storage and product data in DB.
-- **Criterios de Aceptación:**
-  - Imágenes almacenadas en object storage seguro
+- **Acceptance Criteria:**
+  - Images stored in secure object storage
   - Product metadata persisted in PostgreSQL
-  - URLs seguras generadas para acceso a imágenes
+  - Secure URLs generated for image access
   - Correct relationships between product and images
-  - Limpieza automática de archivos temporales
-  - Backup strategy definida
+  - Automatic temporary file cleanup
+  - Backup strategy defined
 
-**Historia 2.3: IA para generación de contenido texto ML**
-- **Descripción:** Integración con LLM que analiza imágenes + prompt, genera título optimizado para algoritmo ML, usa herramienta oficial ML para categoría (evitar penalizaciones), mapea atributos a categoría específica, genera descripción estructurada aplicando best practices ML investigadas.
+**Story 2.3: AI for ML Text Content Generation**
+- **Description:** Integration with LLM that analyzes images + prompt, generates optimized title for ML algorithm, uses official ML tool for category (avoid penalties), maps attributes to specific category, generates structured description applying researched ML best practices.
+- **Acceptance Criteria:**
+  - Functional multimodal LLM integration
+  - Optimized title generation for ML algorithm
+  - Use of official ML tool for category
+  - Attribute mapping to specific category
+  - Structured description generation
+  - Application of ML best practices knowledge
+  - Basic error handling with automatic retry and clear feedback
+
+**Story 2.4: AI for ML Main Image Processing**
+- **Description:** System that processes ALL uploaded images (white background, quality adjustments), after processing decides which becomes main, integration with AI service to remove background, automatic adjustments, resizing according to ML specs, thumbnail generation IF ML doesn't provide them automatically, general quality validation.
+- **Acceptance Criteria:**
+  - Processing of all uploaded images
+  - Automatic selection of best main image post-processing
+  - White background processing implemented
+  - Automatic quality adjustments (sharpness, lighting)
+  - Resizing according to MercadoLibre specs
+  - Thumbnail generation (if ML doesn't provide them)
+  - General quality validation
+  - Basic error handling with automatic retry and clear feedback
+
+**Story 2.5: Persistence of All Generated Content**
+- **Description:** Store text content (title, category, attributes, description) in PostgreSQL, main image + thumbnails (if applicable) in S3, processing metadata, secure URLs, versioning, timestamps, correct relationships between all components, and product status management.
+- **Acceptance Criteria:**
+  - Text content persistence in PostgreSQL
+  - Main image storage in S3
+  - Thumbnail persistence (if applicable)
+  - Processing metadata stored
+  - Secure URLs generated
+  - Versioning implemented
+  - Creation timestamps
+  - Product state management: uploading → processing → ready → publishing → published/failed
+  - Simple and understandable states for user
+  - Trackable and auditable state transitions
+  - Correct relationships between components
+
+**Historia 2.6: Visualización del contenido completo con edición móvil comprensiva**
+- **Descripción:** UI que muestra todo el contenido generado con capacidades de edición comprensivas en mobile y potenciadas en desktop, permitiendo workflow completo desde cualquier plataforma.
 - **Criterios de Aceptación:**
-  - Integración con LLM multimodal funcional
-  - Generación de título optimizado para algoritmo ML
-  - Uso de herramienta oficial ML para categoría
-  - Mapeo de atributos a categoría específica
-  - Generación de descripción estructurada
-  - Aplicación de conocimiento de ML best practices
-  - Manejo básico de errores con retry automático y feedback claro
+  - **Mobile-Complete Interface:**
+    - Review completo del contenido generado (título, categoría, atributos, descripción)
+    - Preview de cómo se verá en MercadoLibre
+    - Confidence score prominente con indicadores visuales (🟢>85%, 🟡70-85%, 🔴<70%)
+    - **Comprehensive Mobile Editing Capabilities:**
+      - **Prompt editing** con auto-regeneración de contenido
+      - **Title editing** con validación en tiempo real
+      - **Category selection** con opciones ML-compatible
+      - **Key attributes editing** para atributos críticos
+      - **Description editing** con formato básico
+    - **Approval final capability:** Botón "Publish Now" para contenido high-confidence
+    - Swipe/touch interface para seleccionar entre opciones AI-generadas
+  - **Desktop-Enhanced Interface (Image Management Hub):**
+    - Todas las capacidades mobile PLUS:
+    - **Full Image CRUD Operations:** Add, delete, reorder product images
+    - **Main Image Selection Logic:** Designate primary image for MercadoLibre
+    - **Auto-Reprocessing Interface:** Visual feedback during automatic reprocessing
+    - **Advanced Content Editing:** Live preview with before/after comparison
+    - **Before/After Image Comparison Tools:** Side-by-side analysis
+    - Comparación lado a lado con datos originales
+    - Edición avanzada de atributos técnicos completos
+    - Preview multi-formato y validaciones extendidas
+  - **Cross-Platform Decision Logic:**
+    - Confidence >85%: Mobile puede aprobar directamente
+    - Confidence 70-85%: Mobile puede editar comprensivamente y aprobar
+    - Confidence <70%: Sistema sugiere revisión desktop pero mobile mantiene capacidad de override
+  - **Real-time Cross-Platform Sync:** Navegación fluida con sincronización instantánea
+  - **Auto-Reprocessing Triggers:** Automatic AI rerun when user edits prompt or modifies images
 
-**Historia 2.4: IA para procesamiento de imagen principal ML**
-- **Descripción:** Sistema que procesa TODAS las imágenes cargadas (fondo blanco, ajustes de calidad), después del procesamiento decide cuál queda como principal, integración con servicio de IA para remover fondo, ajustes automáticos, redimensionado según specs ML, generación de thumbnails SI ML no los provee automáticamente, validación de calidad general.
-- **Criterios de Aceptación:**
-  - Procesamiento de todas las imágenes cargadas
-  - Selección automática de mejor imagen principal post-procesamiento
-  - Procesamiento de fondo blanco implementado
-  - Ajustes automáticos de calidad (sharpness, lighting)
-  - Redimensionado según specs de MercadoLibre
-  - Generación de thumbnails (si ML no los provee)
-  - Validación de calidad general
-  - Manejo básico de errores con retry automático y feedback claro
+### **Epic 3: Advanced Image Management & Publishing**
 
-**Historia 2.5: Persistencia de todo el contenido generado**
-- **Descripción:** Almacenar contenido texto (título, categoría, atributos, descripción) en PostgreSQL, imagen principal + thumbnails (si aplica) en S3, metadatos de procesamiento, URLs seguras, versionado, timestamps, relaciones correctas entre todos los componentes, y gestión de estados del producto.
-- **Criterios de Aceptación:**
-  - Persistencia de contenido texto en PostgreSQL
-  - Almacenamiento de imagen principal en S3
-  - Persistencia de thumbnails (si aplica)
-  - Metadatos de procesamiento almacenados
-  - URLs seguras generadas
-  - Versionado implementado
-  - Timestamps de creación
-  - Gestión de estados del producto: uploading → processing → ready → publishing → published/failed
-  - Estados simples y comprensibles para el usuario
-  - Transiciones de estado trackeable y auditable
-  - Relaciones correctas entre componentes
-
-**Historia 2.6: Visualización del contenido completo**
-- **Descripción:** UI que muestra todo el contenido generado, mobile-friendly para review básico, desktop-optimized para edición detallada, preview de cómo se verá en ML, comparación con datos originales, opciones básicas de edición, confidence scores visibles.
-- **Criterios de Aceptación:**
-  - UI mobile-friendly para review básico del contenido
-  - UI desktop-optimized para edición detallada
-  - Preview de cómo se verá en MercadoLibre
-  - Comparación con datos originales
-  - Opciones básicas de edición
-  - Confidence scores visibles por componente
-  - Navegación fluida entre mobile y desktop
-
-### **Epic 3: Review & Publishing**
-
-**Historia 3.1: Implementación del Motor de Procesamiento de Imagen Principal**
-- **Descripción:** Desarrollar sistema automatizado para seleccionar y procesar imagen principal con fondo blanco profesional cumpliendo estándares de MercadoLibre.
+**Historia 3.1: Implementación del Motor de Procesamiento de Imagen Principal con Auto-Reprocessing**
+- **Descripción:** Desarrollar sistema automatizado para seleccionar y procesar imagen principal con fondo blanco profesional, incluyendo lógica de auto-reprocesamiento cuando cambien los inputs.
 - **Criterios de Aceptación:**
   - Selección automática de mejor imagen principal
   - Procesamiento de fondo blanco implementado
   - Ajustes automáticos de calidad (sharpness, lighting)
   - Redimensionado según specs de MercadoLibre
+  - **Auto-Reprocessing Logic:**
+    - **Trigger on image add/delete:** Automatic reprocessing of all content
+    - **Trigger on prompt edit:** Automatic content regeneration
+    - **No manual reprocess buttons:** Seamless automatic triggers
+    - **User feedback during reprocessing:** Progress indicators and status updates
+    - **Failure handling:** Graceful degradation with user notification
   - Validación de calidad de output
   - Fallback para imágenes de baja calidad
   - Performance optimizada para procesamiento
@@ -356,14 +515,24 @@ This section describes the high-level technical decisions, fundamental assumptio
   - URLs de acceso generadas
   - Versionado de procesamiento implementado
 
-**Historia 3.3: Visualización y Validación de la Imagen Principal Procesada**
-- **Descripción:** Mostrar resultado del procesamiento de imagen en panel de control para validación del usuario.
+**Historia 3.3: Image Management Hub con Full CRUD Operations**
+- **Descripción:** Interfaz desktop completa para gestión integral de imágenes del producto, incluyendo operaciones CRUD y herramientas de comparación avanzadas.
 - **Criterios de Aceptación:**
-  - Comparación lado a lado (original vs procesada)
+  - **Full Image CRUD Interface:**
+    - **Add images:** Upload additional product images
+    - **Delete images:** Remove unwanted images with confirmation
+    - **Reorder images:** Drag-and-drop sequence management
+    - **Main image selection:** Visual interface to designate primary image
+  - **Advanced Comparison Tools:**
+    - **Before/after image comparison:** Side-by-side original vs processed
+    - **Image quality scoring:** Visual quality metrics and recommendations
+    - **MercadoLibre context preview:** How images appear in actual listing
+  - **Auto-Reprocessing Management:**
+    - **Visual feedback:** Progress indicators during automatic reprocessing
+    - **Processing status:** Clear indication of reprocessing triggers and completion
+    - **Manual override capability:** Option to prevent auto-reprocessing when needed
   - Scores de calidad visibles
-  - Opción de re-procesar disponible
   - Feedback sobre calidad de imagen
-  - Selección manual alternativa disponible
   - Preview en contexto de MercadoLibre
 
 ### **Epic 4: AI-Powered Listing Content Generation (The Content that Sells)**
@@ -473,7 +642,7 @@ This section describes the high-level technical decisions, fundamental assumptio
   - Notificaciones de status implementadas
   - Dashboard actualizado con nuevo estado
 
-## 8. Key Reference Documents
+## 10. Key Reference Documents
 1.  **IntelliPost AI - Project Brief (v1.0, English Version)** - *Como se generó con Analyst Mary.*
 2.  **User-Provided Architectural Example & Principles (v1.0)** - *Ejemplo detallado de estructura modular Hexagonal provisto por el usuario.*
 3.  **Research Report: AI Technology Evaluation for Image Processing & Data Operations** - *Referencia a los archivos en `reports/image_processing/` (claude.md, gemini.md, x.md).*
@@ -481,7 +650,7 @@ This section describes the high-level technical decisions, fundamental assumptio
 5.  **Research Report: Universal Principles of Persuasive & High-Conversion Publishing** - *Referencia a los archivos en `reports/publishing/general/` (claude.md, gemini.md, x.md).*
 6.  **Research Prompts (Generated)** - *Los 3 prompts detallados generados durante la fase de PRD como mandato para las investigaciones, cuyos hallazgos iniciales están en los reportes anteriores.*
 
-## 9. Out of Scope Ideas Post MVP
+## 11. Out of Scope Ideas Post MVP
 The following functionalities are explicitly considered out of scope for the MVP and will be evaluated for future versions:
 * Product Variant Management.
 * Support for Multiple Publication Types per Product in MercadoLibre.
@@ -496,14 +665,15 @@ The following functionalities are explicitly considered out of scope for the MVP
 * "Save Draft" Functionality for Initial Inputs.
 * Detailed Accessibility (Beyond MVP Fundamentals).
 
-## 10. Change Log
+## 12. Change Log
 | Change | Date | Version | Description | Author |
 | ------ | ---- | ------- | ----------- | ------ |
 | Initial Creation | 2025-05-27 | 1.0 | Initial PRD creation. | John (PM) |
+| UX Handoff Integration | 2025-06-20 | 1.1 | **COMPREHENSIVE UX INTEGRATION:** Added Section 4 (UX-Driven Success Metrics & Design Requirements), updated Section 6 (Desktop as Image Management Hub), added Section 7 (Auto-reprocessing Technical Specifications), enhanced Section 8.5 (UX-Informed Risk Assessment). Updated Epic 3 and Stories 2.6, 3.1, 3.3. Integrated confidence-based color system, performance metrics (<30s approval, >80% mobile completion), and comprehensive mobile editing. Translated content to English per DS1.1-DS1.4. | Sarah (PO) |
 
 --- END PRD START CHECKLIST OUTPUT ------
 
-## 11. Checklist Results Report
+## 13. Checklist Results Report
 
 ### **Executive Summary**
 The IntelliPost AI PRD has demonstrated significant improvement and now presents a comprehensive and robust structure with clear objectives, complete functional requirements, and well-defined technical assumptions. The critical gaps previously identified have been successfully resolved.
@@ -610,7 +780,7 @@ El PRD ha experimentado una transformación notable, evolucionando de una base s
 
 --- END Checklist START Design Architect `UI/UX Specification Mode` Prompt ------
 
-## 12. Prompt for Design Architect (UI/UX Specification Mode)
+## 14. Prompt for Design Architect (UI/UX Specification Mode)
 
 **Objective:** Elaborate on the UI/UX aspects of the product defined in this PRD.
 **Mode:** UI/UX Specification Mode
@@ -625,7 +795,7 @@ El PRD ha experimentado una transformación notable, evolucionando de una base s
 
 --- END Design Architect `UI/UX Specification Mode` Prompt START Architect Prompt ------
 
-## 13. Initial Architect Prompt
+## 15. Initial Architect Prompt
 
 Based on our discussions and requirements analysis for the "IntelliPost AI" project, I've compiled the following technical guidance from this PRD to inform your architecture analysis and decisions, to kick off the Architecture Creation Mode:
 
