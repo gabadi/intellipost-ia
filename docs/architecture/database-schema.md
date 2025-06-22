@@ -62,7 +62,7 @@ CREATE TABLE users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     last_login_at TIMESTAMP WITH TIME ZONE,
-    
+
     -- Indexes
     CONSTRAINT users_email_check CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 );
@@ -83,7 +83,7 @@ CREATE INDEX idx_users_active ON users(is_active) WHERE is_active = true;
 ```sql
 CREATE TYPE product_status AS ENUM (
     'uploading',     -- Images being uploaded
-    'processing',    -- AI content generation in progress  
+    'processing',    -- AI content generation in progress
     'ready',         -- Generated content ready for review
     'publishing',    -- Being published to MercadoLibre
     'published',     -- Successfully published
@@ -95,21 +95,21 @@ CREATE TABLE products (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     status product_status NOT NULL DEFAULT 'uploading',
     prompt_text TEXT NOT NULL CHECK (char_length(prompt_text) <= 500),
-    
+
     -- Processing metadata
     processing_started_at TIMESTAMP WITH TIME ZONE,
     processing_completed_at TIMESTAMP WITH TIME ZONE,
     processing_error TEXT,
-    
+
     -- Timestamps
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     -- Business constraints
     CONSTRAINT products_prompt_not_empty CHECK (trim(prompt_text) != ''),
     CONSTRAINT products_processing_time CHECK (
-        processing_started_at IS NULL OR 
-        processing_completed_at IS NULL OR 
+        processing_started_at IS NULL OR
+        processing_completed_at IS NULL OR
         processing_completed_at >= processing_started_at
     )
 );
@@ -142,7 +142,7 @@ BEGIN
     ELSIF OLD.status = 'published' AND NEW.status != 'published' THEN
         RAISE EXCEPTION 'Cannot transition from published state';
     END IF;
-    
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -160,33 +160,33 @@ CREATE TRIGGER products_status_transition_trigger
 CREATE TABLE product_images (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    
+
     -- Image storage
     original_s3_url TEXT NOT NULL,
     processed_s3_url TEXT, -- After background removal/optimization
-    
+
     -- Image metadata
     is_primary BOOLEAN DEFAULT false,
     file_size_bytes INTEGER NOT NULL CHECK (file_size_bytes > 0),
     file_format VARCHAR(10) NOT NULL CHECK (file_format IN ('jpg', 'jpeg', 'png', 'webp')),
     resolution_width INTEGER CHECK (resolution_width > 0),
     resolution_height INTEGER CHECK (resolution_height > 0),
-    
+
     -- Processing metadata (JSONB for flexibility)
     processing_metadata JSONB DEFAULT '{}',
-    
+
     -- Timestamps
     uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     processed_at TIMESTAMP WITH TIME ZONE,
-    
+
     -- Business constraints
-    CONSTRAINT product_images_one_primary_per_product UNIQUE (product_id, is_primary) 
+    CONSTRAINT product_images_one_primary_per_product UNIQUE (product_id, is_primary)
         DEFERRABLE INITIALLY DEFERRED
 );
 
 -- Indexes for performance
 CREATE INDEX idx_product_images_product_id ON product_images(product_id);
-CREATE INDEX idx_product_images_primary ON product_images(product_id, is_primary) 
+CREATE INDEX idx_product_images_primary ON product_images(product_id, is_primary)
     WHERE is_primary = true;
 CREATE INDEX idx_product_images_processing ON product_images USING GIN (processing_metadata);
 ```
@@ -216,11 +216,11 @@ CREATE INDEX idx_product_images_processing ON product_images USING GIN (processi
 CREATE TABLE generated_content (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    
+
     -- AI Generated content
     title VARCHAR(60) NOT NULL CHECK (char_length(trim(title)) >= 10),
     description TEXT NOT NULL CHECK (char_length(trim(description)) >= 50),
-    
+
     -- MercadoLibre specific fields (COMPLETE)
     ml_category_id VARCHAR(50) NOT NULL,
     ml_category_name VARCHAR(200) NOT NULL,
@@ -231,41 +231,41 @@ CREATE TABLE generated_content (
     ml_buying_mode VARCHAR(20) DEFAULT 'buy_it_now',
     ml_condition VARCHAR(20) DEFAULT 'new',
     ml_listing_type_id VARCHAR(50) DEFAULT 'gold_special',
-    
+
     -- MercadoLibre flexible attributes and terms
     ml_attributes JSONB DEFAULT '{}', -- Category-specific attributes (brand, model, etc.)
     ml_sale_terms JSONB DEFAULT '{}', -- Payment, shipping terms
     ml_shipping JSONB DEFAULT '{}', -- Shipping configuration
-    
+
     -- Warranty and service
     ml_warranty VARCHAR(500),
     ml_warranty_type VARCHAR(50) CHECK (ml_warranty_type IN ('manufacturer', 'seller', 'without_warranty')),
-    
-    -- AI confidence scoring  
+
+    -- AI confidence scoring
     confidence_overall DECIMAL(3,2) NOT NULL CHECK (confidence_overall BETWEEN 0.00 AND 1.00),
     confidence_breakdown JSONB NOT NULL DEFAULT '{}',
-    
+
     -- AI provider metadata
     ai_provider VARCHAR(50) NOT NULL DEFAULT 'gemini',
     ai_model_version VARCHAR(100) NOT NULL,
     generation_time_ms INTEGER CHECK (generation_time_ms > 0),
-    
+
     -- Publishing data (after ML publication)
     ml_item_id VARCHAR(50), -- MercadoLibre item ID
     ml_permalink TEXT, -- Public URL to the listing
     ml_status VARCHAR(20), -- active, paused, closed, etc.
     ml_health DECIMAL(3,2) CHECK (ml_health BETWEEN 0.00 AND 1.00), -- Item health score
     ml_sold_quantity INTEGER DEFAULT 0 CHECK (ml_sold_quantity >= 0),
-    
+
     -- Version control for regeneration
     version INTEGER NOT NULL DEFAULT 1,
-    
+
     -- Timestamps
     generated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     ml_published_at TIMESTAMP WITH TIME ZONE,
     ml_last_updated_at TIMESTAMP WITH TIME ZONE,
-    
+
     -- Business constraints
     CONSTRAINT ml_title_length_check CHECK (char_length(ml_title) <= 60 AND char_length(trim(ml_title)) >= 10),
     CONSTRAINT ml_currency_supported CHECK (ml_currency_id IN ('ARS', 'USD')),
@@ -307,36 +307,36 @@ CREATE UNIQUE INDEX idx_generated_content_product_version ON generated_content(p
 ```sql
 CREATE TABLE ml_credentials (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    
-    -- OAuth application data  
+
+    -- OAuth application data
     ml_app_id VARCHAR(255) NOT NULL,
     ml_secret_key_encrypted TEXT NOT NULL, -- AES-256 encrypted
-    
+
     -- OAuth tokens (6-hour access, 6-month refresh)
-    ml_access_token_encrypted TEXT NOT NULL, -- AES-256 encrypted  
+    ml_access_token_encrypted TEXT NOT NULL, -- AES-256 encrypted
     ml_refresh_token_encrypted TEXT NOT NULL, -- AES-256 encrypted
     ml_token_type VARCHAR(20) DEFAULT 'bearer',
-    
+
     -- Token lifecycle
     ml_expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    ml_refresh_expires_at TIMESTAMP WITH TIME ZONE NOT NULL, 
+    ml_refresh_expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     ml_scopes TEXT DEFAULT 'offline_access read write',
-    
+
     -- MercadoLibre user data
     ml_user_id BIGINT NOT NULL, -- MercadoLibre user ID
     ml_nickname VARCHAR(100), -- MercadoLibre nickname
     ml_email VARCHAR(255), -- MercadoLibre email
     ml_site_id CHAR(3) DEFAULT 'MLA', -- Argentina marketplace
-    
+
     -- Validation and health
     ml_is_valid BOOLEAN DEFAULT false,
     ml_last_validated_at TIMESTAMP WITH TIME ZONE,
     ml_validation_error TEXT,
-    
+
     -- Timestamps
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     -- Business constraints
     CONSTRAINT ml_credentials_app_id_check CHECK (ml_app_id != ''),
     CONSTRAINT ml_credentials_token_type_check CHECK (ml_token_type = 'bearer'),
@@ -359,7 +359,7 @@ CREATE INDEX idx_ml_credentials_site_id ON ml_credentials(ml_site_id);
 ### Mobile Dashboard Query (Primary Use Case)
 ```sql
 -- Get user's recent products with images for mobile dashboard
-SELECT 
+SELECT
     p.id,
     p.status,
     p.prompt_text,
@@ -378,24 +378,24 @@ LIMIT 20;
 ### Real-time Status Updates Query
 ```sql
 -- Get product status for WebSocket updates
-SELECT 
+SELECT
     id,
     status,
     processing_started_at,
     processing_completed_at,
     processing_error
-FROM products 
+FROM products
 WHERE id = $1;
 ```
 
 ### Confidence-based Routing Query
 ```sql
 -- Determine user flow based on AI confidence
-SELECT 
+SELECT
     p.id,
     p.status,
     gc.confidence_overall,
-    CASE 
+    CASE
         WHEN gc.confidence_overall > 0.85 THEN 'quick_approval'
         WHEN gc.confidence_overall > 0.70 THEN 'balanced_review'
         ELSE 'manual_edit'
@@ -426,11 +426,11 @@ DATABASE_CONFIG = {
 Application Level Caching:
   - User sessions: Redis (future)
   - Generated content: In-memory for active products
-  
+
 Database Level:
   - Query plan caching: PostgreSQL default
   - Connection pooling: SQLAlchemy
-  
+
 CDN Level:
   - Image delivery: CloudFront/similar
   - Static assets: Service Worker (PWA)
@@ -439,17 +439,17 @@ CDN Level:
 ### Monitoring Queries
 ```sql
 -- Slow query monitoring
-SELECT 
+SELECT
     query,
     mean_exec_time,
     calls,
     total_exec_time
-FROM pg_stat_statements 
+FROM pg_stat_statements
 WHERE mean_exec_time > 100
 ORDER BY mean_exec_time DESC;
 
--- Index usage monitoring  
-SELECT 
+-- Index usage monitoring
+SELECT
     schemaname,
     tablename,
     indexname,
@@ -519,11 +519,11 @@ Backup Schedule:
   - Full backup: Daily at 2 AM UTC
   - Incremental: Every 6 hours
   - Point-in-time recovery: 7 days retention
-  
+
 Backup Storage:
   - Primary: S3/MinIO encrypted
   - Geographic redundancy: Different region
-  
+
 Recovery Testing:
   - Monthly recovery test
   - RTO: 30 minutes
@@ -578,12 +578,12 @@ BEGIN
         last_name = 'User',
         is_active = false
     WHERE id = user_uuid;
-    
+
     -- Keep products but remove sensitive prompt data
     UPDATE products SET
         prompt_text = '[User content deleted]'
     WHERE user_id = user_uuid;
-    
+
     -- Delete ML credentials completely
     DELETE FROM ml_credentials WHERE user_id = user_uuid;
 END;

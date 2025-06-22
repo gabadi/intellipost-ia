@@ -39,7 +39,7 @@ ALTER TABLE generated_content ADD COLUMN IF NOT EXISTS
     ml_buying_mode VARCHAR(20) NOT NULL DEFAULT 'buy_it_now',
     ml_condition VARCHAR(20) NOT NULL CHECK (ml_condition IN ('new', 'used', 'not_specified')),
     ml_listing_type_id VARCHAR(50) NOT NULL,
-    
+
     -- Business constraints
     CONSTRAINT ml_title_length_check CHECK (char_length(ml_title) <= 60),
     CONSTRAINT ml_currency_supported CHECK (ml_currency_id IN ('ARS', 'USD')),
@@ -63,11 +63,11 @@ CREATE TABLE ml_categories (
     status VARCHAR(20) DEFAULT 'enabled',
     max_title_length INTEGER DEFAULT 60,
     immediate_payment BOOLEAN DEFAULT false,
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     CONSTRAINT ml_categories_status_check CHECK (status IN ('enabled', 'disabled', 'under_review'))
 );
 
@@ -80,14 +80,14 @@ CREATE TABLE ml_attributes (
     is_required BOOLEAN DEFAULT false,
     is_catalog_required BOOLEAN DEFAULT false,
     is_variation_attribute BOOLEAN DEFAULT false,
-    
+
     -- For list-type attributes
     allowed_values JSONB DEFAULT '[]',
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     CONSTRAINT ml_attributes_value_type_check CHECK (value_type IN ('string', 'number', 'boolean', 'list', 'number_unit'))
 );
 
@@ -111,27 +111,27 @@ ALTER TABLE generated_content ADD COLUMN IF NOT EXISTS
     ml_buying_mode VARCHAR(20) DEFAULT 'buy_it_now',
     ml_condition VARCHAR(20) DEFAULT 'new',
     ml_listing_type_id VARCHAR(50) DEFAULT 'gold_special',
-    
+
     -- ML-specific attributes (flexible storage)
     ml_attributes JSONB DEFAULT '{}',
     ml_sale_terms JSONB DEFAULT '{}',
     ml_shipping JSONB DEFAULT '{}',
-    
+
     -- Warranty and service
     ml_warranty VARCHAR(500),
     ml_warranty_type VARCHAR(50),
-    
+
     -- Publishing metadata
     ml_item_id VARCHAR(50), -- MercadoLibre item ID after creation
     ml_permalink TEXT, -- Public URL to the listing
     ml_status VARCHAR(20), -- active, paused, closed, etc.
     ml_health DECIMAL(3,2), -- Item health score (0.00-1.00)
     ml_sold_quantity INTEGER DEFAULT 0,
-    
+
     -- Timestamps
     ml_published_at TIMESTAMP WITH TIME ZONE,
     ml_last_updated_at TIMESTAMP WITH TIME ZONE,
-    
+
     -- Constraints
     CONSTRAINT ml_title_required CHECK (ml_title != ''),
     CONSTRAINT ml_price_positive CHECK (ml_price IS NULL OR ml_price > 0),
@@ -159,29 +159,29 @@ ALTER TABLE ml_credentials ADD COLUMN IF NOT EXISTS
     -- OAuth application data
     ml_app_id VARCHAR(255) NOT NULL DEFAULT '',
     ml_secret_key_encrypted TEXT NOT NULL DEFAULT '',
-    
+
     -- OAuth tokens
     ml_access_token_encrypted TEXT NOT NULL DEFAULT '',
     ml_refresh_token_encrypted TEXT NOT NULL DEFAULT '',
     ml_token_type VARCHAR(20) DEFAULT 'bearer',
-    
+
     -- Token lifecycle
     ml_expires_at TIMESTAMP WITH TIME ZONE,
     ml_refresh_expires_at TIMESTAMP WITH TIME ZONE,
     ml_scopes TEXT DEFAULT 'offline_access read write',
-    
+
     -- User data
     ml_user_id BIGINT, -- MercadoLibre user ID
     ml_nickname VARCHAR(100), -- MercadoLibre nickname
     ml_email VARCHAR(255), -- MercadoLibre email
-    
+
     -- Validation and health
     ml_is_valid BOOLEAN DEFAULT false,
     ml_last_validated_at TIMESTAMP WITH TIME ZONE,
     ml_validation_error TEXT,
     ml_rate_limit_remaining INTEGER,
     ml_rate_limit_reset TIMESTAMP WITH TIME ZONE,
-    
+
     -- Constraints
     CONSTRAINT ml_credentials_app_id_check CHECK (ml_app_id != ''),
     CONSTRAINT ml_credentials_token_type_check CHECK (ml_token_type IN ('bearer')),
@@ -241,18 +241,18 @@ ALTER TABLE product_images ADD COLUMN IF NOT EXISTS
     ml_picture_url TEXT, -- ML's CDN URL
     ml_max_size VARCHAR(20), -- e.g., "1920x1920"
     ml_variations JSONB DEFAULT '{}', -- Different size variations
-    
+
     -- Image validation
     ml_upload_status VARCHAR(20) DEFAULT 'pending',
     ml_upload_error TEXT,
     ml_dominant_color VARCHAR(7), -- Hex color code
-    
+
     -- Crop and positioning data
     ml_crop_data JSONB DEFAULT '{}',
-    
+
     -- Timestamps
     ml_uploaded_at TIMESTAMP WITH TIME ZONE,
-    
+
     -- Constraints
     CONSTRAINT ml_upload_status_check CHECK (ml_upload_status IN ('pending', 'uploading', 'success', 'failed')),
     CONSTRAINT ml_dominant_color_format CHECK (ml_dominant_color IS NULL OR ml_dominant_color ~ '^#[0-9A-Fa-f]{6}$')
@@ -325,18 +325,18 @@ ALTER TABLE generated_content ADD COLUMN IF NOT EXISTS
     ml_price_currency_local CHAR(3) DEFAULT 'ARS',
     ml_price_usd DECIMAL(10,2), -- USD price for Global Selling
     ml_installments JSONB DEFAULT '{}', -- Installment options
-    
+
     -- Argentina tax and regulation
     ml_tax_mode VARCHAR(20) DEFAULT 'not_specified',
     ml_tax_percentage DECIMAL(5,2),
     ml_accepts_mercadopago BOOLEAN DEFAULT true,
     ml_immediate_payment BOOLEAN DEFAULT false,
-    
+
     -- Shipping (Argentina specific)
     ml_free_shipping BOOLEAN DEFAULT false,
     ml_local_pick_up BOOLEAN DEFAULT false,
     ml_shipping_mode VARCHAR(20) DEFAULT 'me2',
-    
+
     -- Constraints
     CONSTRAINT ml_price_currency_check CHECK (ml_price_currency_local IN ('ARS', 'USD')),
     CONSTRAINT ml_tax_mode_check CHECK (ml_tax_mode IN ('not_specified', 'tax_included', 'tax_not_included')),
@@ -366,24 +366,24 @@ ALTER TABLE generated_content ADD COLUMN IF NOT EXISTS
 CREATE TABLE ml_argentina_compliance (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    
+
     -- AFIP/CUIT information
     cuit_number VARCHAR(15),
     tax_condition VARCHAR(50), -- monotributo, responsable_inscripto, etc.
-    
+
     -- Business information
     business_name VARCHAR(200),
     business_address TEXT,
     business_phone VARCHAR(20),
-    
+
     -- Compliance status
     is_verified BOOLEAN DEFAULT false,
     verification_date TIMESTAMP WITH TIME ZONE,
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     CONSTRAINT ml_argentina_compliance_one_per_user UNIQUE (user_id)
 );
 ```
@@ -402,16 +402,16 @@ ALTER TABLE generated_content ADD COLUMN IF NOT EXISTS
     ml_health DECIMAL(3,2),
     ml_catalog_listing BOOLEAN DEFAULT false,
     ml_catalog_product_id VARCHAR(100),
-    
+
     -- Performance metrics
     ml_views INTEGER DEFAULT 0,
     ml_sold_quantity INTEGER DEFAULT 0,
     ml_available_quantity_current INTEGER,
-    
+
     -- Modification tracking
     ml_last_updated_at TIMESTAMP WITH TIME ZONE,
     ml_status_history JSONB DEFAULT '[]',
-    
+
     -- Constraints
     CONSTRAINT ml_status_valid CHECK (ml_status IN ('draft', 'active', 'paused', 'closed', 'under_review', 'inactive')),
     CONSTRAINT ml_health_range CHECK (ml_health IS NULL OR ml_health BETWEEN 0.00 AND 1.00)
@@ -454,27 +454,27 @@ CREATE TABLE ml_api_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id),
     product_id UUID REFERENCES products(id),
-    
+
     -- API call details
     endpoint VARCHAR(200) NOT NULL,
     method VARCHAR(10) NOT NULL,
     request_body JSONB,
     response_body JSONB,
-    
+
     -- Response details
     status_code INTEGER NOT NULL,
     success BOOLEAN DEFAULT false,
     error_message TEXT,
     error_code VARCHAR(50),
-    
+
     -- Rate limiting
     rate_limit_remaining INTEGER,
     rate_limit_reset TIMESTAMP WITH TIME ZONE,
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     processing_time_ms INTEGER,
-    
+
     -- Constraints
     CONSTRAINT ml_api_logs_method_check CHECK (method IN ('GET', 'POST', 'PUT', 'DELETE', 'PATCH')),
     CONSTRAINT ml_api_logs_status_check CHECK (status_code BETWEEN 100 AND 599)
@@ -529,14 +529,14 @@ ALTER TABLE generated_content ADD COLUMN IF NOT EXISTS
     ml_buying_mode VARCHAR(20) DEFAULT 'buy_it_now',
     ml_condition VARCHAR(20) DEFAULT 'new',
     ml_listing_type_id VARCHAR(50) DEFAULT 'gold_special',
-    
+
     -- ML attributes and metadata
     ml_attributes JSONB DEFAULT '{}',
     ml_sale_terms JSONB DEFAULT '{}',
     ml_shipping JSONB DEFAULT '{}',
     ml_warranty VARCHAR(500),
     ml_warranty_type VARCHAR(50),
-    
+
     -- Publishing data
     ml_item_id VARCHAR(50),
     ml_permalink TEXT,
@@ -545,7 +545,7 @@ ALTER TABLE generated_content ADD COLUMN IF NOT EXISTS
     ml_sold_quantity INTEGER DEFAULT 0,
     ml_published_at TIMESTAMP WITH TIME ZONE,
     ml_last_updated_at TIMESTAMP WITH TIME ZONE,
-    
+
     -- Argentina-specific
     ml_original_price DECIMAL(10,2),
     ml_price_currency_local CHAR(3) DEFAULT 'ARS',
@@ -558,7 +558,7 @@ ALTER TABLE generated_content ADD COLUMN IF NOT EXISTS
     ml_free_shipping BOOLEAN DEFAULT false,
     ml_local_pick_up BOOLEAN DEFAULT false,
     ml_shipping_mode VARCHAR(20) DEFAULT 'me2',
-    
+
     -- Lifecycle tracking
     ml_catalog_listing BOOLEAN DEFAULT false,
     ml_catalog_product_id VARCHAR(100),

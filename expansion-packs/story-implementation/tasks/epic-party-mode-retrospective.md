@@ -1,11 +1,11 @@
 # Epic Party Mode Retrospective
 
 ## Task Overview
-**Agent:** sm (Scrum Master - Epic Retrospective Facilitator and Strategic Documenter)  
-**Action Type:** multi-agent-epic-retrospective  
-**Duration:** 45-60 minutes  
-**Collaborators:** [architect, po, dev, ux-expert] as participants  
-**LLM-Optimized:** Multi-agent collaborative epic insight generation  
+**Agent:** sm (Scrum Master - Epic Retrospective Facilitator and Strategic Documenter)
+**Action Type:** multi-agent-epic-retrospective
+**Duration:** 45-60 minutes
+**Collaborators:** [architect, po, dev, ux-expert] as participants
+**LLM-Optimized:** Multi-agent collaborative epic insight generation
 
 ## Purpose
 Conduct comprehensive epic retrospective with all key stakeholders to consolidate learnings from ALL stories, generate epic-level insights and patterns, create action items for next epic, and build team consensus on strategic improvements.
@@ -34,7 +34,7 @@ Conduct comprehensive epic retrospective with all key stakeholders to consolidat
 ## Execution Steps
 
 ### Step 1: Epic Data Consolidation (10 minutes)
-**Agent:** sm (Epic Retrospective Facilitator)  
+**Agent:** sm (Epic Retrospective Facilitator)
 Lead epic data consolidation with strategic focus on process insights:
 
 ```markdown
@@ -58,7 +58,7 @@ Lead epic data consolidation with strategic focus on process insights:
 - {arch_item_1} | Stories: {story_list} | Priority: {HIGH/MEDIUM/LOW}
 - {arch_item_2} | Stories: {story_list} | Priority: {HIGH/MEDIUM/LOW}
 
-### FUTURE_EPIC ({future_count} items)  
+### FUTURE_EPIC ({future_count} items)
 - {future_item_1} | Stories: {story_list} | Est: {effort_estimate}
 - {future_item_2} | Stories: {story_list} | Est: {effort_estimate}
 
@@ -89,7 +89,7 @@ Lead epic data consolidation with strategic focus on process insights:
 - **{pattern_1}:** Appeared in {story_count} stories | Impact: {impact_description}
 - **{pattern_2}:** Appeared in {story_count} stories | Impact: {impact_description}
 
-### Negative Patterns  
+### Negative Patterns
 - **{anti_pattern_1}:** Appeared in {story_count} stories | Risk: {risk_description}
 - **{anti_pattern_2}:** Appeared in {story_count} stories | Risk: {risk_description}
 
@@ -118,7 +118,7 @@ Lead epic data consolidation with strategic focus on process insights:
 
 #### Developer Analysis
 ```markdown
-## Implementation Patterns  
+## Implementation Patterns
 ### Efficiency Patterns
 - **{efficiency_pattern_1}:** Reduced effort by {time_saved} | Stories: {story_list}
 - **{efficiency_pattern_2}:** Increased effort by {time_added} | Stories: {story_list}
@@ -151,7 +151,7 @@ Lead epic data consolidation with strategic focus on process insights:
 ```
 
 ### Step 3: Party Mode Consensus Building (15 minutes)
-**Facilitator:** sm (Epic Strategic Leader)  
+**Facilitator:** sm (Epic Strategic Leader)
 **Participants:** All agents (architect, po, dev, ux-expert as collaborators)
 
 #### Epic-Level Insights Voting
@@ -164,7 +164,7 @@ Lead epic data consolidation with strategic focus on process insights:
    - Stories: {story_references}
 
 2. **{success_factor_2}** | Votes: {vote_count}/5 | Priority: {HIGH/MEDIUM/LOW}
-   - Evidence: {supporting_evidence}  
+   - Evidence: {supporting_evidence}
    - Stories: {story_references}
 
 3. **{success_factor_3}** | Votes: {vote_count}/5 | Priority: {HIGH/MEDIUM/LOW}
@@ -227,7 +227,7 @@ Lead epic data consolidation with strategic focus on process insights:
 
 ### Epic Legacy Items
 - **Architecture Improvements:** {arch_count} improvements implemented
-- **Process Innovations:** {process_count} new processes established  
+- **Process Innovations:** {process_count} new processes established
 - **Tool Enhancements:** {tool_count} tools improved/added
 - **Team Capabilities:** {capability_count} new capabilities developed
 
@@ -254,7 +254,7 @@ Generate final epic retrospective artifacts:
 ## Strategic Insights for Next Epic
 ### What Worked Well (Replicate)
 - {insight_1}
-- {insight_2}  
+- {insight_2}
 - {insight_3}
 
 ### What Didn't Work (Avoid)
@@ -276,8 +276,8 @@ Generate final epic retrospective artifacts:
 - {strategic_action_1} - @{owner} - Timeline: {timeframe}
 - {strategic_action_2} - @{owner} - Timeline: {timeframe}
 
-**Epic Retrospective Status:** COMPLETE  
-**Team Consensus:** ACHIEVED  
+**Epic Retrospective Status:** COMPLETE
+**Team Consensus:** ACHIEVED
 **Next Epic Readiness:** {READY/NEEDS_PREP/BLOCKED}
 ```
 
