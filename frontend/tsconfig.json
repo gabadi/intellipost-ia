@@ -14,5 +14,7 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "noEmit": true,
     "allowImportingTsExtensions": true
-  }
+  },
+  "include": ["src/**/*", "app.html", "svelte.config.js"],
+  "exclude": ["node_modules/**/*", ".svelte-kit/**/*", "build/**/*"]
 }

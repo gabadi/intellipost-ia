@@ -15,31 +15,26 @@ IntelliPost AI is an intelligent social media posting platform that leverages AI
 git clone <repository-url>
 cd intellipost-ia
 
-# Install Python dependencies and set up environment
-uv sync --dev
+# Install all dependencies (monorepo unified approach)
+npm run install:all
 
-# Install frontend dependencies
-cd frontend
-npm install
-cd ..
-
-# Install pre-commit hooks
-uv run pre-commit install
-uv run pre-commit install --hook-type commit-msg
+# Set up pre-commit hooks
+npm run prepare
 ```
 
 ### 2. Verify Installation
 ```bash
-# Test Python quality tools
-uv run ruff check backend/
-uv run pyright backend/
-uv run tach check
+# Run unified quality checks
+npm run quality
 
-# Test frontend quality tools
-cd frontend && npm run lint && npm run dep-check && cd ..
+# Test individual components
+npm run lint:backend
+npm run typecheck:backend
+npm run arch-check
+npm run lint:frontend
 
 # Test pre-commit hooks
-uv run pre-commit run --all-files
+npm run pre-commit
 ```
 
 ## Project Structure
@@ -55,6 +50,7 @@ intellipost-ia/
 │   └── src/                   # Source code
 ├── tests/                     # Test files
 ├── docs/                      # Project documentation
+├── package.json              # Monorepo orchestration & scripts
 ├── pyproject.toml            # Python project configuration
 ├── .pre-commit-config.yaml   # Pre-commit hooks configuration
 └── README.md                 # This file
@@ -71,28 +67,29 @@ intellipost-ia/
 
 #### Commands
 ```bash
-# Linting and formatting
-uv run ruff check backend/          # Check for issues
-uv run ruff check --fix backend/    # Auto-fix issues
-uv run ruff format backend/         # Format code
+# Unified monorepo commands (recommended)
+npm run lint:backend            # Check for issues
+npm run format:backend          # Format code
+npm run typecheck:backend       # Type checking
+npm run arch-check              # Architectural boundaries
+npm run quality                 # Run all quality checks
 
-# Type checking
-uv run pyright backend/
-
-# Architectural boundaries
-uv run tach check
-
-# Run all quality checks
-uv run ruff check backend/ && uv run pyright backend/ && uv run tach check
+# Direct uvx commands (when needed)
+uvx ruff check backend/         # Check for issues
+uvx ruff format backend/        # Format code
+uvx pyright backend/            # Type checking
+uvx tach check backend/         # Architectural boundaries
 ```
 
 #### Testing
 ```bash
-# Run tests with coverage
-uv run pytest
+# Unified monorepo commands
+npm run test:backend            # Run tests with coverage
+npm run dev:backend             # Start development server
 
-# Run tests with coverage report
-uv run pytest --cov=backend --cov-report=html
+# Direct uv commands (when needed)
+uv run pytest                  # Run tests with coverage
+uv run pytest --cov=backend --cov-report=html  # Coverage report
 ```
 
 ### Frontend Development
@@ -104,24 +101,17 @@ uv run pytest --cov=backend --cov-report=html
 
 #### Commands
 ```bash
-cd frontend
+# Unified monorepo commands (recommended)
+npm run dev:frontend        # Development server
+npm run lint:frontend       # Check formatting and lint
+npm run format:frontend     # Format code
+npm run typecheck:frontend  # Type checking
+npm run build:frontend      # Build for production
 
-# Development server
-npm run dev
-
-# Linting and formatting
-npm run lint              # Check formatting and lint
-npm run format            # Format code
-npm run lint:fix          # Auto-fix lint issues
-
-# Dependency validation
-npm run dep-check
-
-# Type checking
-npm run check
-
-# Build
-npm run build
+# Direct workspace commands (when needed)
+npm run dev --workspace=frontend
+npm run lint --workspace=frontend
+npm run build --workspace=frontend
 ```
 
 ## Quality Gates and Pre-commit Hooks

@@ -11,25 +11,26 @@ repos:
         name: ruff-format
         files: ^backend/
 
-  # Temporarily disabled - needs proper configuration
-  # - repo: local
-  #   hooks:
-  #     - id: pyright
-  #       name: pyright-check
-  #       entry: uv run pyright backend/
-  #       language: system
-  #       files: ^backend/
-  #       types: [python]
+  # Pyright type checking with uvx
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright-check
+        entry: uvx pyright backend/
+        language: system
+        files: ^backend/
+        types: [python]
 
-  # Tach architectural boundaries - temporarily disabled
-  # - repo: local
-  #   hooks:
-  #     - id: tach
-  #       name: tach-check
-  #       entry: uv run tach check backend/
-  #       language: system
-  #       files: ^backend/
-  #       types: [python]
+  # Tach architectural boundaries with uvx
+  - repo: local
+    hooks:
+      - id: tach
+        name: tach-check
+        entry: uvx tach check
+        language: system
+        files: ^backend/
+        types: [python]
+        pass_filenames: false
 
   # Frontend hooks
   - repo: https://github.com/pre-commit/mirrors-prettier
@@ -41,29 +42,26 @@ repos:
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown]
         exclude: ^frontend/(node_modules|dist|build)/
 
-  # ESLint - temporarily disabled until deps are properly installed
-  # - repo: https://github.com/pre-commit/mirrors-eslint
-  #   rev: v9.15.0
+  # ESLint via npm workspace - temporarily disabled during config conflict resolution
+  # - repo: local
   #   hooks:
   #     - id: eslint
   #       name: eslint-check
-  #       files: ^frontend/.*\.(js|jsx|ts|tsx|svelte)$
-  #       additional_dependencies:
-  #         - eslint@^9.15.0
-  #         - "@typescript-eslint/eslint-plugin@^8.14.0"
-  #         - "@typescript-eslint/parser@^8.14.0"
-  #         - "eslint-plugin-svelte@^2.46.0"
-  #         - "eslint-config-prettier@^9.1.0"
-
-  # Dependency cruiser for frontend - temporarily disabled
-  # - repo: local
-  #   hooks:
-  #     - id: dependency-cruiser
-  #       name: dependency-cruiser-check
-  #       entry: sh -c 'cd frontend && npm run dep-check'
+  #       entry: npm run lint:frontend
   #       language: system
-  #       files: ^frontend/
-  #       types_or: [javascript, jsx, ts, tsx]
+  #       files: ^frontend/.*\.(js|jsx|ts|tsx|svelte)$
+  #       pass_filenames: false
+
+  # Dependency cruiser for frontend
+  - repo: local
+    hooks:
+      - id: dependency-cruiser
+        name: dependency-cruiser-check
+        entry: npm run dep-check --workspace=frontend
+        language: system
+        files: ^frontend/
+        types_or: [javascript, jsx, ts, tsx]
+        pass_filenames: false
 
   # General hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
