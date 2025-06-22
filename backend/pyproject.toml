@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "intellipost-ia"
 version = "0.1.0"
 description = "IntelliPost AI - Intelligent social media posting platform"
-readme = "README.md"
+# readme = "../README.md"  # Removed - setuptools doesn't allow parent directory access
 requires-python = ">=3.11"
 license = "MIT"
 authors = [
@@ -113,7 +113,7 @@ known-first-party = ["intellipost"]
 
 # Pyright configuration
 [tool.pyright]
-include = ["backend", "tests"]
+include = [".", "../tests"]
 exclude = ["**/__pycache__"]
 venvPath = "."
 venv = ".venv"
@@ -146,13 +146,13 @@ minversion = "7.0"
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=backend",
+    "--cov=.",
     "--cov-report=term-missing:skip-covered",
     "--cov-report=html:htmlcov",
     "--cov-report=xml",
     "--cov-fail-under=80",
 ]
-testpaths = ["tests"]
+testpaths = ["../tests"]
 filterwarnings = [
     "error",
     "ignore::UserWarning",
@@ -166,7 +166,7 @@ markers = [
 
 # Coverage configuration
 [tool.coverage.run]
-source = ["backend"]
+source = ["."]
 omit = [
     "*/tests/*",
     "*/migrations/*",
@@ -186,14 +186,17 @@ exclude_lines = [
 
 # Setuptools configuration
 [tool.setuptools.packages.find]
-where = ["backend"]
-include = ["backend*"]
+where = ["."]
+include = ["*"]
 
 # Tach configuration moved to separate tach.toml file
 
 # Dev dependencies now managed by uvx and package.json
 # Use: uvx ruff, uvx pyright, uvx tach, uvx pre-commit
 [dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+]
 test = [
     "pytest>=8.4.1",
     "pytest-asyncio>=1.0.0",

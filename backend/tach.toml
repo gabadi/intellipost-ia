@@ -18,17 +18,17 @@ ignore_type_checking_imports = true
 # - backend.domain.analytics (performance tracking, metrics)
 
 [[modules]]
-path = "backend.domain"
+path = "domain"
 depends_on = []
 
 [[modules]]
-path = "backend.infrastructure"
-depends_on = ["backend.domain"]
+path = "infrastructure"
+depends_on = ["domain"]
 
 [[modules]]
-path = "backend.application"
-depends_on = ["backend.domain"]
+path = "application"
+depends_on = ["domain"]
 
 [[modules]]
-path = "backend.api"
-depends_on = ["backend.domain", "backend.application"]
+path = "api"
+depends_on = ["domain", "application"]
