@@ -213,6 +213,10 @@ public
 # Rollup.js default build output
 dist/
 
+# SvelteKit
+.svelte-kit/
+build/
+
 # Uncomment the public line in if your project uses Gatsby and not Next.js
 # public
 

@@ -8,9 +8,65 @@
       "to": {
         "circular": true
       }
+    },
+    {
+      "name": "no-api-to-lib",
+      "severity": "error",
+      "comment": "API routes should not import lib components directly - use server-side logic only",
+      "from": {
+        "path": "^src/routes/api/"
+      },
+      "to": {
+        "path": "^src/lib/components/"
+      }
+    },
+    {
+      "name": "no-components-to-api",
+      "severity": "error",
+      "comment": "UI components should not directly import API client functions - use stores instead",
+      "from": {
+        "path": "^src/lib/components/"
+      },
+      "to": {
+        "path": "^src/lib/api/"
+      }
+    },
+    {
+      "name": "no-cross-domain-components",
+      "severity": "warn",
+      "comment": "Components should stay within their domain boundaries",
+      "from": {
+        "path": "^src/lib/components/product/"
+      },
+      "to": {
+        "path": "^src/lib/components/auth/"
+      }
+    },
+    {
+      "name": "no-utils-to-components",
+      "severity": "error",
+      "comment": "Utility functions should not import UI components",
+      "from": {
+        "path": "^src/lib/utils/"
+      },
+      "to": {
+        "path": "^src/lib/components/"
+      }
+    },
+    {
+      "name": "no-stores-to-components",
+      "severity": "error",
+      "comment": "Stores should not import UI components - maintain separation of state and presentation",
+      "from": {
+        "path": "^src/lib/stores/"
+      },
+      "to": {
+        "path": "^src/lib/components/"
+      }
     }
   ],
   "options": {
-    "doNotFollow": "node_modules"
+    "doNotFollow": "node_modules",
+    "includeOnly": "^src/"
   }
 }

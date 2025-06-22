@@ -1,0 +1,34 @@
+# Tach Configuration - Architectural Boundary Enforcement
+# IntelliPost AI MVP - Hexagonal Architecture Validation
+
+source_roots = ["."]
+exact = false
+disable_logging = false
+ignore_type_checking_imports = true
+
+# Current configuration: Monolithic domain (appropriate for current empty state)
+# Future evolution: Split domain into business modules when implementation begins:
+# - backend.domain.shared (common concepts, value objects)
+# - backend.domain.users (user management, authentication)
+# - backend.domain.content (content creation, editing, templates)
+# - backend.domain.posts (social media post entities)
+# - backend.domain.social_platforms (platform integrations)
+# - backend.domain.ai_generation (AI content generation logic)
+# - backend.domain.scheduling (post scheduling, automation)
+# - backend.domain.analytics (performance tracking, metrics)
+
+[[modules]]
+path = "backend.domain"
+depends_on = []
+
+[[modules]]
+path = "backend.infrastructure"
+depends_on = ["backend.domain"]
+
+[[modules]]
+path = "backend.application"
+depends_on = ["backend.domain"]
+
+[[modules]]
+path = "backend.api"
+depends_on = ["backend.domain", "backend.application"]

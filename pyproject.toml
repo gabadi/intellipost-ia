@@ -21,7 +21,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "fastapi>=0.104.0",
+    "fastapi>=0.115.0,<0.116.0",
     "uvicorn[standard]>=0.24.0",
     "pydantic>=2.5.0",
     "sqlalchemy>=2.0.0",
@@ -29,8 +29,8 @@ dependencies = [
     "python-multipart>=0.0.6",
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
-    "httpx>=0.25.0",
-    "pillow>=10.1.0",
+    "httpx>=0.28.0,<0.29.0",
+    "pillow>=11.0.0,<12.0.0",
     "python-dotenv>=1.0.0",
 ]
 
@@ -189,28 +189,7 @@ exclude_lines = [
 where = ["backend"]
 include = ["backend*"]
 
-# Tach configuration for architectural boundaries
-[tool.tach]
-source_roots = ["."]
-exact = false
-disable_logging = false
-ignore_type_checking_imports = true
-
-[[tool.tach.modules]]
-path = "backend.domain"
-depends_on = []
-
-[[tool.tach.modules]]
-path = "backend.infrastructure"
-depends_on = ["backend.domain"]
-
-[[tool.tach.modules]]
-path = "backend.application"
-depends_on = ["backend.domain"]
-
-[[tool.tach.modules]]
-path = "backend.api"
-depends_on = ["backend.domain", "backend.application"]
+# Tach configuration moved to separate tach.toml file
 
 # Dev dependencies now managed by uvx and package.json
 # Use: uvx ruff, uvx pyright, uvx tach, uvx pre-commit
@@ -219,4 +198,7 @@ test = [
     "pytest>=8.4.1",
     "pytest-asyncio>=1.0.0",
     "pytest-cov>=6.2.1",
+    "coverage[toml]>=7.0.0",
+    "respx>=0.22.0",
+    "testcontainers>=4.10.0",
 ]

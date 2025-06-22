@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres-test:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: intellipost_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d intellipost_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio-test:
+    image: minio/minio:latest
+    environment:
+      MINIO_ROOT_USER: test_user
+      MINIO_ROOT_PASSWORD: test_password
+    ports:
+      - "9001:9000"
+      - "9091:9090"
+    command: server /data --console-address ":9090"
+    volumes:
+      - minio_test_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+volumes:
+  postgres_test_data:
+  minio_test_data:
