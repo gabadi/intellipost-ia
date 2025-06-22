@@ -27,10 +27,10 @@ TOTAL_CHECKS=0
 run_check() {
     local check_name="$1"
     local command="$2"
-    
+
     TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
     echo -e "${BLUE}[$TOTAL_CHECKS] Running: $check_name${NC}"
-    
+
     if eval "$command" >/dev/null 2>&1; then
         echo -e "${GREEN}✅ PASS: $check_name${NC}"
     else
