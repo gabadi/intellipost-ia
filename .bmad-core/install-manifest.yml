@@ -1,5 +1,5 @@
 version: 4.11.0
-installed_at: '2025-06-22T06:47:37.690Z'
+installed_at: '2025-06-22T17:50:40.416Z'
 install_type: full
 agent: null
 ide_setup: null
@@ -7,10 +7,10 @@ ides_setup:
   - claude-code
 files:
   - path: .bmad-core/install-manifest.yml.bak
-    hash: 41665169cda3ad87
+    hash: 0041edeea9e4a692
     modified: false
   - path: .bmad-core/install-manifest.yml
-    hash: 41665169cda3ad87
+    hash: 0041edeea9e4a692
     modified: false
   - path: .bmad-core/core-config.yml
     hash: 8ccd25183820a4a9
@@ -96,6 +96,9 @@ files:
   - path: .bmad-core/tasks/review-infrastructure.md
     hash: 16f31fb41114cbb2
     modified: false
+  - path: .bmad-core/tasks/kb-mode-interaction.md.bak
+    hash: 8cd6a131d183329e
+    modified: false
   - path: .bmad-core/tasks/kb-mode-interaction.md
     hash: 97623a1fbcb686e4
     modified: false
@@ -111,8 +114,14 @@ files:
   - path: .bmad-core/tasks/document-project.md
     hash: ca98763e814b6f75
     modified: false
+  - path: .bmad-core/tasks/doc-migration-task.md.bak
+    hash: f2527bab73c5226b
+    modified: false
   - path: .bmad-core/tasks/doc-migration-task.md
     hash: 6a86e5d9cd386452
+    modified: false
+  - path: .bmad-core/tasks/create-next-story.md.bak
+    hash: 868c48b0636bad0e
     modified: false
   - path: .bmad-core/tasks/create-next-story.md
     hash: be7699b750a382e3
@@ -143,6 +152,9 @@ files:
     modified: false
   - path: .bmad-core/data/technical-preferences.md
     hash: 6530bed845540b0d
+    modified: false
+  - path: .bmad-core/data/bmad-kb.md.bak
+    hash: 08d6662e49bf77b0
     modified: false
   - path: .bmad-core/data/bmad-kb.md
     hash: ad648fc937924caf
@@ -188,6 +200,9 @@ files:
     modified: false
   - path: .bmad-core/agents/dev.md
     hash: a7ae3b363320af28
+    modified: false
+  - path: .bmad-core/agents/bmad-orchestrator.md.bak
+    hash: ab760b1ffab318ee
     modified: false
   - path: .bmad-core/agents/bmad-orchestrator.md
     hash: c26017d6501d2e06
