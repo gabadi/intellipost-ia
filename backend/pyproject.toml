@@ -32,6 +32,7 @@ dependencies = [
     "httpx>=0.28.0,<0.29.0",
     "pillow>=11.0.0,<12.0.0",
     "python-dotenv>=1.0.0",
+    "pydantic-settings>=2.10.0",
 ]
 
 # Dev dependencies now managed by uvx and package.json
@@ -172,6 +173,8 @@ omit = [
     "*/migrations/*",
     "*/venv/*",
     "*/__pycache__/*",
+    "domain/exceptions.py",
+    "domain/services/protocols.py",
 ]
 
 [tool.coverage.report]

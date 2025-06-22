@@ -32,3 +32,8 @@ depends_on = ["domain"]
 [[modules]]
 path = "api"
 depends_on = ["domain", "application"]
+
+# Root module for main.py - can access all layers for bootstrapping
+[[modules]]
+path = "<root>"
+depends_on = ["domain", "infrastructure", "application", "api"]
