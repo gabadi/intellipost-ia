@@ -1,360 +1,306 @@
-# UX to Architecture Handoff Document
-## IntelliPost AI - Technical Architecture Requirements
+# UX to Frontend Architect Handoff Document
+## IntelliPost AI - MVP Frontend Architecture Requirements
 
 ### Document Information
-- **From:** Sally (UX Expert)
-- **To:** Fred (Architect)
-- **Date:** June 20, 2025
-- **Phase:** UX Complete → Architecture Design
+- **From:** UX Design Team
+- **To:** Frontend Architect
+- **Date:** June 22, 2025
+- **Phase:** Frontend Specification Complete → Frontend Architecture Design
+- **MVP Scope:** Mobile-Complete, Desktop Post-MVP
 
 ---
 
-## Architecture Overview
+## Executive Summary
 
-IntelliPost AI implements a **mobile-complete, desktop-optional** architecture supporting AI-powered MercadoLibre listing generation with cross-platform state synchronization and adaptive user interfaces based on AI confidence scoring.
+IntelliPost AI MVP implements a **mobile-complete** architecture supporting AI-powered MercadoLibre listing generation. Users capture photos, add prompts, and publish listings through two primary mobile flows based on AI confidence scoring.
+
+**Core Value Proposition:** Photo + Prompt = Ready-to-publish listing in <60 seconds
 
 ---
 
-## Core Technical Requirements
+## MVP Scope and Constraints
 
-### 1. Mobile-First Responsive Architecture
+### MVP Definition: Mobile-Complete
+- ✅ **Core:** Mobile Quick Approval flow (high confidence >85%)
+- ✅ **Core:** Mobile Balanced Review flow (medium confidence 70-85%)
+- ✅ **Handled:** Low confidence (<70%) uses Balanced Review with additional guidance
+- 🔄 **Post-MVP:** Desktop power management interface
 
-**Breakpoint Strategy:**
-- **Mobile:** 320px - 767px (primary target, mobile-complete functionality)
-- **Tablet:** 768px - 1023px (mobile interface with enhanced touch targets)
-- **Desktop:** 1024px+ (full desktop interface with image management)
+### Critical Success Metrics
+- **Time to First Listing:** <60 seconds from photo capture to published
+- **Mobile Completion Rate:** >80% of workflows completed without desktop
+- **Processing Performance:** 10-15 seconds typical AI processing
+- **Upload Performance:** <5 seconds for multiple photos on mobile network
 
-**Performance Targets:**
-- **Mobile load time:** <3 seconds for review screens
-- **Interaction response:** <100ms for all user interactions
-- **Image processing feedback:** Real-time progress indicators
-- **Auto-save frequency:** Every 30 seconds during editing
+---
 
-### 2. AI Integration Architecture
+## Core User Flows (MVP)
 
-**Processing Pipeline:**
+### 1. Quick Approval Flow (High Confidence >85%)
 ```
-User Input (Images + Prompt) 
-    ↓
-AI Processing Service
-    ↓
-Confidence Scoring Engine
-    ↓
-Content Generation (Title, Category, Attributes, Description)
-    ↓
-Image Processing (Background removal, Enhancement)
-    ↓
-State Management & Persistence
+Add Product → Camera Opens → Multiple Photos → Required Prompt → 
+AI Processing (10-15s) → Generated Listing → BIG "PUBLISH NOW" → 
+Published to MercadoLibre
 ```
 
-**Auto-Reprocessing Triggers:**
-- **Add Image:** Reprocess all content and images
-- **Delete Image:** Reprocess remaining images and update content
-- **Edit Prompt:** Reprocess content generation only
-- **Timeout:** 2-minute maximum processing time
+**Secondary Path:** Small "Review Details" link for optional tweaks
 
-**Confidence Scoring System:**
-- **Overall Confidence:** Weighted average of component scores
-- **Component Confidence:** Individual scores for images, title, category, attributes
-- **Threshold-Based UI:** >85% (green), 70-85% (yellow), <70% (red)
+### 2. Balanced Review Flow (Medium/Low Confidence ≤85%)
+```
+Review Generated Listing → "Looks Good" OR "Need Changes" → 
+[If Changes] Edit Interface (Prompt + Manual Fields) → 
+[If Prompt Changed] AI Regeneration → Publish
+```
 
-### 3. State Management Architecture
+**Edit Interface supports:**
+- **Prompt editing:** Triggers full AI regeneration  
+- **Manual tweaks:** Direct field editing (no regeneration)
 
-**Cross-Platform Synchronization:**
-- **Real-time sync:** User account-based state persistence
-- **Conflict resolution:** Last-write-wins with timestamp validation
-- **Offline capability:** Local state with sync on reconnection
-- **Session persistence:** 24-hour draft state retention
+---
 
-**State Entities:**
+## Critical Frontend Components (MVP)
+
+### 1. Photo Collection Component
+**Purpose:** Multi-photo capture and selection
+- Direct camera integration (opens immediately on "Add Product")
+- Gallery picker for existing photos
+- No photo limit (unlimited)
+- Preview grid with remove/reorder
+- Photo count indicator
+
+### 2. Prompt Input Component  
+**Purpose:** Required user description for AI accuracy
+- Required field with placeholder: "Describe your item (brand, size, condition...)"
+- "Important for accuracy" messaging
+- Auto-resize text area
+- Regeneration trigger in edit mode
+
+### 3. Processing Spinner Component
+**Purpose:** AI processing feedback (10-15 seconds)
+- Full screen overlay with spinner
+- "Analyzing your photos..." messaging  
+- Time estimate display
+- No cancel option (keep simple for MVP)
+
+### 4. Generated Listing Preview Component
+**Purpose:** Display complete AI-generated listing
+- Main product image prominent
+- Generated title with AI labeling (🤖)
+- Confidence indicator (green/yellow/red)
+- Large "PUBLISH NOW" primary button
+- Small "Edit Details" secondary link
+
+### 5. Edit Interface Component
+**Purpose:** Two-mode editing capability
+- **Prompt Section:** Edit original prompt + "Update & Regenerate" button
+- **Manual Fields:** Direct editing of title, description, price, category
+- Clear visual separation between AI regeneration vs manual tweaks
+- Auto-save for manual changes
+
+### Supporting Components
+- **Confidence Indicator:** Visual confidence scoring (>85% green, 70-85% yellow, <70% red)
+- **Action Button:** Primary/secondary actions with confidence-appropriate styling
+- **AI Transparency Labels:** Clear distinction between user content (📝) and AI content (🤖)
+
+---
+
+## Technical Requirements (MVP)
+
+### Performance Targets
+- **App Load:** <3 seconds for dashboard on 3G
+- **Photo Upload:** <5 seconds for multiple photos
+- **AI Processing:** 10-15 seconds typical, 30 seconds maximum
+- **UI Response:** <100ms for all interactions
+- **Animation:** 60fps for confidence indicators
+
+### Mobile-First Architecture
+**Responsive Strategy:**
+- **Mobile:** 320px-767px (Core MVP)
+- **Tablet:** 768px-1023px (Mobile extended with larger touch targets)
+- **Desktop:** 1024px+ (Post-MVP)
+
+**Touch Optimization:**
+- Minimum 44px touch targets
+- Swipe gestures for image comparison
+- No hover states (mobile-first design)
+- Single-column layout optimized for one-hand use
+
+### Network Resilience
+- **3G Compatibility:** App functional on slower mobile networks
+- **Image Compression:** Automatic compression before upload
+- **Progressive Upload:** Show UI while photos upload in background
+- **Offline Handling:** Cache user inputs during network issues
+- **Retry Logic:** Automatic retry on processing failures
+
+---
+
+## State Management Requirements
+
+### Product State Entity
 ```typescript
 interface ProductState {
   id: string;
   userId: string;
-  status: 'uploading' | 'processing' | 'ready' | 'publishing' | 'published' | 'failed';
+  status: 'uploading' | 'processing' | 'ready' | 'published' | 'failed';
   confidence: {
-    overall: number;
-    images: number;
-    title: number;
-    category: number;
-    attributes: number;
-    description: number;
+    overall: number; // 0-100
   };
   inputs: {
-    prompt: string;
-    originalImages: ImageData[];
+    prompt: string; // Required field
+    images: ImageData[]; // Unlimited count
   };
   outputs: {
+    title: string;
+    description: string;
+    category: string;
+    price: number;
     processedImages: ImageData[];
     mainImage: string;
-    title: string;
-    category: CategoryData;
-    attributes: AttributeData[];
-    description: string;
   };
   metadata: {
     createdAt: timestamp;
     updatedAt: timestamp;
-    lastProcessedAt: timestamp;
   };
 }
 ```
 
-### 4. Image Management System
-
-**Storage Architecture:**
-- **Original Images:** Secure object storage (S3-compatible)
-- **Processed Images:** CDN-enabled storage with multiple resolutions
-- **Temporary Processing:** Ephemeral storage with automatic cleanup
-
-**Processing Pipeline:**
+### State Transitions
 ```
-Original Image Upload
-    ↓
-Validation (format, size, resolution)
-    ↓
-AI Processing (background removal, enhancement)
-    ↓
-Multi-resolution generation
-    ↓
-CDN distribution
-    ↓
-Database reference storage
+Created → Uploading → Processing → Ready → Published
+                           ↓
+                        Failed → [Retry/Manual Edit]
 ```
-
-**CRUD Operations:**
-- **Create:** Multi-file upload with progress tracking
-- **Read:** Optimized delivery with lazy loading
-- **Update:** Main image selection and reordering
-- **Delete:** Soft delete with cleanup jobs
-
-### 5. API Architecture Requirements
-
-**Core API Endpoints:**
-
-```
-POST /api/products
-GET /api/products
-GET /api/products/{id}
-PUT /api/products/{id}
-DELETE /api/products/{id}
-
-POST /api/products/{id}/images
-DELETE /api/products/{id}/images/{imageId}
-PUT /api/products/{id}/images/reorder
-
-POST /api/products/{id}/process
-GET /api/products/{id}/confidence
-
-POST /api/products/{id}/publish
-GET /api/products/{id}/preview
-
-GET /api/categories
-GET /api/categories/{id}/attributes
-```
-
-**Real-time Updates:**
-- **WebSocket connection** for processing status
-- **Server-sent events** for confidence score updates
-- **Push notifications** for cross-platform sync
-
-### 6. External Service Integration
-
-**MercadoLibre API Integration:**
-- **Category API:** Real-time category validation and suggestions
-- **Publishing API:** Automated listing creation and updates
-- **Preview API:** Generate ML listing previews
-- **Error Handling:** Robust retry logic with exponential backoff
-
-**AI Service Integration:**
-- **Image Processing:** Background removal and enhancement services
-- **Content Generation:** LLM integration for title, description, attributes
-- **Confidence Scoring:** Machine learning model for quality assessment
-- **Rate Limiting:** Intelligent queuing and throttling
-
-### 7. Database Schema Requirements
-
-**Core Tables:**
-```sql
--- Users
-users (id, email, created_at, updated_at, preferences)
-
--- Products
-products (id, user_id, status, confidence_data, created_at, updated_at)
-
--- Product Content
-product_content (product_id, title, category_id, attributes, description, confidence_scores)
-
--- Images
-images (id, product_id, type, url, metadata, is_main, sort_order)
-
--- Processing Jobs
-processing_jobs (id, product_id, type, status, started_at, completed_at, error_data)
-
--- ML Integration
-ml_listings (id, product_id, ml_listing_id, status, published_at, url)
-```
-
-**Indexes and Performance:**
-- **User products:** Composite index on (user_id, status, updated_at)
-- **Image lookups:** Index on (product_id, type, sort_order)
-- **Processing queue:** Index on (status, created_at)
-
-### 8. Security Requirements
-
-**Authentication & Authorization:**
-- **JWT-based authentication** with refresh tokens
-- **Role-based access control** (user, admin)
-- **API rate limiting** per user and endpoint
-- **CORS configuration** for web application
-
-**Data Protection:**
-- **Encryption at rest** for sensitive data
-- **HTTPS enforcement** for all communications
-- **Secure file upload** with virus scanning
-- **Data retention policies** with automatic cleanup
-
-**MercadoLibre Integration Security:**
-- **OAuth 2.0 flow** for ML API access
-- **Encrypted credential storage** with key rotation
-- **Scope-limited permissions** for ML operations
-- **Audit logging** for all ML API interactions
-
-### 9. Error Handling and Resilience
-
-**Error Categories:**
-- **User Input Errors:** Validation failures, format issues
-- **Processing Errors:** AI service failures, timeout errors
-- **Integration Errors:** ML API failures, network issues
-- **System Errors:** Database failures, storage issues
-
-**Resilience Patterns:**
-- **Circuit breaker** for external service calls
-- **Retry with exponential backoff** for transient failures
-- **Graceful degradation** when AI services are unavailable
-- **Fallback mechanisms** for critical path operations
-
-**User Experience During Errors:**
-```
-Processing Failure → Clear error message → Retry options → Manual editing fallback
-ML API Failure → Cached categories → Manual category selection
-Image Processing Failure → Original image use → Processing retry option
-```
-
-### 10. Monitoring and Observability
-
-**Performance Metrics:**
-- **API response times** by endpoint and user
-- **Image processing duration** and success rates
-- **AI confidence score distributions** over time
-- **User workflow completion rates** by platform
-
-**Business Metrics:**
-- **Listing publication success rates**
-- **User engagement** by platform (mobile vs desktop)
-- **Processing accuracy** via user feedback
-- **Cross-platform usage patterns**
-
-**Alerting:**
-- **High error rates** in AI processing
-- **Performance degradation** alerts
-- **External service** availability monitoring
-- **Database performance** and capacity alerts
 
 ---
 
-## Technical Constraints and Considerations
+## API Requirements (Frontend Perspective)
 
-### Scalability Requirements:
-- **Concurrent users:** Support 100+ simultaneous users for MVP
-- **Image processing:** Queue-based processing with auto-scaling
-- **Database scaling:** Read replicas for query performance
-- **CDN usage:** Global image delivery optimization
+### Critical Endpoints
+```typescript
+// Core product flow
+POST /api/products                    // Create with photos + prompt
+GET /api/products/{id}/status         // Check processing status
+PUT /api/products/{id}/prompt         // Update prompt (triggers regeneration)
+PUT /api/products/{id}/fields         // Manual field updates
+POST /api/products/{id}/publish       // Publish to MercadoLibre
 
-### Technology Stack Alignment:
-- **Backend:** Python with FastAPI (per PRD requirements)
-- **Frontend:** Svelte with SvelteKit (per PRD requirements)
-- **Database:** PostgreSQL with JSONB for flexible schema
-- **Storage:** S3-compatible object storage
-- **Cache:** Redis for session and temporary data
+// Real-time updates
+WebSocket /api/products/{id}/updates  // Processing status updates
+```
 
-### Development Considerations:
-- **TDD methodology:** Test-first development approach
-- **API-first design:** Well-documented API contracts
-- **Component isolation:** Testable, modular architecture
-- **Performance testing:** Load testing for critical paths
+### API Response Requirements
+- **Processing status:** Real-time updates during AI processing
+- **Confidence scoring:** Overall confidence percentage
+- **Error handling:** Clear error messages with retry guidance
+- **MercadoLibre integration:** Direct publishing capability
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Core Infrastructure
-- User authentication and basic API framework
-- Database schema and migration system
-- Basic image upload and storage
-- Simple AI processing pipeline
+### Phase 1: Foundation (Week 1-2)
+**Components:** Photo Collection + Prompt Input + Processing Spinner + Basic Dashboard
+**Goal:** User can capture photos → add prompt → see processing feedback
 
-### Phase 2: Mobile Interface Implementation
-- Three-tier mobile interface development
-- Cross-platform state synchronization
-- Basic editing capabilities
-- Auto-reprocessing implementation
+### Phase 2: AI Integration (Week 3-4)  
+**Components:** Generated Listing Preview + Confidence Indicator + Action Button + MercadoLibre publish
+**Goal:** Complete Quick Approval flow working end-to-end
 
-### Phase 3: Desktop Enhancement
-- Image management interface
-- Advanced editing capabilities
-- Before/after comparison tools
-- MercadoLibre preview integration
+### Phase 3: Edit Capabilities (Week 5-6)
+**Components:** Edit Interface + AI regeneration + Form validation + Success states  
+**Goal:** Full mobile-complete experience (both flows)
 
-### Phase 4: Optimization and Polish
-- Performance optimization
-- Advanced error handling
-- Monitoring and alerting setup
-- User experience refinements
+### Phase 4: Polish & Optimization (Week 7-8)
+**Focus:** Performance optimization + Error handling + UI polish + Testing
+**Goal:** Production-ready MVP
 
 ---
 
-## Architecture Validation Points
+## Risk Mitigation
 
-### Critical Technical Decisions Needed:
-1. **Auto-reprocessing feasibility:** Confirm AI service integration approach
-2. **Real-time sync implementation:** WebSocket vs polling vs hybrid approach
-3. **Image processing pipeline:** In-house vs external service integration
-4. **State management complexity:** Client-side state vs server-driven approach
+### High-Risk Components (Address Early)
+1. **Camera Integration:** Test on multiple devices immediately
+2. **AI Processing Time:** Mock with realistic delays, plan for timeouts
+3. **Photo Upload Performance:** Test on slow networks from start
+4. **MercadoLibre API:** Validate publishing integration early
 
-### Integration Validation Required:
-- **MercadoLibre API capabilities** and limitations
-- **AI service performance** and reliability
-- **Image processing services** quality and speed
-- **Database performance** under concurrent load
+### Fallback Strategies
+- **AI Processing Fails:** Edit interface as manual backup
+- **Slow Network:** Progressive upload with offline storage
+- **Processing Timeout:** Clear error messaging with retry options
 
-### Security Review Points:
-- **File upload security** and virus scanning
-- **API security** and rate limiting implementation
-- **Cross-platform authentication** token management
-- **External service** credential security
+---
+
+## Design System Integration
+
+### Color System (MVP-Critical)
+- **Primary Blue (#2563EB):** User-generated content labels
+- **Accent Purple (#7C3AED):** AI-generated content labels  
+- **Success Green (#059669):** High confidence states (>85%)
+- **Warning Yellow (#D97706):** Medium confidence states (70-85%)
+- **Error Red (#DC2626):** Low confidence states (<70%)
+
+### Typography
+- **Primary Font:** Inter (clean, mobile-readable)
+- **Type Scale:** H1: 32px, Body: 16px minimum for mobile
+- **Line Height:** 1.5 for body text readability
+
+### Spacing
+- **Grid System:** 4px base unit
+- **Touch Targets:** Minimum 44px for mobile interactions
+- **Spacing Scale:** 8px, 16px, 24px, 32px for consistent layouts
+
+---
+
+## Error Handling Strategy
+
+### Critical Error States
+```
+Upload Failed → Clear retry message → [Try Again] [Cancel]
+AI Processing Failed → "Try again or edit manually" → [Retry] [Edit Manually]
+Network Issues → Cache inputs → Resume when connected
+Processing Timeout → Clear error → Manual editing fallback
+```
+
+### User Experience During Errors
+- **Clear messaging:** No technical jargon, actionable guidance
+- **Retry mechanisms:** Always provide recovery options
+- **Fallback paths:** Manual editing when AI fails
+- **Progress preservation:** Never lose user inputs
+
+---
+
+## Success Validation
+
+### Implementation Checkpoints
+- **Phase 1:** Camera integration working on 3+ device types
+- **Phase 2:** Full Quick Approval flow <60 seconds end-to-end
+- **Phase 3:** Edit interface supports both prompt and manual editing
+- **Phase 4:** App performs on 3G networks with <3 second load
+
+### Ready for Launch Criteria
+- ✅ Mobile Quick Approval flow complete
+- ✅ Mobile Balanced Review flow complete  
+- ✅ Error handling and recovery working
+- ✅ Performance targets met on real devices
+- ✅ MercadoLibre publishing integration verified
 
 ---
 
 ## Handoff Artifacts
 
-### Available Documentation:
-- **Frontend Specification:** `/docs/front-end-spec.md` (comprehensive UI/UX specs)
-- **Product Requirements:** `/docs/prd.md` (updated with mobile-complete strategy)
-- **UX Research:** `/mobile-ai-content-review-ux-research.md` (user behavior insights)
+### Complete Documentation Available
+- **Frontend Specification:** `/docs/front-end-spec/` (14 sharded files)
+- **Wireframes:** ASCII mockups for all core screens
+- **Component Specs:** Detailed component definitions with states
+- **User Flows:** Complete flow diagrams for both MVP paths
 
-### Design System Resources:
-- **Component specifications** in frontend documentation
-- **Interaction patterns** defined with technical requirements
-- **Responsive behavior** detailed by breakpoint
-- **Accessibility requirements** (WCAG 2.1 AA compliance)
-
-### User Flow Documentation:
-- **Mermaid diagrams** for all critical flows
-- **Error handling flows** for failure scenarios
-- **Cross-platform transition** specifications
-- **State management flows** for synchronization
+### Design System Resources
+- **Color palette:** Complete with hex codes and usage
+- **Typography scale:** Defined for mobile-first implementation
+- **Component library:** All MVP components specified with variants
+- **Responsive strategy:** Mobile-complete breakpoint specifications
 
 ---
 
-*This handoff document provides the technical foundation for implementing the IntelliPost AI architecture, ensuring UX design decisions are properly supported by robust, scalable technical infrastructure.*
+*This handoff provides everything needed to architect and implement the IntelliPost AI MVP frontend. Focus on mobile-complete functionality with simple, fast user flows that emphasize AI automation over manual configuration.*
