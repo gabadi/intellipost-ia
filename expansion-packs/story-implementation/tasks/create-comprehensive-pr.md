@@ -1,10 +1,10 @@
 # Create Comprehensive PR
 
 ## Task Overview
-**Agent:** po (Product Owner - Business Context Owner)  
-**Action Type:** pr-creation-with-context  
-**Duration:** 5-8 minutes  
-**LLM-Optimized:** Business-driven PR with comprehensive context  
+**Agent:** po (Product Owner - Business Context Owner)
+**Action Type:** pr-creation-with-context
+**Duration:** 5-8 minutes
+**LLM-Optimized:** Business-driven PR with comprehensive context
 
 ## Purpose
 Generate pull request with business summary, technical changes, learning extraction, and validation evidence for streamlined review and delivery.
@@ -42,21 +42,21 @@ Generate comprehensive PR description:
 # Epic {epic_number}.{story_number}: {story_title}
 
 ## 🎯 Business Summary
-**Epic:** {epic_title}  
-**Epic Progress:** {epic_completion_percentage}% complete ({completed_stories}/{total_stories} stories)  
-**Business Value:** {primary_business_value}  
-**User Impact:** {user_impact_description}  
-**Success Metrics:** {success_criteria}  
+**Epic:** {epic_title}
+**Epic Progress:** {epic_completion_percentage}% complete ({completed_stories}/{total_stories} stories)
+**Business Value:** {primary_business_value}
+**User Impact:** {user_impact_description}
+**Success Metrics:** {success_criteria}
 **Epic Status:** {IN_PROGRESS/COMPLETE}
 
 ### Key Business Outcomes
 - ✅ {business_outcome_1}
-- ✅ {business_outcome_2} 
+- ✅ {business_outcome_2}
 - ✅ {business_outcome_3}
 
 ## 🔧 Technical Changes
-**Type:** {feature/enhancement/fix/refactor}  
-**Complexity:** {SIMPLE/MODERATE/COMPLEX}  
+**Type:** {feature/enhancement/fix/refactor}
+**Complexity:** {SIMPLE/MODERATE/COMPLEX}
 **Architecture Impact:** {HIGH/MEDIUM/LOW/NONE}
 
 ### Implementation Summary
@@ -99,7 +99,7 @@ Generate comprehensive PR description:
 ### Quality Gates
 - **Tests:** {test_count} added, {test_coverage}% coverage
 - **Linting:** ✅ PASS
-- **Type Safety:** ✅ PASS  
+- **Type Safety:** ✅ PASS
 - **Build:** ✅ PASS
 - **E2E Tests:** ✅ PASS ({test_count} scenarios)
 
@@ -125,7 +125,7 @@ Generate comprehensive PR description:
 
 ### E2E Scenarios Covered
 - ✅ {scenario_1} - PASS
-- ✅ {scenario_2} - PASS  
+- ✅ {scenario_2} - PASS
 - ✅ {scenario_3} - PASS
 
 ### Edge Cases Tested
@@ -136,7 +136,7 @@ Generate comprehensive PR description:
 - **Story File:** Updated with complete implementation context
 - **Epic Progress:** Updated with story completion
 - **Architecture Docs:** {updated/not_applicable}
-- **API Documentation:** {updated/not_applicable}  
+- **API Documentation:** {updated/not_applicable}
 - **User Documentation:** {updated/not_applicable}
 - **Epic Retrospective:** {SCHEDULED/NOT_APPLICABLE}
 
@@ -146,12 +146,12 @@ Generate comprehensive PR description:
 - **Commit:** {commit_hash}
 
 ---
-**Story Status:** Done → Ready for Delivery  
-**Epic Status:** {epic_completion_percentage}% complete  
-**Epic Retrospective:** {TRIGGERED/PENDING}  
-**Implementation Time:** {actual_time} (Est: {estimated_time})  
-**Quality Score:** {quality_score}/10  
-**Learning Items:** {learning_count} captured  
+**Story Status:** Done → Ready for Delivery
+**Epic Status:** {epic_completion_percentage}% complete
+**Epic Retrospective:** {TRIGGERED/PENDING}
+**Implementation Time:** {actual_time} (Est: {estimated_time})
+**Quality Score:** {quality_score}/10
+**Learning Items:** {learning_count} captured
 
 {epic_completion_celebration}
 
@@ -170,7 +170,7 @@ EOF
 ```bash
 # Auto-assign reviewers based on learning categories
 gh pr edit --add-reviewer {architect_username}    # For ARCH_CHANGE items
-gh pr edit --add-reviewer {po_username}          # For FUTURE_EPIC items  
+gh pr edit --add-reviewer {po_username}          # For FUTURE_EPIC items
 gh pr edit --add-reviewer {dev_team_username}    # For URGENT_FIX items
 gh pr edit --add-reviewer {sm_username}          # For PROCESS_IMPROVEMENT items
 ```
@@ -190,7 +190,7 @@ gh pr edit --add-reviewer {sm_username}          # For PROCESS_IMPROVEMENT items
 - Business summary: ✅ COMPLETE
 - Epic completion status: ✅ COMPLETE
 - Technical changes: ✅ COMPLETE
-- Learning extraction: ✅ COMPLETE  
+- Learning extraction: ✅ COMPLETE
 - Validation evidence: ✅ COMPLETE
 - Review assignments: ✅ COMPLETE
 - Epic retrospective context: ✅ COMPLETE (MANDATORY if epic 100% complete)
@@ -223,7 +223,7 @@ gh pr edit --add-reviewer {sm_username}          # For PROCESS_IMPROVEMENT items
 REVIEWER_MAPPING:
 - ARCH_CHANGE items → @architect (technical review)
 - FUTURE_EPIC items → @po (business validation)
-- URGENT_FIX items → @dev-team (technical validation)  
+- URGENT_FIX items → @dev-team (technical validation)
 - PROCESS_IMPROVEMENT → @sm (process review)
 - TOOLING items → @infra-devops (infrastructure review)
 - KNOWLEDGE_GAP → @sm + @po (team development)

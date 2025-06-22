@@ -1,10 +1,10 @@
 # Capture Learning Triage
 
 ## Task Overview
-**Agent:** architect  
-**Action Type:** learning-triage  
-**Duration:** 10-15 minutes  
-**LLM-Optimized:** Token-efficient structured capture  
+**Agent:** architect
+**Action Type:** learning-triage
+**Duration:** 10-15 minutes
+**LLM-Optimized:** Token-efficient structured capture
 
 ## Purpose
 Systematically capture and triage learnings from story implementation to drive continuous improvement and feed future epics.
@@ -30,7 +30,7 @@ Systematically capture and triage learnings from story implementation to drive c
 - **Timeline:** Current epic / Next epic / Technical debt backlog
 
 ### FUTURE_EPIC (Epic Candidate Features)
-- **Purpose:** Features or capabilities that emerged during implementation  
+- **Purpose:** Features or capabilities that emerged during implementation
 - **Token Limit:** 50 tokens per item
 - **Format:** `EPIC: [Feature] - [Business Value] - [Complexity] - [Owner: po]`
 - **Priority:** HIGH/MEDIUM/LOW
@@ -38,7 +38,7 @@ Systematically capture and triage learnings from story implementation to drive c
 
 ### URGENT_FIX (Critical Issues Requiring Immediate Attention)
 - **Purpose:** Blockers or critical issues that need immediate resolution
-- **Token Limit:** 50 tokens per item  
+- **Token Limit:** 50 tokens per item
 - **Format:** `URGENT: [Issue] - [Impact] - [Fix Required] - [Owner: dev/architect]`
 - **Priority:** CRITICAL (resolve within current sprint)
 - **Timeline:** Immediate (within 1-2 days)
@@ -79,7 +79,7 @@ CONTEXT_REVIEW:
 ### Step 2: Extract Learning Items
 For each category, scan implementation evidence:
 - Review feedback patterns
-- Implementation fix patterns  
+- Implementation fix patterns
 - Quality gate failure patterns
 - Time/effort variance patterns
 - Technical decision points
@@ -98,7 +98,7 @@ OWNERSHIP_ASSIGNMENT:
 - architect: Architecture, technical debt, system design
 - po: Business features, epic candidates, requirements
 - dev: Implementation issues, code quality, technical fixes
-- sm: Process improvements, team coordination, knowledge gaps  
+- sm: Process improvements, team coordination, knowledge gaps
 - infra-devops-platform: Tooling, infrastructure, automation
 ```
 
@@ -119,7 +119,7 @@ Update story file with:
 ### ARCH_CHANGE
 - ARCH: [Component] - [Issue] - [Impact] - [Owner: architect] | Priority: [HIGH/MEDIUM/LOW] | Timeline: [Current/Next/Backlog]
 
-### FUTURE_EPIC  
+### FUTURE_EPIC
 - EPIC: [Feature] - [Business Value] - [Complexity] - [Owner: po] | Priority: [HIGH/MEDIUM/LOW] | Timeline: [Next/Quarter/Future]
 
 ### URGENT_FIX

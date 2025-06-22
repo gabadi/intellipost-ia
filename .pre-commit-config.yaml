@@ -1,0 +1,89 @@
+repos:
+  # Python hooks
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.0
+    hooks:
+      - id: ruff
+        name: ruff-lint
+        files: ^backend/
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+        name: ruff-format
+        files: ^backend/
+
+  # Temporarily disabled - needs proper configuration
+  # - repo: local
+  #   hooks:
+  #     - id: pyright
+  #       name: pyright-check
+  #       entry: uv run pyright backend/
+  #       language: system
+  #       files: ^backend/
+  #       types: [python]
+
+  # Tach architectural boundaries - temporarily disabled
+  # - repo: local
+  #   hooks:
+  #     - id: tach
+  #       name: tach-check
+  #       entry: uv run tach check backend/
+  #       language: system
+  #       files: ^backend/
+  #       types: [python]
+
+  # Frontend hooks
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        name: prettier-format
+        files: ^frontend/
+        types_or: [javascript, jsx, ts, tsx, json, yaml, markdown]
+        exclude: ^frontend/(node_modules|dist|build)/
+
+  # ESLint - temporarily disabled until deps are properly installed
+  # - repo: https://github.com/pre-commit/mirrors-eslint
+  #   rev: v9.15.0
+  #   hooks:
+  #     - id: eslint
+  #       name: eslint-check
+  #       files: ^frontend/.*\.(js|jsx|ts|tsx|svelte)$
+  #       additional_dependencies:
+  #         - eslint@^9.15.0
+  #         - "@typescript-eslint/eslint-plugin@^8.14.0"
+  #         - "@typescript-eslint/parser@^8.14.0"
+  #         - "eslint-plugin-svelte@^2.46.0"
+  #         - "eslint-config-prettier@^9.1.0"
+
+  # Dependency cruiser for frontend - temporarily disabled
+  # - repo: local
+  #   hooks:
+  #     - id: dependency-cruiser
+  #       name: dependency-cruiser-check
+  #       entry: sh -c 'cd frontend && npm run dep-check'
+  #       language: system
+  #       files: ^frontend/
+  #       types_or: [javascript, jsx, ts, tsx]
+
+  # General hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # Commit message hooks
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]

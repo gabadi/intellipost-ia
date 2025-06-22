@@ -62,14 +62,14 @@ required_data: []
 # Post-install message
 post_install_message: |
   Story Implementation Pack v1.0.0 ready!
-  
+
   Phase 1: Story Preparation (Epic → Story Ready for Development)
   Phase 2: Implementation (Story Development with Validation)
   Phase 3: Quality Review (Comprehensive Round 1 + Efficient Round 2+)
   Phase 4: Learning Extraction (Triage + Collaborative Review)
   Phase 5: Commit and PR Preparation (Context Generation)
   Phase 6: PR Creation and Epic Progress (Delivery + Tracking)
-  
+
   Features:
   - Epic validation before story creation
   - Project-agnostic code generation and build tool integration
@@ -83,7 +83,7 @@ post_install_message: |
   - Comprehensive PR creation with business context and learning insights
   - Epic progress tracking with learning integration
   - LLM-optimized documentation with token limits and structured brevity
-  
+
   Learning Categories:
   - ARCH_CHANGE: Architecture improvements and technical debt
   - FUTURE_EPIC: Epic candidates and feature opportunities
@@ -91,7 +91,7 @@ post_install_message: |
   - PROCESS_IMPROVEMENT: Development workflow enhancements
   - TOOLING: Infrastructure and automation improvements
   - KNOWLEDGE_GAP: Team training and skill development needs
-  
+
   Epic Retrospective Features:
   - Automatic trigger when epic reaches 100% completion
   - Multi-agent collaborative analysis (SM, Architect, PO, Dev, UX-Expert)
@@ -100,17 +100,17 @@ post_install_message: |
   - Action items for next epic with clear ownership
   - Epic knowledge base creation for future reference
   - Seamless integration with final story PR
-  
+
   Usage:
     *workflow story-simple epic_number=X story_number=Y        # 9 steps, streamlined for simple changes
     *workflow story-implementation epic_number=X story_number=Y # 15 steps, comprehensive for features
-  
+
   Workflow Selection Guide:
   - story-simple: UI/UX improvements, content updates, simple bug fixes, minor backend changes
   - story-implementation: New features, business logic, database changes, cross-system integration
-  
+
   ⚠️ Both workflows include complexity validation warnings to ensure appropriate selection.
   All workflow steps require Task tool execution for proper expansion pack compliance.
-  
+
   Built on core bmad-method components for maximum reliability.
   Complete learning extraction and epic progress tracking in both variants.

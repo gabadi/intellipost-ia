@@ -37,7 +37,7 @@
 
 **Icon Library:** Heroicons (outline and solid variants)
 
-**Usage Guidelines:** 
+**Usage Guidelines:**
 - Outline icons for interface elements
 - Solid icons for status indicators and filled states
 - Consistent sizing: 16px (small), 20px (medium), 24px (large)
@@ -46,5 +46,5 @@
 
 **Grid System:** 4px base unit with 8px, 16px, 24px, 32px, 48px, 64px scale
 
-**Spacing Scale:** 
+**Spacing Scale:**
 - xs: 4px, sm: 8px, md: 16px, lg: 24px, xl: 32px, 2xl: 48px, 3xl: 64px

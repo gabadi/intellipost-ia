@@ -83,7 +83,7 @@ import anthropic
 
 async def extract_product_data_claude(image_base64: str):
     client = anthropic.Anthropic(api_key="YOUR_KEY")
-    
+
     prompt = """
     Analiza esta imagen de packaging y extrae en formato JSON:
     - marca
@@ -93,7 +93,7 @@ async def extract_product_data_claude(image_base64: str):
     - precio
     - características_principales
     """
-    
+
     message = client.messages.create(
         model="claude-3-5-sonnet-20241022",
         max_tokens=1000,
@@ -126,11 +126,11 @@ async def extract_product_data_claude(image_base64: str):
 class HybridExtractor:
     def __init__(self):
         self.ocr_confidence_threshold = 0.8
-        
+
     async def process_document(self, image: UploadFile):
         # Intento con OCR local
         ocr_result = self.extract_with_tesseract(image)
-        
+
         if ocr_result['confidence'] > self.ocr_confidence_threshold:
             # Extracción con reglas si la confianza es alta
             return self.rule_based_extraction(ocr_result['text'])
@@ -179,12 +179,12 @@ GENERA:
 1. TÍTULO (máx 60 caracteres):
    - Formato: Marca + Modelo + Característica Principal
    - Sin símbolos ni puntuación excesiva
-   
+
 2. DESCRIPCIÓN (150-300 palabras):
    - Párrafo 1: Beneficios principales
    - Párrafo 2: Especificaciones técnicas
    - Párrafo 3: Casos de uso
-   
+
 3. ATRIBUTOS JSON:
    - marca, modelo, categoría_ml, características
 
@@ -215,29 +215,29 @@ class ProductRequest(BaseModel):
     name: str = Field(..., description="Nombre del producto")
     category: str = Field(..., description="Categoría de MercadoLibre")
     images: List[str] = Field(..., description="URLs de imágenes")
-    
+
 class IntelliPostAI:
     def __init__(self):
         self.image_processor = ImageProcessor()
         self.data_extractor = DataExtractor()
         self.content_generator = ContentGenerator()
-    
+
     async def process_product(self, request: ProductRequest):
         # Procesamiento paralelo
         tasks = [
             self.image_processor.process_images(request.images),
             self.data_extractor.extract_from_images(request.images),
         ]
-        
+
         image_results, extracted_data = await asyncio.gather(*tasks)
-        
+
         # Generación de contenido basada en datos extraídos
         content = await self.content_generator.generate(
             product_name=request.name,
             extracted_data=extracted_data,
             category=request.category
         )
-        
+
         return {
             "processed_images": image_results,
             "extracted_data": extracted_data,

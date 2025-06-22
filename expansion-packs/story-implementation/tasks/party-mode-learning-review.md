@@ -1,11 +1,11 @@
 # Party Mode Learning Review
 
 ## Task Overview
-**Agent:** architect (Technical Architect - Facilitator and Documenter)  
-**Action Type:** collaborative-learning-review  
-**Duration:** Flexible based on learning complexity  
-**Participants:** Configurable at execution time based on story complexity and learning items  
-**Collaborators:** Selected based on learning domain expertise requirements  
+**Agent:** architect (Technical Architect - Facilitator and Documenter)
+**Action Type:** collaborative-learning-review
+**Duration:** Flexible based on learning complexity
+**Participants:** Configurable at execution time based on story complexity and learning items
+**Collaborators:** Selected based on learning domain expertise requirements
 
 ## Purpose
 Time-boxed collaborative review of learning triage items to validate priorities, assign ownership, and create actionable next steps with team consensus.
@@ -43,7 +43,7 @@ SETUP:
 - Confirm architecture impact assessment
 - Suggest alternative solutions if needed
 
-**PO:** FUTURE_EPIC + KNOWLEDGE_GAP items  
+**PO:** FUTURE_EPIC + KNOWLEDGE_GAP items
 - Validate business value and roadmap fit
 - Confirm epic candidate priorities
 - Assess resource requirements
@@ -156,7 +156,7 @@ Update story file with:
 #### IMMEDIATE_ACTIONS (Current Sprint)
 - [Action] - [Owner] - [Due: YYYY-MM-DD] - [Success Criteria] | Team Vote: [X/4]
 
-#### NEXT_SPRINT_ACTIONS  
+#### NEXT_SPRINT_ACTIONS
 - [Action] - [Owner] - [Sprint Planning Item] - [Dependencies] | Team Vote: [X/4]
 
 #### BACKLOG_ITEMS

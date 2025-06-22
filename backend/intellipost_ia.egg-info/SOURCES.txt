@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+backend/intellipost_ia.egg-info/PKG-INFO
+backend/intellipost_ia.egg-info/SOURCES.txt
+backend/intellipost_ia.egg-info/dependency_links.txt
+backend/intellipost_ia.egg-info/requires.txt
+backend/intellipost_ia.egg-info/top_level.txt
