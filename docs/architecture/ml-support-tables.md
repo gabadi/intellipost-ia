@@ -16,22 +16,22 @@ CREATE TABLE ml_categories (
     name VARCHAR(200) NOT NULL,
     parent_id VARCHAR(50) REFERENCES ml_categories(id),
     site_id CHAR(3) NOT NULL DEFAULT 'MLA',
-    
+
     -- Category properties
     listing_allowed BOOLEAN DEFAULT true,
     catalog_listing BOOLEAN DEFAULT false,
     status VARCHAR(20) DEFAULT 'enabled',
-    
+
     -- Listing constraints
     max_title_length INTEGER DEFAULT 60,
     max_description_length INTEGER DEFAULT 50000,
     immediate_payment BOOLEAN DEFAULT false,
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     last_synced_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     CONSTRAINT ml_categories_status_check CHECK (status IN ('enabled', 'disabled', 'under_review')),
     CONSTRAINT ml_categories_site_check CHECK (site_id = 'MLA') -- Argentina only for MVP
 );
@@ -56,28 +56,28 @@ CREATE TABLE ml_attributes (
     id VARCHAR(100) PRIMARY KEY, -- e.g., 'BRAND'
     category_id VARCHAR(50) NOT NULL REFERENCES ml_categories(id) ON DELETE CASCADE,
     name VARCHAR(200) NOT NULL,
-    
+
     -- Attribute type and validation
     value_type VARCHAR(50) NOT NULL,
     is_required BOOLEAN DEFAULT false,
     is_catalog_required BOOLEAN DEFAULT false,
     is_variation_attribute BOOLEAN DEFAULT false,
     is_searchable BOOLEAN DEFAULT false,
-    
+
     -- For list-type attributes
     allowed_values JSONB DEFAULT '[]',
     default_value TEXT,
-    
+
     -- Constraints
     min_value DECIMAL(15,4),
     max_value DECIMAL(15,4),
     max_values_allowed INTEGER DEFAULT 1,
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     last_synced_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     CONSTRAINT ml_attributes_value_type_check CHECK (
         value_type IN ('string', 'number', 'boolean', 'list', 'number_unit', 'date')
     ),
@@ -114,12 +114,12 @@ ALTER TABLE product_images ADD COLUMN IF NOT EXISTS
     ml_secure_url TEXT, -- HTTPS URL provided by ML
     ml_size VARCHAR(20), -- O, B, S, M, L, X (Original, Big, Small, Medium, Large, Extra)
     ml_quality VARCHAR(20), -- "good", "excellent" based on ML analysis
-    
+
     -- ML processing metadata
     ml_uploaded_at TIMESTAMP WITH TIME ZONE,
     ml_upload_error TEXT,
     ml_upload_retry_count INTEGER DEFAULT 0,
-    
+
     -- Constraints
     CONSTRAINT ml_size_valid CHECK (ml_size IS NULL OR ml_size IN ('O', 'B', 'S', 'M', 'L', 'X')),
     CONSTRAINT ml_quality_valid CHECK (ml_quality IS NULL OR ml_quality IN ('good', 'excellent')),
@@ -139,28 +139,28 @@ CREATE INDEX idx_product_images_ml_upload_status ON product_images(product_id, m
 ```sql
 CREATE TABLE ml_api_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    
+
     -- Request data
     endpoint VARCHAR(200) NOT NULL,
     method VARCHAR(10) NOT NULL,
     request_id VARCHAR(100), -- ML request ID for tracing
-    
+
     -- Response data
     status_code INTEGER NOT NULL,
     response_time_ms INTEGER,
-    
+
     -- Error tracking
     error_type VARCHAR(100),
     error_message TEXT,
     error_details JSONB,
-    
+
     -- Context
     product_id UUID REFERENCES products(id),
     operation VARCHAR(50), -- 'create_item', 'upload_image', 'get_categories', etc.
-    
+
     -- Timestamps
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     CONSTRAINT ml_api_logs_method_check CHECK (method IN ('GET', 'POST', 'PUT', 'DELETE')),
     CONSTRAINT ml_api_logs_status_check CHECK (status_code >= 100 AND status_code < 600),
     CONSTRAINT ml_api_logs_response_time_check CHECK (response_time_ms IS NULL OR response_time_ms >= 0)
@@ -189,15 +189,15 @@ DECLARE
 BEGIN
     -- Mark all categories as potentially stale
     UPDATE ml_categories SET last_synced_at = NOW() - INTERVAL '1 day';
-    
+
     -- This would be called by Python code that fetches from ML API
     -- and inserts/updates categories
-    
+
     -- Return count of synced categories
-    SELECT COUNT(*) INTO synced_count 
-    FROM ml_categories 
+    SELECT COUNT(*) INTO synced_count
+    FROM ml_categories
     WHERE last_synced_at > NOW() - INTERVAL '1 hour';
-    
+
     RETURN synced_count;
 END;
 $$ LANGUAGE plpgsql;
@@ -216,19 +216,19 @@ CREATE OR REPLACE FUNCTION validate_ml_attributes(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         ma.id,
-        CASE 
+        CASE
             WHEN ma.is_required AND NOT (p_attributes ? ma.id) THEN false
-            WHEN ma.value_type = 'list' AND (p_attributes ->> ma.id) IS NOT NULL 
+            WHEN ma.value_type = 'list' AND (p_attributes ->> ma.id) IS NOT NULL
                  AND NOT (ma.allowed_values @> jsonb_build_array(p_attributes ->> ma.id)) THEN false
             ELSE true
         END as is_valid,
-        CASE 
-            WHEN ma.is_required AND NOT (p_attributes ? ma.id) THEN 
+        CASE
+            WHEN ma.is_required AND NOT (p_attributes ? ma.id) THEN
                 'Required attribute ' || ma.name || ' is missing'
-            WHEN ma.value_type = 'list' AND (p_attributes ->> ma.id) IS NOT NULL 
-                 AND NOT (ma.allowed_values @> jsonb_build_array(p_attributes ->> ma.id)) THEN 
+            WHEN ma.value_type = 'list' AND (p_attributes ->> ma.id) IS NOT NULL
+                 AND NOT (ma.allowed_values @> jsonb_build_array(p_attributes ->> ma.id)) THEN
                 'Invalid value for ' || ma.name || '. Allowed values: ' || ma.allowed_values::text
             ELSE NULL
         END as error_message

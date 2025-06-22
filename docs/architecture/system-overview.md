@@ -71,11 +71,11 @@ Language: Python 3.11+
 Framework: FastAPI
   - Rationale: High performance, automatic OpenAPI, excellent async support
   - Async/await for AI processing and real-time updates
-  
+
 Database: PostgreSQL 15+
   - Primary: Structured data (users, products, content)
   - JSONB: Flexible metadata and ML attributes
-  
+
 Object Storage: S3-Compatible
   - Images: Original and processed photos
   - CDN integration for fast mobile delivery
@@ -94,11 +94,11 @@ Real-time: WebSocket (FastAPI native)
 Framework: SvelteKit
   - Rationale: Lightweight, excellent mobile performance, TypeScript support
   - SSR capability for SEO (post-MVP)
-  
+
 State Management: Svelte Stores
   - Global: Auth, products, UI state
   - Real-time: WebSocket integration
-  
+
 Type Safety: TypeScript
   - Shared types with backend
   - Auto-generated API client
@@ -161,15 +161,15 @@ Photo Upload → AI Processing → Content Ready → User Review → Publishing 
 # Protocol defines CLIENT interface (what the business logic expects)
 class AIContentGenerator(Protocol):
     async def generate_listing(
-        self, 
-        images: List[ImageData], 
-        prompt: str, 
+        self,
+        images: List[ImageData],
+        prompt: str,
         ml_category_hint: Optional[str] = None
     ) -> GeneratedContent:
         ...
-    
+
     async def calculate_confidence(
-        self, 
+        self,
         content: GeneratedContent
     ) -> ConfidenceScore:
         ...
@@ -179,12 +179,12 @@ class AIContentGenerator(Protocol):
 class GeminiService:
     def __init__(self, api_key: str):
         self.client = genai.GenerativeModel("gemini-2.5-flash")
-    
+
     # Duck-type compatible with AIContentGenerator
     async def generate_listing(self, images: List[ImageData], prompt: str, ml_category_hint: Optional[str] = None) -> GeneratedContent:
         # Returns GeneratedContent instance
         pass
-    
+
     async def calculate_confidence(self, content: GeneratedContent) -> ConfidenceScore:
         # Returns ConfidenceScore instance
         pass
@@ -207,16 +207,16 @@ async def process_product_content(product_id: UUID, ai_service: AIContentGenerat
 ```python
 class ProcessingNotifier(Protocol):
     async def notify_status_change(
-        self, 
-        product_id: UUID, 
-        status: ProductStatus, 
+        self,
+        product_id: UUID,
+        status: ProductStatus,
         progress: Optional[int] = None
     ) -> None:
         ...
-    
+
     async def notify_completion(
-        self, 
-        product_id: UUID, 
+        self,
+        product_id: UUID,
         result: GeneratedContent
     ) -> None:
         ...
@@ -228,15 +228,15 @@ class ProcessingNotifier(Protocol):
 ```python
 class MLPublisher(Protocol):
     async def publish_listing(
-        self, 
-        content: GeneratedContent, 
+        self,
+        content: GeneratedContent,
         credentials: MLCredentials
     ) -> PublishedListing:
         ...
-    
+
     async def suggest_categories(
-        self, 
-        title: str, 
+        self,
+        title: str,
         description: str
     ) -> List[MLCategory]:
         ...
@@ -273,8 +273,8 @@ async def generate_content(
     ai_service: AIContentGenerator = Depends()
 ):
     background_tasks.add_task(
-        process_product_content, 
-        product_id, 
+        process_product_content,
+        product_id,
         ai_service
     )
     return {"status": "processing_started"}
@@ -316,7 +316,7 @@ User Data:
   - Images: User-owned, deletable on demand
   - Generated Content: User-owned, exportable
   - ML Credentials: Encrypted, never logged
-  
+
 Compliance Ready:
   - Data export functionality
   - Data deletion on user request
@@ -335,7 +335,7 @@ class AIServiceWithFallback:
         # Accept interfaces (Protocols)
         self.primary = primary
         self.secondary = secondary
-    
+
     # Duck-type compatible with AIContentGenerator Protocol
     async def generate_listing(self, images: List[ImageData], prompt: str) -> GeneratedContent:
         try:
@@ -445,7 +445,7 @@ def test_environment():
 - **MVP:** Start with mobile-optimized web app
 - **Evolution:** PWA features if needed, native wrapper as fallback
 
-### 5. **Total Cost per Listing: ~$0.13-0.17** 
+### 5. **Total Cost per Listing: ~$0.13-0.17**
 **Monthly MVP Cost: ~$150 for 1000 listings**
 
 ---

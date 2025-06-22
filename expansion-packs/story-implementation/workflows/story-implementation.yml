@@ -11,7 +11,7 @@ workflow:
     Phase 6: PR Creation and Epic Progress (Delivery + Tracking)
     Phase 7: Epic Retrospective (MANDATORY when epic reaches 100% completion)
   type: story-implementation
-  
+
   visualization: |
     ```mermaid
     flowchart TD
@@ -23,39 +23,39 @@ workflow:
         C -->|Pass| D{PO: Approve Story}
         C -->|Fail| C2[SM: Revise Story<br/>max 3 retries]
         C2 --> C
-        
+
         D -->|Pass| E[Infra: Setup Environment]
         D -->|Fail| D2[PO: Clarify Requirements<br/>max 3 retries]
         D2 --> D
-        
+
         E --> F[Dev: Implement Story<br/>with quality gates]
         F --> G{Dev: Pre-Review Validation<br/>quality gates + DoD}
         G -->|Pass| H[Round 1 Reviews<br/>Parallel]
         G -->|Fail| G2[Dev: Fix Issues<br/>max 5 retries]
         G2 --> G
-        
+
         H --> H1[Architect Review]
-        H --> H2[Business Review]  
+        H --> H2[Business Review]
         H --> H3[Process Review]
         H --> H4[QA Review]
         H --> H5[UX Review]
-        
+
         H1 --> I[Architect: Consolidate<br/>All Feedback]
         H2 --> I
         H3 --> I
         H4 --> I
         H5 --> I
-        
+
         I --> J[Dev: Implement<br/>Consolidated Fixes]
         J --> J2{Dev: Verify<br/>Quality Gates}
         J2 -->|Pass| K{Architect: Validate<br/>Fixes + Playwright}
         J2 -->|Fail| J3[Dev: Fix Quality Issues<br/>max 3 retries]
         J3 --> J2
-        
+
         K -->|Pass| L[Arch: Learning<br/>Triage]
         K -->|Fail| K2[Dev: Additional Fixes<br/>max 3 retries]
         K2 --> J2
-        
+
         L --> M[SM: Party Mode<br/>Learning Review]
         M --> N[Dev: Commit &<br/>Prepare PR Context]
         N --> O[PO: Create<br/>Comprehensive PR]
@@ -64,7 +64,7 @@ workflow:
         P1 -->|Yes| R[SM: Epic Retrospective<br/>MANDATORY Multi-Agent]
         P1 -->|No| Q[Story: Complete<br/>PR Delivered]
         R --> Q
-        
+
         %% Styling
         classDef phase1 fill:#e1f5fe
         classDef phase2 fill:#f3e5f5
@@ -76,7 +76,7 @@ workflow:
         classDef failure fill:#ffebee
         classDef decision fill:#fff3e0
         classDef parallel fill:#f0f4f8
-        
+
         class A1,B,E phase1
         class F,G phase2
         class H,H1,H2,H3,H4,H5,I,J,J2,K phase3
@@ -96,7 +96,7 @@ workflow:
       required: true
     story_number:
       type: string
-      description: The story number within the epic (e.g., "1", "2", "3")  
+      description: The story number within the epic (e.g., "1", "2", "3")
       required: true
 
   outputs:
@@ -122,7 +122,7 @@ workflow:
       checklist: epic-readiness-checklist.md
       notes: "REQUIRED: Use Task tool for execution - Validate epic business readiness and dependencies before story creation"
       story_status_update: "N/A - No story exists yet"
-      
+
     - step: create_story
       agent: sm
       action: create-next-story
@@ -132,7 +132,7 @@ workflow:
         - story_number
       notes: "REQUIRED: Use Task tool for execution - Create comprehensive story from epic context using existing bmad-core task"
       story_status_update: "Draft"
-      
+
     - step: validate_story_draft
       agent: sm
       action: execute-checklist
@@ -142,7 +142,7 @@ workflow:
       checklist: story-draft-checklist.md
       notes: "REQUIRED: Use Task tool for execution - Validate story draft quality and completeness using bmad-core checklist"
       checklist_completion_tracking: true
-      
+
     - step: po_approval
       agent: po
       action: approve-story-for-development
@@ -152,7 +152,7 @@ workflow:
         - epic_number
       notes: "REQUIRED: Use Task tool for execution - Product Owner validates business value and approves for development"
       story_status_update: "Approved"
-      
+
     - step: environment_setup
       agent: infra-devops-platform
       action: setup-development-environment
@@ -160,7 +160,7 @@ workflow:
       inputs:
         - story_file
       notes: "REQUIRED: Use Task tool for execution - Ensure development environment ready for story implementation"
-      
+
     - step: implement_story
       agent: dev
       action: implement-story-development
@@ -171,7 +171,7 @@ workflow:
         - story_number
       notes: "REQUIRED: Use Task tool for execution - Complete story implementation with validation (includes project quality gates)"
       story_status_update: "In Progress"
-      
+
     - step: pre_review_validation
       agent: dev
       action: execute-checklist
@@ -182,7 +182,7 @@ workflow:
       notes: "REQUIRED: Use Task tool for execution - Final validation before reviews - ensures project quality gates pass"
       story_status_update: "Review"
       checklist_completion_tracking: true
-      
+
     - step: round1_architecture_review
       agent: architect
       action: execute-checklist
@@ -192,7 +192,7 @@ workflow:
       checklist: story-dod-checklist.md
       notes: "REQUIRED: Use Task tool for execution - Round 1 - Architect validates technical design and architecture"
       checklist_completion_tracking: true
-      
+
     - step: round1_business_review
       agent: po
       action: execute-checklist
@@ -202,7 +202,7 @@ workflow:
       checklist: story-dod-checklist.md
       notes: "REQUIRED: Use Task tool for execution - Round 1 - Product Owner validates business alignment and value"
       checklist_completion_tracking: true
-      
+
     - step: round1_process_review
       agent: sm
       action: execute-checklist
@@ -212,7 +212,7 @@ workflow:
       checklist: story-dod-checklist.md
       notes: "REQUIRED: Use Task tool for execution - Round 1 - Scrum Master validates process compliance and DoD"
       checklist_completion_tracking: true
-      
+
     - step: round1_qa_review
       agent: qa
       action: execute-checklist
@@ -222,7 +222,7 @@ workflow:
       checklist: story-dod-checklist.md
       notes: "REQUIRED: Use Task tool for execution - Round 1 - QA validates implementation quality and completeness"
       checklist_completion_tracking: true
-      
+
     - step: round1_ux_review
       agent: ux-expert
       action: execute-checklist
@@ -232,7 +232,7 @@ workflow:
       checklist: story-dod-checklist.md
       notes: "REQUIRED: Use Task tool for execution - Round 1 - UX Expert validates user experience and accessibility"
       checklist_completion_tracking: true
-      
+
     - step: consolidate_feedback
       agent: architect
       action: consolidate-review-feedback
@@ -245,7 +245,7 @@ workflow:
         - qa_feedback
         - ux_feedback
       notes: "REQUIRED: Use Task tool for execution - Architect consolidates all review feedback with REQUIRED-FOR-COMPLETION/QUALITY-STANDARD/IMPROVEMENT classification"
-      
+
     - step: implement_fixes
       agent: dev
       action: implement-consolidated-fixes
@@ -254,7 +254,7 @@ workflow:
         - story_file
         - consolidated_feedback
       notes: "REQUIRED: Use Task tool for execution - Dev implements consolidated fixes and documents in story"
-      
+
     - step: verify_quality_gates
       agent: dev
       action: execute-checklist
@@ -264,7 +264,7 @@ workflow:
       checklist: story-dod-checklist.md
       notes: "REQUIRED: Use Task tool for execution - Dev verifies all quality gates pass before architect review"
       checklist_completion_tracking: true
-      
+
     - step: validate_fixes
       agent: architect
       action: validate-consolidated-fixes
@@ -275,7 +275,7 @@ workflow:
         - implemented_fixes
       notes: "REQUIRED: Use Task tool for execution - Architect validates fixes using story docs + browser MCP for UX changes"
       story_status_update: "Implementation Validated"
-      
+
     - step: capture_learning_triage
       agent: architect
       action: capture-learning-triage
@@ -287,7 +287,7 @@ workflow:
         - quality_metrics
       notes: "REQUIRED: Use Task tool for execution - Extract and triage learnings into structured categories with priorities"
       story_status_update: "Learning Extracted"
-      
+
     - step: party_mode_review
       agent: architect
       action: party-mode-learning-review
@@ -298,7 +298,7 @@ workflow:
       collaborators: [po, sm, dev]
       notes: "REQUIRED: Use Task tool for execution - Architect-led collaborative team review of learning items with technical categorization consensus"
       story_status_update: "Learning Reviewed"
-      
+
     - step: commit_and_prepare_pr
       agent: dev
       action: commit-and-prepare-pr
@@ -309,7 +309,7 @@ workflow:
         - implementation_changes
       notes: "REQUIRED: Use Task tool for execution - Commit implementation with comprehensive context and prepare PR materials"
       story_status_update: "Changes Committed"
-      
+
     - step: create_comprehensive_pr
       agent: po
       action: create-comprehensive-pr
@@ -320,7 +320,7 @@ workflow:
         - pr_context
       notes: "REQUIRED: Use Task tool for execution - Create PR with business summary, technical changes, and learning extraction"
       story_status_update: "PR Created"
-      
+
     - step: update_epic_progress
       agent: sm
       action: update-epic-progress
@@ -332,7 +332,7 @@ workflow:
         - learning_items
       notes: "REQUIRED: Use Task tool for execution - Update epic progress tracking and schedule learning integration"
       story_status_update: "Done - Delivered"
-      
+
     - step: epic_retrospective
       agent: sm
       action: epic-party-mode-retrospective
@@ -374,86 +374,86 @@ workflow:
     - halt_on_failure: true
     - Each step must complete successfully before proceeding
     - Failed steps should be retried after addressing issues
-    
+
   retry_protocols:
     epic_validation_failure:
       - Issue: "Epic not ready for story creation (missing approval, dependencies, context)"
       - Action: "PO addresses epic readiness issues (approval, dependencies, business context)"
       - Retry: "Re-run validate_epic after epic issues resolved"
       - Max_retries: 3
-      
+
     sm_validation_failure:
       - Issue: "Story draft quality fails validation"
       - Action: "SM revises story based on checklist feedback"
       - Retry: "Re-run validate_story_draft after corrections"
       - Max_retries: 3
-      
+
     po_approval_failure:
       - Issue: "Business value or approval fails"
       - Action: "PO clarifies requirements or updates story"
       - Retry: "Re-run po_approval after business clarification"
       - Max_retries: 3
-      
+
     pre_review_failure:
       - Issue: "Project quality gates fail or DoD checklist incomplete"
       - Action: "Dev fixes technical issues and quality problems"
       - Retry: "Re-run pre_review_validation after fixes"
       - Max_retries: 5
-      
+
     round1_reviews_failure:
       - Issue: "Any Round 1 review fails (architecture, business, QA, UX)"
       - Action: "Proceed to consolidation - Architect will classify as MVP-BLOCKING or not"
       - Retry: "No retry at individual review level"
       - Notes: "All feedback flows to consolidation regardless of pass/fail"
-      
+
     consolidation_failure:
       - Issue: "Feedback consolidation fails or is incomplete"
       - Action: "Architect re-analyzes review feedback and creates clear action plan"
       - Retry: "Re-run consolidate_feedback after analysis"
       - Max_retries: 2
-      
+
     quality_gates_failure:
       - Issue: "Quality gates fail after implementing fixes"
       - Action: "Dev fixes technical issues (tests, linting, etc.)"
       - Retry: "Re-run implement_fixes → verify_quality_gates cycle"
       - Max_retries: 3
       - Notes: "Must pass all project quality gates before architect review"
-      
+
     fixes_validation_failure:
       - Issue: "Architect finds fixes incomplete or incorrect"
       - Action: "Dev implements additional fixes based on specific feedback"
       - Retry: "Re-run implement_fixes → verify_quality_gates → validate_fixes cycle"
       - Max_retries: 3
       - Notes: "Each retry includes quality gate verification + browser MCP validation"
-      
+
     learning_triage_failure:
       - Issue: "Learning extraction incomplete or poorly categorized"
       - Action: "Architect re-analyzes implementation context and feedback patterns"
       - Retry: "Re-run capture_learning_triage with improved analysis"
       - Max_retries: 2
       - Notes: "Focus on actionable learning items with clear ownership"
-      
+
     learning_review_failure:
       - Issue: "Team consensus not achieved on learning priorities"
       - Action: "SM facilitates additional discussion and conflict resolution"
       - Retry: "Re-run party_mode_review with refined facilitation"
       - Max_retries: 2
       - Notes: "Use voting protocol and time-boxing to achieve consensus"
-      
+
     commit_preparation_failure:
       - Issue: "Commit fails or PR context incomplete"
       - Action: "Dev addresses git issues and completes context preparation"
       - Retry: "Re-run commit_and_prepare_pr after resolving issues"
       - Max_retries: 3
       - Notes: "Ensure all quality gates pass before commit"
-      
+
     pr_creation_failure:
       - Issue: "PR creation fails or context incomplete"
       - Action: "PO addresses GitHub/PR platform issues and completes description"
       - Retry: "Re-run create_comprehensive_pr after resolving platform issues"
       - Max_retries: 3
       - Notes: "Ensure comprehensive business and technical context"
-      
+
     epic_progress_failure:
       - Issue: "Epic progress update fails or tracking incomplete"
       - Action: "SM addresses epic file issues and completes progress tracking"
@@ -464,7 +464,7 @@ workflow:
   dependencies:
     core_bmad_agents:
       - sm (Scrum Master)
-      - po (Product Owner)  
+      - po (Product Owner)
       - infra-devops-platform (DevOps Infrastructure)
       - dev (Developer)
       - architect (Technical Architect)

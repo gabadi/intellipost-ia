@@ -1,10 +1,10 @@
 # Update Epic Progress
 
 ## Task Overview
-**Agent:** sm (Scrum Master - Progress Tracking Owner)  
-**Action Type:** epic-progress-update  
-**Duration:** 3-5 minutes  
-**LLM-Optimized:** Structured epic tracking with learning integration  
+**Agent:** sm (Scrum Master - Progress Tracking Owner)
+**Action Type:** epic-progress-update
+**Duration:** 3-5 minutes
+**LLM-Optimized:** Structured epic tracking with learning integration
 
 ## Purpose
 Track story completion within epic context, update epic progress indicators, and schedule learning extraction for continuous improvement.
@@ -127,7 +127,7 @@ Add learning extraction scheduling to epic:
 
 ### Current Status: {GREEN/YELLOW/RED}
 - **Scope:** {ON_TRACK/AT_RISK/BLOCKED} - {scope_status_detail}
-- **Timeline:** {ON_TRACK/AT_RISK/DELAYED} - {timeline_status_detail}  
+- **Timeline:** {ON_TRACK/AT_RISK/DELAYED} - {timeline_status_detail}
 - **Quality:** {HIGH/MEDIUM/LOW} - Avg: {quality_score}/10
 - **Team Velocity:** {STABLE/INCREASING/DECREASING} - {velocity_trend}
 
@@ -139,7 +139,7 @@ Add learning extraction scheduling to epic:
 
 ### Success Metrics
 - **Business Value Delivered:** {value_score}/10
-- **Technical Quality:** {tech_score}/10  
+- **Technical Quality:** {tech_score}/10
 - **Team Learning:** {learning_score}/10
 - **Process Efficiency:** {efficiency_score}/10
 ```
@@ -233,7 +233,7 @@ Health: {health_color} | Learning: {learning_items} items | ETA: {completion_dat
 
 ## Learning Integration Benefits
 - **Continuous Improvement:** Each story informs the next
-- **Epic-Level Insights:** Patterns emerge across multiple stories  
+- **Epic-Level Insights:** Patterns emerge across multiple stories
 - **Future Planning:** Epic candidates feed roadmap planning
 - **Process Optimization:** Velocity and quality trends guide improvements
 - **Risk Mitigation:** Early identification of epic-level issues

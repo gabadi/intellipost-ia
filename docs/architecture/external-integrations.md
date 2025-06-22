@@ -18,7 +18,7 @@
 
 # Example service integration:
 async def process_product_content(
-    product_id: UUID, 
+    product_id: UUID,
     ai_service: AIContentGenerator,  # Accept interface
     image_processor: ImageProcessor,  # Accept interface
     ml_publisher: MLPublisher        # Accept interface
@@ -40,7 +40,7 @@ from src.models.product import GeneratedContent, ImageData, ConfidenceScore
 
 class AIContentGenerator(Protocol):
     """Client interface - what business logic expects from AI services"""
-    
+
     async def generate_listing(
         self,
         images: List[ImageData],
@@ -49,14 +49,14 @@ class AIContentGenerator(Protocol):
     ) -> GeneratedContent:
         """Generate complete MercadoLibre listing content"""
         ...
-    
+
     async def calculate_confidence(
         self,
         content: GeneratedContent
     ) -> ConfidenceScore:
         """Calculate confidence scores for generated content"""
         ...
-    
+
     async def enhance_description(
         self,
         current_description: str,
@@ -75,7 +75,7 @@ from src.models.product import GeneratedContent, ImageData, ConfidenceScore
 
 class GeminiService:
     """Duck-type compatible with AIContentGenerator Protocol"""
-    
+
     def __init__(self, api_key: str, model_name: str = "gemini-2.5-flash"):
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name)
@@ -84,7 +84,7 @@ class GeminiService:
             "top_p": 0.9,
             "max_output_tokens": 2048,
         }
-    
+
     async def generate_listing(
         self,
         images: List[ImageData],
@@ -103,11 +103,11 @@ class GeminiService:
                     "mime_type": image.mime_type,
                     "data": image.base64_data
                 })
-            
+
             # Build comprehensive prompt
             system_prompt = self._build_system_prompt(category_hint)
             user_prompt = self._build_user_prompt(prompt)
-            
+
             # Generate content
             response = await self.model.generate_content_async(
                 contents=[
@@ -116,10 +116,10 @@ class GeminiService:
                 ],
                 generation_config=self.generation_config
             )
-            
+
             # Parse response into structured data
             parsed_content = self._parse_gemini_response(response.text)
-            
+
             # Return GeneratedContent instance
             return GeneratedContent(
                 title=parsed_content["title"],
@@ -136,10 +136,10 @@ class GeminiService:
                 ai_model_version="gemini-2.5-flash",
                 generation_time_ms=response.usage_metadata.total_latency_ms
             )
-            
+
         except Exception as e:
             raise AIServiceError(f"Gemini generation failed: {str(e)}")
-    
+
     async def calculate_confidence(
         self,
         content: GeneratedContent
@@ -150,7 +150,7 @@ class GeminiService:
             overall=content.confidence_overall,
             breakdown=content.confidence_breakdown
         )
-    
+
     async def enhance_description(
         self,
         current_description: str,
@@ -159,21 +159,21 @@ class GeminiService:
         """Enhance description with additional context"""
         prompt = f"""
         Improve this MercadoLibre product description:
-        
+
         Current: {current_description}
         Additional context: {additional_context}
-        
+
         Return only the improved description in Spanish.
         """
-        
+
         response = await self.model.generate_content_async(prompt)
         return response.text.strip()
-    
+
     def _build_system_prompt(self, category_hint: Optional[str] = None) -> str:
         """Build system prompt for MercadoLibre listing generation"""
         return f"""
         You are an expert MercadoLibre listing generator for Argentina marketplace.
-        
+
         CRITICAL REQUIREMENTS:
         - Generate content in Spanish for Argentina (MLA) marketplace
         - Title: Maximum 60 characters, descriptive and searchable
@@ -181,9 +181,9 @@ class GeminiService:
         - Price: Estimate based on Argentina market in ARS
         - Category: Select most appropriate MercadoLibre category
         - Condition: new, used, or not_specified
-        
+
         {f"CATEGORY HINT: Focus on {category_hint} categories" if category_hint else ""}
-        
+
         RESPONSE FORMAT (JSON):
         {{
             "title": "Product title (max 60 chars)",
@@ -207,14 +207,14 @@ class GeminiService:
             }}
         }}
         """
-    
+
     def _build_user_prompt(self, user_prompt: str) -> str:
         """Build user prompt with image analysis instructions"""
         return f"""
         Analyze these product images and user description to create a MercadoLibre listing:
-        
+
         User description: {user_prompt}
-        
+
         Instructions:
         1. Analyze all images to identify the product
         2. Use the user description as context
@@ -222,24 +222,24 @@ class GeminiService:
         4. Estimate appropriate price for Argentina market
         5. Select correct category and attributes
         6. Provide confidence scores for each component
-        
+
         Return only the JSON response as specified in system prompt.
         """
-    
+
     def _parse_gemini_response(self, response_text: str) -> dict:
         """Parse Gemini response into structured data"""
         try:
             # Extract JSON from response (handle markdown formatting)
             import json
             import re
-            
+
             # Remove markdown code blocks if present
             json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', response_text, re.DOTALL)
             if json_match:
                 response_text = json_match.group(1)
-            
+
             return json.loads(response_text)
-            
+
         except (json.JSONDecodeError, AttributeError) as e:
             raise AIServiceError(f"Failed to parse Gemini response: {str(e)}")
 
@@ -262,21 +262,21 @@ from src.models.product import ImageData, ProcessedImage
 
 class ImageProcessor(Protocol):
     """Client interface for image processing services"""
-    
+
     async def remove_background(
         self,
         image: ImageData
     ) -> ProcessedImage:
         """Remove background from product image"""
         ...
-    
+
     async def enhance_quality(
         self,
         image: ImageData
     ) -> ProcessedImage:
         """Enhance image quality and lighting"""
         ...
-    
+
     async def batch_process(
         self,
         images: List[ImageData]
@@ -294,7 +294,7 @@ from src.models.product import ImageData, ProcessedImage
 
 class PhotoRoomService:
     """Duck-type compatible with ImageProcessor Protocol"""
-    
+
     def __init__(self, api_key: str):
         self.api_key = api_key
         self.base_url = "https://sdk.photoroom.com/v1"
@@ -302,7 +302,7 @@ class PhotoRoomService:
             headers={"x-api-key": api_key},
             timeout=30.0
         )
-    
+
     async def remove_background(
         self,
         image: ImageData
@@ -320,7 +320,7 @@ class PhotoRoomService:
                     image.mime_type
                 )
             }
-            
+
             # PhotoRoom background removal
             response = await self.client.post(
                 f"{self.base_url}/segment",
@@ -332,7 +332,7 @@ class PhotoRoomService:
                 }
             )
             response.raise_for_status()
-            
+
             # Return ProcessedImage instance
             return ProcessedImage(
                 original_image_id=image.id,
@@ -348,12 +348,12 @@ class PhotoRoomService:
                     "format_converted": "png"
                 }
             )
-            
+
         except httpx.HTTPError as e:
             raise ImageProcessingError(f"PhotoRoom API error: {str(e)}")
         except Exception as e:
             raise ImageProcessingError(f"Image processing failed: {str(e)}")
-    
+
     async def enhance_quality(
         self,
         image: ImageData
@@ -367,7 +367,7 @@ class PhotoRoomService:
                     image.mime_type
                 )
             }
-            
+
             # PhotoRoom enhancement
             response = await self.client.post(
                 f"{self.base_url}/enhance",
@@ -379,7 +379,7 @@ class PhotoRoomService:
                 }
             )
             response.raise_for_status()
-            
+
             return ProcessedImage(
                 original_image_id=image.id,
                 processed_data=response.content,
@@ -393,24 +393,24 @@ class PhotoRoomService:
                     "enhancement_type": "product"
                 }
             )
-            
+
         except Exception as e:
             raise ImageProcessingError(f"Image enhancement failed: {str(e)}")
-    
+
     async def batch_process(
         self,
         images: List[ImageData]
     ) -> List[ProcessedImage]:
         """Process multiple images concurrently"""
         import asyncio
-        
+
         # Process images concurrently (PhotoRoom rate limit: 60/minute)
         semaphore = asyncio.Semaphore(10)  # Limit concurrent requests
-        
+
         async def process_single(image: ImageData) -> ProcessedImage:
             async with semaphore:
                 return await self.remove_background(image)
-        
+
         return await asyncio.gather(*[
             process_single(image) for image in images
         ])
@@ -434,7 +434,7 @@ from src.models.product import GeneratedContent, MLListing, MLCredentials
 
 class MLPublisher(Protocol):
     """Client interface for MercadoLibre publishing"""
-    
+
     async def create_listing(
         self,
         content: GeneratedContent,
@@ -443,7 +443,7 @@ class MLPublisher(Protocol):
     ) -> MLListing:
         """Create listing on MercadoLibre"""
         ...
-    
+
     async def update_listing(
         self,
         item_id: str,
@@ -452,14 +452,14 @@ class MLPublisher(Protocol):
     ) -> MLListing:
         """Update existing listing"""
         ...
-    
+
     async def get_categories(
         self,
         site_id: str = "MLA"
     ) -> List[dict]:
         """Get available categories"""
         ...
-    
+
     async def validate_credentials(
         self,
         credentials: MLCredentials
@@ -477,11 +477,11 @@ from src.models.product import GeneratedContent, MLListing, MLCredentials
 
 class MercadoLibreService:
     """Duck-type compatible with MLPublisher Protocol"""
-    
+
     def __init__(self):
         self.base_url = "https://api.mercadolibre.com"
         self.client = httpx.AsyncClient(timeout=30.0)
-    
+
     async def create_listing(
         self,
         content: GeneratedContent,
@@ -495,7 +495,7 @@ class MercadoLibreService:
         try:
             # First, upload images to MercadoLibre
             ml_image_ids = await self._upload_images(images, credentials)
-            
+
             # Prepare listing data
             listing_data = {
                 "title": content.ml_title,
@@ -516,7 +516,7 @@ class MercadoLibreService:
                     "free_shipping": False
                 }
             }
-            
+
             # Create listing via MercadoLibre API
             response = await self.client.post(
                 f"{self.base_url}/items",
@@ -524,9 +524,9 @@ class MercadoLibreService:
                 json=listing_data
             )
             response.raise_for_status()
-            
+
             listing_response = response.json()
-            
+
             # Return MLListing instance
             return MLListing(
                 item_id=listing_response["id"],
@@ -541,12 +541,12 @@ class MercadoLibreService:
                 created_at=listing_response["date_created"],
                 ml_images=ml_image_ids
             )
-            
+
         except httpx.HTTPError as e:
             raise MLAPIError(f"MercadoLibre API error: {str(e)}")
         except Exception as e:
             raise MLAPIError(f"Listing creation failed: {str(e)}")
-    
+
     async def update_listing(
         self,
         item_id: str,
@@ -562,17 +562,17 @@ class MercadoLibreService:
                 "plain_text": content.description
             }
         }
-        
+
         response = await self.client.put(
             f"{self.base_url}/items/{item_id}",
             headers={"Authorization": f"Bearer {credentials.access_token}"},
             json=update_data
         )
         response.raise_for_status()
-        
+
         # Return updated listing data
         return await self._get_listing_details(item_id, credentials)
-    
+
     async def get_categories(
         self,
         site_id: str = "MLA"
@@ -583,7 +583,7 @@ class MercadoLibreService:
         )
         response.raise_for_status()
         return response.json()
-    
+
     async def validate_credentials(
         self,
         credentials: MLCredentials
@@ -597,7 +597,7 @@ class MercadoLibreService:
             return response.status_code == 200
         except:
             return False
-    
+
     async def _upload_images(
         self,
         image_urls: List[str],
@@ -605,28 +605,28 @@ class MercadoLibreService:
     ) -> List[str]:
         """Upload images to MercadoLibre and return image IDs"""
         ml_image_ids = []
-        
+
         for image_url in image_urls:
             # Download image from S3
             image_response = await self.client.get(image_url)
             image_response.raise_for_status()
-            
+
             # Upload to MercadoLibre
             files = {
                 "file": ("image.jpg", image_response.content, "image/jpeg")
             }
-            
+
             upload_response = await self.client.post(
                 f"{self.base_url}/pictures",
                 headers={"Authorization": f"Bearer {credentials.access_token}"},
                 files=files
             )
             upload_response.raise_for_status()
-            
+
             ml_image_ids.append(upload_response.json()["id"])
-        
+
         return ml_image_ids
-    
+
     def _format_attributes(self, attributes: dict) -> List[dict]:
         """Format attributes for MercadoLibre API"""
         return [
@@ -654,7 +654,7 @@ from src.models.product import ImageData
 
 class ObjectStorage(Protocol):
     """Client interface for object storage"""
-    
+
     async def upload_image(
         self,
         image: ImageData,
@@ -663,7 +663,7 @@ class ObjectStorage(Protocol):
     ) -> str:
         """Upload image and return public URL"""
         ...
-    
+
     async def delete_image(
         self,
         bucket: str,
@@ -671,7 +671,7 @@ class ObjectStorage(Protocol):
     ) -> bool:
         """Delete image from storage"""
         ...
-    
+
     async def generate_presigned_url(
         self,
         bucket: str,
@@ -691,7 +691,7 @@ from src.models.product import ImageData
 
 class S3Service:
     """Duck-type compatible with ObjectStorage Protocol"""
-    
+
     def __init__(self, aws_access_key: str, aws_secret_key: str, region: str = "us-east-1"):
         self.s3_client = boto3.client(
             's3',
@@ -700,7 +700,7 @@ class S3Service:
             region_name=region
         )
         self.region = region
-    
+
     async def upload_image(
         self,
         image: ImageData,
@@ -723,13 +723,13 @@ class S3Service:
                     'upload_source': 'intellipost_ai'
                 }
             )
-            
+
             # Return public URL
             return f"https://{bucket}.s3.{self.region}.amazonaws.com/{key}"
-            
+
         except Exception as e:
             raise StorageError(f"S3 upload failed: {str(e)}")
-    
+
     async def delete_image(
         self,
         bucket: str,
@@ -741,7 +741,7 @@ class S3Service:
             return True
         except Exception:
             return False
-    
+
     async def generate_presigned_url(
         self,
         bucket: str,
@@ -781,7 +781,7 @@ class ProductService:
     Business logic orchestrating external services
     Uses Go-style: Accept interfaces, return instances
     """
-    
+
     def __init__(
         self,
         ai_service: AIContentGenerator,      # Accept interface
@@ -793,7 +793,7 @@ class ProductService:
         self.image_processor = image_processor
         self.ml_publisher = ml_publisher
         self.storage = storage
-    
+
     async def process_product_images(
         self,
         product: Product
@@ -803,11 +803,11 @@ class ProductService:
         Returns list of S3 URLs (instances)
         """
         processed_urls = []
-        
+
         for image in product.images:
             # Process image (accept interface, get instance)
             processed_image = await self.image_processor.remove_background(image)
-            
+
             # Upload to storage (accept interface, get instance)
             s3_key = f"products/{product.id}/processed/{image.id}.png"
             s3_url = await self.storage.upload_image(
@@ -815,11 +815,11 @@ class ProductService:
                 bucket="intellipost-images",
                 key=s3_key
             )
-            
+
             processed_urls.append(s3_url)
-        
+
         return processed_urls
-    
+
     async def generate_listing_content(
         self,
         product: Product
@@ -834,9 +834,9 @@ class ProductService:
             prompt=product.prompt_text,
             category_hint=None
         )
-        
+
         return content
-    
+
     async def publish_to_mercadolibre(
         self,
         product: Product,
@@ -854,7 +854,7 @@ class ProductService:
             credentials=credentials,
             images=image_urls
         )
-        
+
         return listing
 
 
@@ -874,7 +874,7 @@ def create_product_service(
     image_processor = create_photoroom_service(photoroom_api_key)
     ml_publisher = create_mercadolibre_service()
     storage = create_s3_service(aws_access_key, aws_secret_key)
-    
+
     # Return business service with injected dependencies
     return ProductService(
         ai_service=ai_service,
@@ -899,7 +899,7 @@ T = TypeVar('T')
 
 class ResilientService:
     """Wrapper for adding resilience to any service"""
-    
+
     @staticmethod
     async def with_retry(
         operation: Callable[[], T],
@@ -907,14 +907,14 @@ class ResilientService:
         backoff_factor: float = 1.0
     ) -> T:
         """Add exponential backoff retry to any operation"""
-        
+
         for attempt in range(max_retries + 1):
             try:
                 return await operation()
             except RetryableError as e:
                 if attempt == max_retries:
                     raise ServiceError(f"Operation failed after {max_retries} retries: {str(e)}")
-                
+
                 wait_time = backoff_factor * (2 ** attempt)
                 await asyncio.sleep(wait_time)
             except Exception as e:

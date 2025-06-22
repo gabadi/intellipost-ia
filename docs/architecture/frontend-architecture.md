@@ -20,7 +20,7 @@ Core Principle: Mobile-Complete MVP
 
 Performance Targets:
   - App Load: <3 seconds on 3G
-  - UI Response: <100ms for all interactions  
+  - UI Response: <100ms for all interactions
   - Photo Upload: <5 seconds for multiple photos
   - End-to-End Flow: <60 seconds photo → published
 ```
@@ -50,7 +50,7 @@ src/
 ├── lib/
 │   ├── components/            # Reusable UI components
 │   │   ├── core/             # Core mobile components
-│   │   ├── product/          # Product-specific components  
+│   │   ├── product/          # Product-specific components
 │   │   ├── ui/               # Generic UI components
 │   │   └── forms/            # Form components
 │   ├── stores/               # Svelte stores for state
@@ -86,32 +86,32 @@ src/
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { imageCompression } from '$lib/utils/image';
-  
+
   export let images: ImageData[] = [];
   export let maxImages: number = 10;
-  
+
   const dispatch = createEventDispatcher<{
     imagesChange: ImageData[];
     uploadStart: void;
     uploadComplete: void;
   }>();
-  
+
   let fileInput: HTMLInputElement;
   let isUploading = false;
-  
+
   // Mobile camera access
   async function capturePhoto() {
     fileInput.click();
   }
-  
+
   // Handle file selection with compression
   async function handleFileSelect(event: Event) {
     const files = (event.target as HTMLInputElement).files;
     if (!files) return;
-    
+
     isUploading = true;
     dispatch('uploadStart');
-    
+
     try {
       const compressedImages = await Promise.all(
         Array.from(files).map(async (file) => {
@@ -128,7 +128,7 @@ src/
           };
         })
       );
-      
+
       images = [...images, ...compressedImages];
       dispatch('imagesChange', images);
     } finally {
@@ -136,16 +136,16 @@ src/
       dispatch('uploadComplete');
     }
   }
-  
+
   function removeImage(imageId: string) {
     images = images.filter(img => img.id !== imageId);
     dispatch('imagesChange', images);
   }
-  
+
   function setPrimary(imageId: string) {
-    images = images.map(img => ({ 
-      ...img, 
-      isPrimary: img.id === imageId 
+    images = images.map(img => ({
+      ...img,
+      isPrimary: img.id === imageId
     }));
     dispatch('imagesChange', images);
   }
@@ -163,9 +163,9 @@ src/
     on:change={handleFileSelect}
     style="display: none;"
   />
-  
+
   <!-- Camera button - prominent mobile placement -->
-  <button 
+  <button
     class="camera-btn"
     on:click={capturePhoto}
     disabled={isUploading || images.length >= maxImages}
@@ -177,25 +177,25 @@ src/
       📷 Tomar Fotos
     {/if}
   </button>
-  
+
   <!-- Image grid - mobile touch-optimized -->
   {#if images.length > 0}
     <div class="image-grid">
       {#each images as image (image.id)}
         <div class="image-card" class:primary={image.isPrimary}>
           <img src={image.url} alt="Product" />
-          
+
           <!-- Mobile touch controls -->
           <div class="image-controls">
-            <button 
-              class="btn-small" 
+            <button
+              class="btn-small"
               on:click={() => setPrimary(image.id)}
               disabled={image.isPrimary}
             >
               {image.isPrimary ? '⭐' : '☆'}
             </button>
-            <button 
-              class="btn-small btn-danger" 
+            <button
+              class="btn-small btn-danger"
               on:click={() => removeImage(image.id)}
             >
               🗑️
@@ -205,7 +205,7 @@ src/
       {/each}
     </div>
   {/if}
-  
+
   <!-- Photo count indicator -->
   <div class="photo-count">
     {images.length} foto{images.length !== 1 ? 's' : ''}
@@ -218,7 +218,7 @@ src/
     width: 100%;
     padding: 1rem;
   }
-  
+
   .camera-btn {
     width: 100%;
     padding: 1rem;
@@ -233,14 +233,14 @@ src/
     justify-content: center;
     gap: 0.5rem;
   }
-  
+
   .image-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 0.5rem;
     margin-top: 1rem;
   }
-  
+
   .image-card {
     position: relative;
     aspect-ratio: 1;
@@ -248,17 +248,17 @@ src/
     overflow: hidden;
     border: 2px solid transparent;
   }
-  
+
   .image-card.primary {
     border-color: #059669;
   }
-  
+
   .image-card img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  
+
   .image-controls {
     position: absolute;
     top: 0.25rem;
@@ -266,7 +266,7 @@ src/
     display: flex;
     gap: 0.25rem;
   }
-  
+
   .btn-small {
     width: 32px;
     height: 32px;
@@ -279,7 +279,7 @@ src/
     align-items: center;
     justify-content: center;
   }
-  
+
   .photo-count {
     text-align: center;
     margin-top: 0.5rem;
@@ -296,37 +296,37 @@ src/
 <!-- PromptInputComponent.svelte -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  
+
   export let value = '';
   export let placeholder = 'Describe your item (brand, size, condition...)';
   export let minLength = 10;
   export let maxLength = 500;
   export let required = true;
   export let disabled = false;
-  
+
   const dispatch = createEventDispatcher<{
     change: string;
     regenerate: string;
   }>();
-  
+
   let textArea: HTMLTextAreaElement;
   let isValid = false;
-  
+
   $: isValid = value.trim().length >= minLength;
   $: remainingChars = maxLength - value.length;
-  
+
   function handleInput() {
     dispatch('change', value);
     autoResize();
   }
-  
+
   function autoResize() {
     if (textArea) {
       textArea.style.height = 'auto';
       textArea.style.height = textArea.scrollHeight + 'px';
     }
   }
-  
+
   function handleRegenerate() {
     if (isValid) {
       dispatch('regenerate', value);
@@ -339,7 +339,7 @@ src/
     Describe tu producto
     {#if required}<span class="required">*</span>{/if}
   </label>
-  
+
   <textarea
     bind:this={textArea}
     bind:value
@@ -353,7 +353,7 @@ src/
     on:input={handleInput}
     rows="3"
   ></textarea>
-  
+
   <!-- Mobile-friendly validation feedback -->
   <div class="prompt-meta">
     <div class="validation-info">
@@ -365,12 +365,12 @@ src/
         <span class="hint">Importante para precisión del AI</span>
       {/if}
     </div>
-    
+
     <div class="char-count" class:warning={remainingChars < 50}>
       {remainingChars}
     </div>
   </div>
-  
+
   <!-- Regenerate button for edit mode -->
   <slot name="regenerate-button">
     <!-- Will be provided in edit mode -->
@@ -382,18 +382,18 @@ src/
     width: 100%;
     margin-bottom: 1rem;
   }
-  
+
   .prompt-label {
     display: block;
     font-weight: 600;
     margin-bottom: 0.5rem;
     color: #374151;
   }
-  
+
   .required {
     color: #DC2626;
   }
-  
+
   .prompt-textarea {
     width: 100%;
     padding: 0.75rem;
@@ -405,21 +405,21 @@ src/
     min-height: 80px;
     line-height: 1.5;
   }
-  
+
   .prompt-textarea:focus {
     outline: none;
     border-color: #2563EB;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
-  
+
   .prompt-textarea.valid {
     border-color: #059669;
   }
-  
+
   .prompt-textarea.invalid {
     border-color: #DC2626;
   }
-  
+
   .prompt-meta {
     display: flex;
     justify-content: space-between;
@@ -427,17 +427,17 @@ src/
     margin-top: 0.5rem;
     font-size: 0.875rem;
   }
-  
+
   .error { color: #DC2626; }
   .success { color: #059669; }
   .hint { color: #6B7280; }
   .warning { color: #D97706; }
-  
+
   .char-count {
     color: #6B7280;
     font-variant-numeric: tabular-nums;
   }
-  
+
   .char-count.warning {
     color: #D97706;
     font-weight: 600;
@@ -453,15 +453,15 @@ src/
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { realtimeStore } from '$lib/stores/realtime';
-  
+
   export let productId: string;
   export let estimatedSeconds = 15;
-  
+
   let progress = 0;
   let message = 'Analyzing your photos...';
   let elapsedSeconds = 0;
   let interval: number;
-  
+
   // Subscribe to real-time updates
   const unsubscribe = realtimeStore.subscribe(productId, (update) => {
     if (update.type === 'status_change') {
@@ -469,30 +469,30 @@ src/
       message = update.data.message || message;
     }
   });
-  
+
   onMount(() => {
     // Progress simulation if no real-time updates
     interval = setInterval(() => {
       elapsedSeconds += 1;
-      
+
       // Simulate progress curve (fast start, slow finish)
       const progressPercent = Math.min(
-        (elapsedSeconds / estimatedSeconds) * 80 + 
-        Math.random() * 10, 
+        (elapsedSeconds / estimatedSeconds) * 80 +
+        Math.random() * 10,
         95
       );
-      
+
       if (progress === 0) {
         progress = progressPercent;
       }
     }, 1000);
   });
-  
+
   onDestroy(() => {
     if (interval) clearInterval(interval);
     unsubscribe();
   });
-  
+
   $: remainingSeconds = Math.max(0, estimatedSeconds - elapsedSeconds);
 </script>
 
@@ -504,12 +504,12 @@ src/
       <div class="spinner"></div>
       <div class="spinner-progress" style="--progress: {progress}%"></div>
     </div>
-    
+
     <!-- AI processing message -->
     <h2 class="processing-title">
       🤖 {message}
     </h2>
-    
+
     <!-- Progress indicator -->
     <div class="progress-info">
       <div class="progress-bar">
@@ -519,14 +519,14 @@ src/
         {Math.round(progress)}% complete
       </div>
     </div>
-    
+
     <!-- Time estimate -->
     {#if remainingSeconds > 0}
       <div class="time-estimate">
         Estimated time: {remainingSeconds}s remaining
       </div>
     {/if}
-    
+
     <!-- Helpful tips while waiting -->
     <div class="processing-tips">
       <p>💡 <strong>Tip:</strong> Better photos = better results</p>
@@ -550,20 +550,20 @@ src/
     z-index: 1000;
     padding: 2rem;
   }
-  
+
   .processing-content {
     text-align: center;
     max-width: 400px;
     width: 100%;
   }
-  
+
   .spinner-container {
     position: relative;
     width: 120px;
     height: 120px;
     margin: 0 auto 2rem;
   }
-  
+
   .spinner {
     width: 100%;
     height: 100%;
@@ -571,7 +571,7 @@ src/
     border-radius: 50%;
     animation: spin 2s linear infinite;
   }
-  
+
   .spinner-progress {
     position: absolute;
     top: 0;
@@ -584,11 +584,11 @@ src/
     transform: rotate(calc(var(--progress) * 3.6deg - 90deg));
     transition: transform 0.5s ease;
   }
-  
+
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
-  
+
   .processing-title {
     font-size: 1.5rem;
     font-weight: 600;
@@ -596,11 +596,11 @@ src/
     margin-bottom: 1.5rem;
     line-height: 1.4;
   }
-  
+
   .progress-info {
     margin-bottom: 1rem;
   }
-  
+
   .progress-bar {
     width: 100%;
     height: 8px;
@@ -609,32 +609,32 @@ src/
     overflow: hidden;
     margin-bottom: 0.5rem;
   }
-  
+
   .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #2563EB, #7C3AED);
     border-radius: 4px;
     transition: width 0.5s ease;
   }
-  
+
   .progress-text {
     font-weight: 600;
     color: #2563EB;
   }
-  
+
   .time-estimate {
     color: #6B7280;
     margin-bottom: 1.5rem;
     font-variant-numeric: tabular-nums;
   }
-  
+
   .processing-tips {
     background: #F3F4F6;
     border-radius: 8px;
     padding: 1rem;
     text-align: left;
   }
-  
+
   .processing-tips p {
     margin: 0.5rem 0;
     font-size: 0.9rem;
@@ -652,32 +652,32 @@ src/
   import { createEventDispatcher } from 'svelte';
   import ConfidenceIndicator from './ConfidenceIndicator.svelte';
   import ActionButton from './ActionButton.svelte';
-  
+
   export let product: Product;
   export let isPublishing = false;
-  
+
   const dispatch = createEventDispatcher<{
     publish: void;
     edit: void;
     regenerate: void;
   }>();
-  
+
   $: content = product.generated_content;
   $: confidence = content?.confidence_overall || 0;
   $: primaryImage = product.images?.find(img => img.is_primary);
-  
+
   // Determine flow based on confidence
   $: flowType = confidence > 0.85 ? 'quick_approval' : 'balanced_review';
   $: showPublishButton = confidence > 0.70;
-  
+
   function handlePublish() {
     dispatch('publish');
   }
-  
+
   function handleEdit() {
     dispatch('edit');
   }
-  
+
   function handleRegenerate() {
     dispatch('regenerate');
   }
@@ -687,25 +687,25 @@ src/
   <!-- Primary product image -->
   {#if primaryImage}
     <div class="image-container">
-      <img 
-        src={primaryImage.processed_url || primaryImage.original_url} 
+      <img
+        src={primaryImage.processed_url || primaryImage.original_url}
         alt={content?.title || 'Product'}
         class="product-image"
       />
-      <ConfidenceIndicator 
-        confidence={confidence} 
+      <ConfidenceIndicator
+        confidence={confidence}
         position="top-right"
       />
     </div>
   {/if}
-  
+
   <!-- Generated content display -->
   <div class="content-section">
     <!-- AI-generated title -->
     <h1 class="product-title">
       🤖 {content?.title || 'Generating title...'}
     </h1>
-    
+
     <!-- Key details -->
     <div class="product-details">
       <div class="detail-item">
@@ -714,14 +714,14 @@ src/
           ${content?.ml_price?.toLocaleString('es-AR') || 'Calculando...'}
         </span>
       </div>
-      
+
       <div class="detail-item">
         <span class="label">Categoría:</span>
         <span class="value">
           {content?.ml_category_name || 'Detecting category...'}
         </span>
       </div>
-      
+
       <div class="detail-item">
         <span class="label">Condición:</span>
         <span class="value">
@@ -729,7 +729,7 @@ src/
         </span>
       </div>
     </div>
-    
+
     <!-- AI-generated description -->
     <div class="description-section">
       <h3 class="section-title">🤖 Description</h3>
@@ -737,14 +737,14 @@ src/
         {content?.description || 'Generating description...'}
       </p>
     </div>
-    
+
     <!-- Confidence and flow guidance -->
     <div class="confidence-section">
-      <ConfidenceIndicator 
+      <ConfidenceIndicator
         confidence={confidence}
         showDetails={true}
       />
-      
+
       {#if flowType === 'quick_approval'}
         <div class="flow-message success">
           ✅ High confidence - Ready to publish!
@@ -756,7 +756,7 @@ src/
       {/if}
     </div>
   </div>
-  
+
   <!-- Action buttons - mobile optimized -->
   <div class="action-section">
     {#if showPublishButton}
@@ -775,7 +775,7 @@ src/
         {/if}
       </ActionButton>
     {/if}
-    
+
     <ActionButton
       variant="outline"
       size="medium"
@@ -783,7 +783,7 @@ src/
     >
       ✏️ Edit Details
     </ActionButton>
-    
+
     <ActionButton
       variant="ghost"
       size="small"
@@ -804,24 +804,24 @@ src/
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
-  
+
   .image-container {
     position: relative;
     width: 100%;
     aspect-ratio: 4/3;
     overflow: hidden;
   }
-  
+
   .product-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  
+
   .content-section {
     padding: 1.5rem;
   }
-  
+
   .product-title {
     font-size: 1.25rem;
     font-weight: 600;
@@ -829,13 +829,13 @@ src/
     margin-bottom: 1rem;
     line-height: 1.4;
   }
-  
+
   .product-details {
     display: grid;
     gap: 0.5rem;
     margin-bottom: 1.5rem;
   }
-  
+
   .detail-item {
     display: flex;
     justify-content: space-between;
@@ -843,45 +843,45 @@ src/
     padding: 0.5rem 0;
     border-bottom: 1px solid #F3F4F6;
   }
-  
+
   .label {
     font-weight: 500;
     color: #6B7280;
   }
-  
+
   .value {
     font-weight: 600;
     color: #374151;
   }
-  
+
   .price {
     color: #059669;
     font-size: 1.1rem;
   }
-  
+
   .description-section {
     margin-bottom: 1.5rem;
   }
-  
+
   .section-title {
     font-size: 1rem;
     font-weight: 600;
     color: #374151;
     margin-bottom: 0.5rem;
   }
-  
+
   .description {
     color: #6B7280;
     line-height: 1.6;
   }
-  
+
   .confidence-section {
     margin-bottom: 1.5rem;
     padding: 1rem;
     background: #F9FAFB;
     border-radius: 8px;
   }
-  
+
   .flow-message {
     margin-top: 0.5rem;
     padding: 0.5rem;
@@ -889,19 +889,19 @@ src/
     font-weight: 500;
     text-align: center;
   }
-  
+
   .flow-message.success {
     background: #D1FAE5;
     color: #065F46;
     border: 1px solid #A7F3D0;
   }
-  
+
   .flow-message.warning {
     background: #FEF3C7;
     color: #92400E;
     border: 1px solid #FDE68A;
   }
-  
+
   .action-section {
     padding: 1.5rem;
     background: #F9FAFB;
@@ -909,19 +909,19 @@ src/
     flex-direction: column;
     gap: 0.75rem;
   }
-  
+
   /* Mobile-specific optimizations */
   @media (max-width: 480px) {
     .listing-preview {
       border-radius: 0;
       box-shadow: none;
     }
-    
+
     .content-section,
     .action-section {
       padding: 1rem;
     }
-    
+
     .product-title {
       font-size: 1.125rem;
     }
@@ -956,56 +956,56 @@ function createProductsStore() {
 
   return {
     subscribe,
-    
+
     // Load products list
     async loadProducts() {
       update(state => ({ ...state, loading: true, error: null }));
-      
+
       try {
         const response = await fetch('/api/v1/products');
         const data = await response.json();
-        
+
         const items = data.products.reduce((acc, product) => {
           acc[product.id] = product;
           return acc;
         }, {});
-        
-        update(state => ({ 
-          ...state, 
+
+        update(state => ({
+          ...state,
           items,
-          loading: false 
+          loading: false
         }));
       } catch (error) {
-        update(state => ({ 
-          ...state, 
+        update(state => ({
+          ...state,
           error: error.message,
-          loading: false 
+          loading: false
         }));
       }
     },
-    
+
     // Create new product
     async createProduct(promptText: string, images: File[]) {
       const formData = new FormData();
       formData.append('prompt_text', promptText);
       images.forEach(image => formData.append('images[]', image));
-      
+
       const response = await fetch('/api/v1/products', {
         method: 'POST',
         body: formData
       });
-      
+
       const product = await response.json();
-      
+
       update(state => ({
         ...state,
         items: { ...state.items, [product.id]: product },
         currentProductId: product.id
       }));
-      
+
       return product;
     },
-    
+
     // Update product status (from WebSocket)
     updateProductStatus(productId: string, status: ProductStatus) {
       update(state => ({
@@ -1019,7 +1019,7 @@ function createProductsStore() {
         }
       }));
     },
-    
+
     // Set current product
     setCurrentProduct(productId: string | null) {
       update(state => ({ ...state, currentProductId: productId }));
@@ -1031,9 +1031,9 @@ export const productsStore = createProductsStore();
 
 // Derived stores
 export const currentProduct = derived(
-  productsStore, 
-  ($products) => $products.currentProductId 
-    ? $products.items[$products.currentProductId] 
+  productsStore,
+  ($products) => $products.currentProductId
+    ? $products.items[$products.currentProductId]
     : null
 );
 
@@ -1065,31 +1065,31 @@ function createRealtimeStore() {
   function connectToProduct(productId: string, onMessage: (data: any) => void) {
     const wsUrl = `ws://localhost:8000/ws/products/${productId}/status`;
     const ws = new WebSocket(wsUrl);
-    
+
     ws.onopen = () => {
-      update(state => ({ 
-        ...state, 
+      update(state => ({
+        ...state,
         connected: true,
         reconnectAttempts: 0,
         subscriptions: { ...state.subscriptions, [productId]: ws }
       }));
     };
-    
+
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       onMessage(data);
     };
-    
+
     ws.onclose = () => {
       update(state => {
         const { [productId]: removed, ...subscriptions } = state.subscriptions;
-        return { 
-          ...state, 
+        return {
+          ...state,
           subscriptions,
           connected: Object.keys(subscriptions).length > 0
         };
       });
-      
+
       // Auto-reconnect logic
       setTimeout(() => {
         update(state => ({ ...state, reconnectAttempts: state.reconnectAttempts + 1 }));
@@ -1098,14 +1098,14 @@ function createRealtimeStore() {
         }
       }, 1000 * Math.pow(2, state.reconnectAttempts));
     };
-    
+
     return () => ws.close();
   }
 
   return {
     subscribe,
     connectToProduct,
-    
+
     disconnect(productId: string) {
       update(state => {
         const ws = state.subscriptions[productId];
@@ -1135,7 +1135,7 @@ export const realtimeStore = createRealtimeStore();
   import MobileNavigation from '$lib/components/core/MobileNavigation.svelte';
   import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
   import { productsStore } from '$lib/stores/products';
-  
+
   // Global loading state
   $: isLoading = $productsStore.loading;
 </script>
@@ -1148,11 +1148,11 @@ export const realtimeStore = createRealtimeStore();
       <LoadingIndicator size="small" />
     {/if}
   </header>
-  
+
   <main class="app-main">
     <slot />
   </main>
-  
+
   <MobileNavigation currentRoute={$page.route.id} />
 </div>
 
@@ -1163,7 +1163,7 @@ export const realtimeStore = createRealtimeStore();
     flex-direction: column;
     background: #F9FAFB;
   }
-  
+
   .app-header {
     background: white;
     padding: 1rem;
@@ -1172,13 +1172,13 @@ export const realtimeStore = createRealtimeStore();
     justify-content: space-between;
     align-items: center;
   }
-  
+
   .app-main {
     flex: 1;
     overflow-y: auto;
     padding-bottom: 80px; /* Space for mobile navigation */
   }
-  
+
   /* Mobile-specific styles */
   @media (max-width: 767px) {
     .app-main {
@@ -1196,22 +1196,22 @@ export const realtimeStore = createRealtimeStore();
   import PhotoCollectionComponent from '$lib/components/product/PhotoCollectionComponent.svelte';
   import PromptInputComponent from '$lib/components/product/PromptInputComponent.svelte';
   import { productsStore } from '$lib/stores/products';
-  
+
   let images: ImageData[] = [];
   let promptText = '';
   let isCreating = false;
-  
+
   $: canSubmit = images.length > 0 && promptText.trim().length >= 10;
-  
+
   async function handleSubmit() {
     if (!canSubmit) return;
-    
+
     isCreating = true;
-    
+
     try {
       const imageFiles = images.map(img => img.file);
       const product = await productsStore.createProduct(promptText, imageFiles);
-      
+
       // Navigate to processing view
       await goto(`/products/${product.id}`);
     } catch (error) {
@@ -1229,20 +1229,20 @@ export const realtimeStore = createRealtimeStore();
     <span class="step active">2. Description</span>
     <span class="step">3. Review</span>
   </div>
-  
-  <PhotoCollectionComponent 
-    bind:images 
+
+  <PhotoCollectionComponent
+    bind:images
     on:imagesChange={() => images = images}
   />
-  
-  <PromptInputComponent 
+
+  <PromptInputComponent
     bind:value={promptText}
     required={true}
     minLength={10}
   />
-  
+
   <div class="submit-section">
-    <button 
+    <button
       class="submit-btn"
       class:disabled={!canSubmit}
       disabled={!canSubmit || isCreating}
@@ -1263,30 +1263,30 @@ export const realtimeStore = createRealtimeStore();
     max-width: 600px;
     margin: 0 auto;
   }
-  
+
   .step-indicator {
     display: flex;
     justify-content: space-between;
     margin-bottom: 2rem;
     padding: 0 1rem;
   }
-  
+
   .step {
     font-size: 0.875rem;
     color: #9CA3AF;
   }
-  
+
   .step.active {
     color: #2563EB;
     font-weight: 600;
   }
-  
+
   .submit-section {
     margin-top: 2rem;
     padding-top: 1rem;
     border-top: 1px solid #E5E7EB;
   }
-  
+
   .submit-btn {
     width: 100%;
     padding: 1rem;
@@ -1298,7 +1298,7 @@ export const realtimeStore = createRealtimeStore();
     border-radius: 8px;
     min-height: 56px;
   }
-  
+
   .submit-btn.disabled {
     background: #9CA3AF;
     cursor: not-allowed;

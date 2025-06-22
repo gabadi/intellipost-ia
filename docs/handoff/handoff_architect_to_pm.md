@@ -1,7 +1,7 @@
 # Architect to Project Manager Handoff Document
 
 ## Document Information
-- **From:** Winston (The Architect)  
+- **From:** Winston (The Architect)
 - **To:** Project Manager
 - **Date:** June 22, 2025
 - **Project:** IntelliPost AI MVP
@@ -21,7 +21,7 @@ The complete technical architecture for IntelliPost AI MVP has been designed and
 
 ## Architecture Deliverables Completed
 
-### 📋 **1. System Architecture Overview** 
+### 📋 **1. System Architecture Overview**
 **Location:** `/docs/architecture/system-overview.md`
 
 **Key Decisions Finalized:**

@@ -15,7 +15,7 @@
 ```
 ┌─────────────────────────────┐
 │ ⚠️ AI Processing Failed     │
-│ Try again or edit manually  │ 
+│ Try again or edit manually  │
 │ [Retry] [Edit Manually]     │
 └─────────────────────────────┘
 ```

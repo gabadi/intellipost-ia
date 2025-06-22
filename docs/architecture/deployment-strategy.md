@@ -18,7 +18,7 @@ MVP Strategy:
   - Consistent development → staging → production
   - Minimal infrastructure complexity
   - Easy debugging and rapid iteration
-  
+
 Post-MVP Scaling:
   - Kubernetes when needed (100+ concurrent users)
   - Managed services when justified
@@ -323,31 +323,31 @@ http {
     upstream api {
         server api:8000;
     }
-    
+
     upstream web {
         server web:3000;
     }
-    
+
     # Rate limiting
     limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
     limit_req_zone $binary_remote_addr zone=upload:10m rate=2r/s;
-    
+
     # Main server block
     server {
         listen 80;
         listen 443 ssl http2;
         server_name intellipost.ai www.intellipost.ai;
-        
+
         # SSL Configuration (for production)
         ssl_certificate /etc/nginx/ssl/fullchain.pem;
         ssl_certificate_key /etc/nginx/ssl/privkey.pem;
-        
+
         # Security headers
         add_header X-Frame-Options DENY;
         add_header X-Content-Type-Options nosniff;
         add_header X-XSS-Protection "1; mode=block";
         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
-        
+
         # Frontend routes
         location / {
             proxy_pass http://web;
@@ -356,23 +356,23 @@ http {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
-        
+
         # API routes
         location /api/ {
             limit_req zone=api burst=20 nodelay;
-            
+
             proxy_pass http://api;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
-            
+
             # CORS headers
             add_header Access-Control-Allow-Origin *;
             add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS";
             add_header Access-Control-Allow-Headers "Authorization, Content-Type";
         }
-        
+
         # WebSocket routes
         location /ws/ {
             proxy_pass http://api;
@@ -384,11 +384,11 @@ http {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
-        
+
         # File upload routes (higher limits)
         location /api/v1/products {
             limit_req zone=upload burst=5 nodelay;
-            
+
             client_max_body_size 50M;
             proxy_pass http://api;
             proxy_set_header Host $host;
@@ -443,7 +443,7 @@ def run_migrations_online():
     """Run migrations in 'online' mode."""
     configuration = context.config
     configuration.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
-    
+
     connectable = engine_from_config(
         configuration.get_section(configuration.config_ini_section),
         prefix="sqlalchemy.",
@@ -533,7 +533,7 @@ pytest tests/ -v --cov=src --cov-report=term-missing
 
 cd ..
 
-# Frontend checks  
+# Frontend checks
 echo "Checking frontend code quality..."
 cd frontend
 
@@ -715,7 +715,7 @@ async def detailed_health_check(db: Session = Depends(get_db)):
         "timestamp": datetime.now(),
         "checks": {}
     }
-    
+
     # Database check
     try:
         db.execute("SELECT 1")
@@ -723,10 +723,10 @@ async def detailed_health_check(db: Session = Depends(get_db)):
     except Exception as e:
         health_status["checks"]["database"] = f"unhealthy: {str(e)}"
         health_status["status"] = "degraded"
-    
+
     # External services check (optional)
     # Could add Gemini/PhotoRoom API checks here
-    
+
     return health_status
 ```
 
@@ -736,7 +736,7 @@ async def detailed_health_check(db: Session = Depends(get_db)):
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Add to frontend Dockerfile  
+# Add to frontend Dockerfile
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3000/ || exit 1
 ```
@@ -784,7 +784,7 @@ services:
 ```yaml
 MVP Scale (100-500 concurrent users):
   - 2 API replicas
-  - 2 Web replicas  
+  - 2 Web replicas
   - Single DB instance
   - Nginx load balancing
 
@@ -834,7 +834,7 @@ Recovery Procedures:
      - Restore from latest backup
      - Run migrations if needed
      - Restart services
-  
+
   2. Complete System Restore:
      - Deploy from git main branch
      - Restore database backup

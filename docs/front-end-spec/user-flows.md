@@ -6,7 +6,7 @@ The MVP focuses on mobile-complete workflows, with desktop functionality planned
 
 ### MVP Flow Prioritization:
 - ✅ **MVP:** Mobile Quick Approval (High Confidence >85%)
-- ✅ **MVP:** Mobile Balanced Review (Medium Confidence 70-85%) 
+- ✅ **MVP:** Mobile Balanced Review (Medium Confidence 70-85%)
 - 🔄 **Post-MVP:** Desktop Power Management (Low Confidence <70%)
 
 ---
@@ -30,7 +30,7 @@ The MVP focuses on mobile-complete workflows, with desktop functionality planned
 3. **Basic Prompt:** Text input with placeholder "Describe your item (brand, size, condition...)" - **Important for accuracy**
 4. **Processing:** Upload & AI analysis (10-15s) - Simple spinner with "Analyzing your photos..."
 5. **Review:** Shows complete generated listing ready to publish
-6. **Primary Action:** Big "PUBLISH NOW" button - direct to MercadoLibre  
+6. **Primary Action:** Big "PUBLISH NOW" button - direct to MercadoLibre
 7. **Secondary Option:** Small "Review Details" link (only if needed)
 8. **Success:** Shows "Published!" message + "Create Another" button + back to dashboard
 
@@ -77,7 +77,7 @@ graph TD
 
 ### Detailed Flow Steps
 
-1. **Review Screen:** Shows complete generated listing (title, description, category, price) 
+1. **Review Screen:** Shows complete generated listing (title, description, category, price)
 2. **Primary Action:** Big "PUBLISH NOW" button - everything is automatic
 3. **Secondary Option:** Small "Edit Details" link for adjustments (optional)
 4. **If Edit:** Two types of adjustments:
@@ -95,7 +95,7 @@ graph TD
     Secondary --> Edit[Edit Interface: Prompt + Manual Tweaks]
     Edit --> Regenerate{Changed Prompt?}
     Regenerate -->|Yes| Process[AI Regenerate]
-    Regenerate -->|No| Publish[Publish Directly] 
+    Regenerate -->|No| Publish[Publish Directly]
     Process --> Publish
     Publish --> Success
 ```

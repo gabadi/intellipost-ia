@@ -1,6 +1,6 @@
 # implement-story-development
 
-**Agent:** dev  
+**Agent:** dev
 **Type:** BatchTask
 
 ## Purpose
@@ -41,13 +41,13 @@ This task handles the core development work for a story:
    - Identify any previous story insights or lessons learned
 
 2. **Assess project context and build system**
-   
+
    **Auto-detect project configuration:**
    - Identify project build system from configuration files
    - Detect available development tools and commands
    - Review project-specific quality standards
    - Understand testing and validation approach
-   
+
    **Use project-defined quality gates:**
    - Use project's configured build, test, and quality commands
    - Follow project's established coding standards
@@ -56,7 +56,7 @@ This task handles the core development work for a story:
 ### Implementation Process
 
 3. **Implement acceptance criteria systematically**
-   
+
    **Follow story task sequence:**
    - Work through tasks/subtasks in order specified in story
    - Complete each acceptance criteria before moving to next
@@ -77,40 +77,40 @@ This task handles the core development work for a story:
    - Use project's established generation workflow
    - Identify when generation is needed (after API/schema changes)
    - Follow project's verification process for generated code
-   
+
    **Common generation scenarios:**
    - Type definitions from API schemas
-   - Client code from API specifications  
+   - Client code from API specifications
    - Protocol buffer implementations
    - GraphQL type definitions
-   
+
    **Verification:**
    - Ensure generated code integrates properly
    - Include generated code in project quality validation
    - Test functionality of generated components
 
 5. **Validate using project-defined quality gates**
-   
+
    **Use project's quality validation approach:**
    - Run project's configured formatting tools
    - Execute project's linting and static analysis
    - Perform project's type checking (if applicable)
    - Run project's test suite
    - Execute project's build process
-   
+
    **Quality gate discovery:**
    - Check project scripts/commands in configuration files
    - Review project CI/CD pipeline configuration
    - Consult project README or documentation
    - Use project's established development workflow
-   
+
    **Fallback approaches:**
    - If project commands are unclear, check standard locations
    - Document any quality gates that cannot be determined
    - Apply manual validation where automated tools unavailable
 
 6. **Test implementation comprehensively**
-   
+
    **Unit testing:**
    - Write unit tests for new functionality following project patterns
    - Ensure test coverage meets project requirements
@@ -132,58 +132,58 @@ This task handles the core development work for a story:
 ### Documentation and Status Management
 
 7. **Update story file with implementation details**
-   
+
    ```markdown
    ## Implementation Details
-   
+
    **Status**: In Progress → Complete
    **Implementation Date**: [Current date]
    **Quality Gates**: [PASS/FAIL status]
-   
+
    ### Acceptance Criteria Implementation
-   
+
    #### AC1: [Description]
    - **Implementation**: [What was built and how]
    - **Files Modified**: [List of files changed]
    - **Tests Added**: [Unit/integration tests created]
    - **Validation**: [How it was tested]
-   
+
    #### AC2: [Description]
    - **Implementation**: [What was built and how]
    - **Files Modified**: [List of files changed]
    - **Tests Added**: [Unit/integration tests created]
    - **Validation**: [How it was tested]
-   
+
    ### Code Generation Executed
    - **Tools Run**: [List of generation commands executed]
    - **Reason**: [Why generation was needed - backend changes, schema updates, etc.]
    - **Generated Files**: [Files created/updated by generation]
    - **Validation**: [How generated code was verified]
-   
+
    ### Quality Gates Status
    **Project Configuration:** [Description of detected project setup]
-   
+
    **Executed Quality Gates:**
    - [Gate 1]: [PASS/FAIL/NOT_APPLICABLE] - [Command/method used]
    - [Gate 2]: [PASS/FAIL/NOT_APPLICABLE] - [Command/method used]
    - [Gate 3]: [PASS/FAIL/NOT_APPLICABLE] - [Command/method used]
-   
+
    **Project-Specific Validation:**
    - [Custom validation 1]: [PASS/FAIL/NOT_APPLICABLE]
    - [Custom validation 2]: [PASS/FAIL/NOT_APPLICABLE]
-   
+
    **Quality Assessment:**
    - **Overall Status**: [PASS/NEEDS_ATTENTION]
    - **Manual Review**: [COMPLETED/NOT_REQUIRED]
-   
+
    ### Technical Decisions Made
    - **Decision 1**: [Context and rationale]
    - **Decision 2**: [Context and rationale]
-   
+
    ### Challenges Encountered
    - **Challenge**: [Description and solution]
    - **Lessons Learned**: [Insights for future stories]
-   
+
    ### Implementation Status
    - **All AC Completed**: [YES/NO]
    - **Quality Gates Passing**: [YES/NO]

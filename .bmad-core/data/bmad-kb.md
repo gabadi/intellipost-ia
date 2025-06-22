@@ -343,7 +343,7 @@ that can handle [specific requirements]."
 
 **Prerequisites**: Planning documents must exist in `docs/` folder
 
-1. **Document Sharding**: 
+1. **Document Sharding**:
    - `@bmad-master` or `@po` shard `docs/prd.md` to `docs/prd/` folder
    - If architecture exists, shard to `docs/architecture/` folder
    - Results in multiple manageable documents and epic files
@@ -364,14 +364,14 @@ that can handle [specific requirements]."
    - SM executes create-next-story task
    - Review generated story in `docs/stories/`
    - Update status from "Draft" to "Approved"
-   
+
    **Step 2 - Story Implementation**: New chat window → `@dev`
    - Agent asks which story to implement
    - Include story file content to save dev agent lookup time
    - Dev follows tasks/subtasks, marking completion
    - Dev leaves notes for SM about any deviations
    - Update status to "Done"
-   
+
    **Step 3 - Repeat**: Continue SM → Dev cycle until all epic stories complete
 
 **Important**: Only 1 story in progress at a time, worked sequentially until all epic stories complete.
@@ -387,7 +387,7 @@ Each status change requires user verification and approval before proceeding.
 
 #### Greenfield Development
 - Business analysis and market research
-- Product requirements and feature definition  
+- Product requirements and feature definition
 - System architecture and design
 - Development execution
 - Testing and deployment
@@ -427,7 +427,7 @@ Templates with Level 2 headings (`##`) can be automatically sharded:
 **Original PRD**:
 ```markdown
 ## Goals and Background Context
-## Requirements  
+## Requirements
 ## User Interface Design Goals
 ## Success Metrics
 ```

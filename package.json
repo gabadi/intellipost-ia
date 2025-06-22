@@ -1,0 +1,60 @@
+{
+  "name": "intellipost-ia",
+  "version": "0.1.0",
+  "description": "IntelliPost AI - Intelligent social media posting platform",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "uvx --from fastapi fastapi dev backend/main.py --host 0.0.0.0 --port 8000",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "echo 'Backend build - TODO: Add production build script'",
+    "build:frontend": "npm run build --workspace=frontend",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && uvx ruff check .",
+    "lint:frontend": "npm run lint --workspace=frontend",
+    "format": "npm run format:backend && npm run format:frontend",
+    "format:backend": "cd backend && uvx ruff format .",
+    "format:frontend": "npm run format --workspace=frontend",
+    "typecheck": "npm run typecheck:backend && npm run typecheck:frontend",
+    "typecheck:backend": "cd backend && uv run pyright",
+    "typecheck:frontend": "npm run check --workspace=frontend",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && uv run pytest",
+    "test:frontend": "npm run test --workspace=frontend",
+    "arch-check": "cd backend && uvx tach check",
+    "quality": "npm run lint && npm run typecheck && npm run arch-check",
+    "ci": "npm run install:all && npm run quality && npm run test",
+    "install:backend": "cd backend && uv sync",
+    "install:frontend": "npm install --workspace=frontend",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "clean": "rm -rf backend/__pycache__ backend/**/__pycache__ frontend/node_modules frontend/dist frontend/.svelte-kit",
+    "pre-commit": "uvx pre-commit run --all-files",
+    "prepare": "uvx pre-commit install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gabadi/intellipost-ia.git"
+  },
+  "author": "IntelliPost Team <dev@intellipost.ai>",
+  "license": "MIT",
+  "keywords": [
+    "ai",
+    "social-media",
+    "automation",
+    "fastapi",
+    "sveltekit",
+    "monorepo"
+  ]
+}

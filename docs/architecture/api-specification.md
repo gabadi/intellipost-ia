@@ -374,7 +374,7 @@ Client Errors (4xx):
   PRODUCT_NOT_FOUND: Product ID not found
   INSUFFICIENT_CONFIDENCE: AI confidence too low for auto-publish
   ML_CREDENTIALS_INVALID: MercadoLibre credentials expired/invalid
-  
+
 Server Errors (5xx):
   AI_SERVICE_UNAVAILABLE: AI provider temporarily down
   ML_API_ERROR: MercadoLibre API error
@@ -407,7 +407,7 @@ API Response Caching:
   - Product lists: 30 seconds
   - ML categories: 24 hours
   - User credentials status: 5 minutes
-  
+
 Mobile Client Caching:
   - Aggressive image caching
   - Offline-first for generated content
@@ -433,7 +433,7 @@ Authentication Flow:
   1. ML OAuth → Get ML credentials
   2. JWT issued for app authentication
   3. Bearer token in Authorization header
-  
+
 Token Structure:
   - Access Token: 6 hours validity
   - Refresh Token: 30 days validity
