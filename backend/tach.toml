@@ -1,21 +1,23 @@
-# Tach Configuration - Architectural Boundary Enforcement
-# IntelliPost AI MVP - Hexagonal Architecture Validation
+interfaces = []
+exclude = []
+source_roots = [
+    ".",
+]
 
-source_roots = ["."]
-exact = false
-disable_logging = false
-ignore_type_checking_imports = true
+[[modules]]
+path = "<root>"
+depends_on = [
+    "api",
+    "infrastructure",
+]
 
-# Current configuration: Monolithic domain (appropriate for current empty state)
-# Future evolution: Split domain into business modules when implementation begins:
-# - backend.domain.shared (common concepts, value objects)
-# - backend.domain.users (user management, authentication)
-# - backend.domain.content (content creation, editing, templates)
-# - backend.domain.posts (social media post entities)
-# - backend.domain.social_platforms (platform integrations)
-# - backend.domain.ai_generation (AI content generation logic)
-# - backend.domain.scheduling (post scheduling, automation)
-# - backend.domain.analytics (performance tracking, metrics)
+[[modules]]
+path = "api"
+depends_on = []
+
+[[modules]]
+path = "application"
+depends_on = []
 
 [[modules]]
 path = "domain"
@@ -23,17 +25,4 @@ depends_on = []
 
 [[modules]]
 path = "infrastructure"
-depends_on = ["domain"]
-
-[[modules]]
-path = "application"
-depends_on = ["domain"]
-
-[[modules]]
-path = "api"
-depends_on = ["domain", "application"]
-
-# Root module for main.py - can access all layers for bootstrapping
-[[modules]]
-path = "<root>"
-depends_on = ["domain", "infrastructure", "application", "api"]
+depends_on = []

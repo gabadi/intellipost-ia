@@ -175,6 +175,7 @@ omit = [
     "*/__pycache__/*",
     "domain/exceptions.py",
     "domain/services/protocols.py",
+    "domain/services/*_protocols.py",
 ]
 
 [tool.coverage.report]
