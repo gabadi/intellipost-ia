@@ -26,7 +26,26 @@ class Settings(BaseSettings):
 
     # Database configuration
     database_url: str = Field(
-        default="sqlite:///./intellipost.db", description="Database connection URL"
+        default="postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5432/intellipost_dev",
+        description="Database connection URL",
+    )
+    database_test_url: str = Field(
+        default="postgresql+asyncpg://test_user:test_password@localhost:5433/intellipost_test",
+        description="Test database connection URL",
+    )
+
+    # Database connection settings
+    database_pool_size: int = Field(
+        default=20, description="Database connection pool size"
+    )
+    database_max_overflow: int = Field(
+        default=10, description="Database connection pool max overflow"
+    )
+    database_pool_timeout: int = Field(
+        default=30, description="Database connection pool timeout in seconds"
+    )
+    database_pool_recycle: int = Field(
+        default=3600, description="Database connection pool recycle time in seconds"
     )
 
     # Security configuration
@@ -48,6 +67,18 @@ class Settings(BaseSettings):
     # Logging configuration
     log_level: str = Field(default="INFO", description="Logging level")
     log_format: str = Field(default="json", description="Log format (json/text)")
+
+    # Object Storage configuration (MinIO/S3)
+    s3_endpoint_url: str | None = Field(
+        default="http://localhost:9001",
+        description="S3-compatible endpoint URL (MinIO for dev)",
+    )
+    s3_access_key: str = Field(default="dev_access_key", description="S3 access key")
+    s3_secret_key: str = Field(default="dev_secret_key", description="S3 secret key")
+    s3_bucket_name: str = Field(
+        default="intellipost-storage", description="S3 bucket name"
+    )
+    s3_region: str = Field(default="us-east-1", description="S3 region")
 
     # External service configuration
     mercadolibre_client_id: str | None = Field(
@@ -105,6 +136,17 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         """Check if running in production mode."""
         return self.environment.lower() == "production"
+
+    @property
+    def is_testing(self) -> bool:
+        """Check if running in testing mode."""
+        return self.environment.lower() == "testing"
+
+    def get_database_url(self) -> str:
+        """Get the appropriate database URL based on environment."""
+        if self.is_testing:
+            return self.database_test_url
+        return self.database_url
 
 
 # Global settings instance
