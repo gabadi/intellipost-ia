@@ -8,13 +8,13 @@ following the specifications from Epic1.Story2.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import health
 from infrastructure.config.logging import (
     RequestLoggingMiddleware,
     get_logger,
     setup_logging,
 )
 from infrastructure.config.settings import Settings
+from infrastructure.health import health_router
 
 # Initialize settings
 settings = Settings()
@@ -33,7 +33,7 @@ app = FastAPI(
 )
 
 # Include routers
-app.include_router(health.router)
+app.include_router(health_router.router)
 
 # Add request logging middleware
 app.add_middleware(RequestLoggingMiddleware)

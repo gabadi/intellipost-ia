@@ -1,0 +1,130 @@
+"""Unit tests for User authentication."""
+
+from datetime import datetime
+from uuid import uuid4
+
+import pytest
+
+from domain.entities.user_core import UserCore
+from domain.entities.user_auth import UserAuth
+from domain.entities.user_status import UserStatus
+
+
+class TestUserAuth:
+    """Test cases for User authentication methods."""
+
+    def test_is_active_true(self):
+        """Test active status detection."""
+        user = UserCore(
+            id=uuid4(),
+            email="test@example.com",
+            created_at=datetime.utcnow(),
+            status=UserStatus.ACTIVE
+        )
+
+        assert UserAuth.is_active(user) is True
+
+    def test_is_active_false(self):
+        """Test inactive status detection."""
+        user = UserCore(
+            id=uuid4(),
+            email="test@example.com",
+            created_at=datetime.utcnow(),
+            status=UserStatus.INACTIVE
+        )
+
+        assert UserAuth.is_active(user) is False
+
+    def test_is_email_verified_true(self):
+        """Test email verification detection when verified."""
+        user = UserCore(
+            id=uuid4(),
+            email="test@example.com",
+            created_at=datetime.utcnow(),
+            email_verified_at=datetime.utcnow()
+        )
+
+        assert UserAuth.is_email_verified(user) is True
+
+    def test_is_email_verified_false(self):
+        """Test email verification detection when not verified."""
+        user = UserCore(
+            id=uuid4(),
+            email="test@example.com",
+            created_at=datetime.utcnow()
+        )
+
+        assert UserAuth.is_email_verified(user) is False
+
+    def test_verify_email(self):
+        """Test email verification."""
+        user = UserCore(
+            id=uuid4(),
+            email="test@example.com",
+            created_at=datetime.utcnow()
+        )
+        initial_updated_at = user.updated_at
+
+        UserAuth.verify_email(user)
+
+        assert user.email_verified_at is not None
+        assert user.updated_at > initial_updated_at
+
+    def test_record_login(self):
+        """Test recording user login."""
+        user = UserCore(
+            id=uuid4(),
+            email="test@example.com",
+            created_at=datetime.utcnow()
+        )
+        initial_updated_at = user.updated_at
+
+        UserAuth.record_login(user)
+
+        assert user.last_login_at is not None
+        assert user.updated_at > initial_updated_at
+
+    def test_activate(self):
+        """Test user activation."""
+        user = UserCore(
+            id=uuid4(),
+            email="test@example.com",
+            created_at=datetime.utcnow(),
+            status=UserStatus.PENDING_VERIFICATION
+        )
+        initial_updated_at = user.updated_at
+
+        UserAuth.activate(user)
+
+        assert user.status == UserStatus.ACTIVE
+        assert user.updated_at > initial_updated_at
+
+    def test_deactivate(self):
+        """Test user deactivation."""
+        user = UserCore(
+            id=uuid4(),
+            email="test@example.com",
+            created_at=datetime.utcnow(),
+            status=UserStatus.ACTIVE
+        )
+        initial_updated_at = user.updated_at
+
+        UserAuth.deactivate(user)
+
+        assert user.status == UserStatus.INACTIVE
+        assert user.updated_at > initial_updated_at
+
+    def test_suspend(self):
+        """Test user suspension."""
+        user = UserCore(
+            id=uuid4(),
+            email="test@example.com",
+            created_at=datetime.utcnow(),
+            status=UserStatus.ACTIVE
+        )
+        initial_updated_at = user.updated_at
+
+        UserAuth.suspend(user)
+
+        assert user.status == UserStatus.SUSPENDED
+        assert user.updated_at > initial_updated_at

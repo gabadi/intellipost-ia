@@ -3,26 +3,32 @@ exclude = []
 source_roots = [
     ".",
 ]
+root_module = "allow"
 
 [[modules]]
 path = "<root>"
-depends_on = [
-    "api",
-    "infrastructure",
-]
-
-[[modules]]
-path = "api"
 depends_on = []
 
 [[modules]]
-path = "application"
+path = "modules.user"
 depends_on = []
 
 [[modules]]
-path = "domain"
+path = "modules.product"
 depends_on = []
 
 [[modules]]
-path = "infrastructure"
+path = "modules.communications"
 depends_on = []
+
+[[modules]]
+path = "modules.ai_content"
+depends_on = ["modules.product"]
+
+[[modules]]
+path = "modules.mercadolibre"
+depends_on = ["modules.product"]
+
+[[modules]]
+path = "modules.auth"
+depends_on = ["modules.user"]

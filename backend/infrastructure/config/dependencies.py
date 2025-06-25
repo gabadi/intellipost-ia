@@ -9,8 +9,8 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from infrastructure.config.logging import get_logger
-from infrastructure.config.settings import Settings
+from .logging import get_logger
+from .settings import Settings
 
 
 # Settings dependency
