@@ -85,18 +85,28 @@ jobs:
         with:
           node-version: '20.10'
           cache: 'npm'
-          cache-dependency-path: './frontend/package-lock.json'
+          cache-dependency-path: |
+            ./package-lock.json
+            ./frontend/package-lock.json
 
       - name: Install uv (needed for prepare script)
         run: pip install uv
 
       - name: Install frontend dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: |
+          # Clean install to ensure fresh state
+          npm ci
+          # Verify prettier and eslint are installed and accessible
+          npx prettier --version
+          npx eslint --version
 
       - name: Run frontend linting
         working-directory: ./frontend
-        run: npm run lint
+        run: |
+          # Run prettier and eslint separately for better error reporting
+          npm run format:check
+          npm run lint:eslint
 
       - name: Run frontend type checking
         working-directory: ./frontend
