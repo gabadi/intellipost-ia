@@ -1,5 +1,5 @@
 interfaces = []
-exclude = []
+exclude = ["domain/entities", "domain/services"]
 source_roots = [
     ".",
 ]

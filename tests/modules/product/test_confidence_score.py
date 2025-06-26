@@ -2,7 +2,7 @@
 
 import pytest
 
-from backend.modules.confidence_score import ConfidenceScore
+from backend.modules.product.domain.confidence_score import ConfidenceScore
 
 
 class TestConfidenceScore:

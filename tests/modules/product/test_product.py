@@ -5,7 +5,9 @@ from uuid import uuid4
 
 import pytest
 
-from backend.modules.product import Product, ProductStatus, ConfidenceScore
+from backend.modules.product.domain.product import Product
+from backend.modules.product.domain.product_status import ProductStatus
+from backend.modules.product.domain.confidence_score import ConfidenceScore
 
 
 class TestProduct:

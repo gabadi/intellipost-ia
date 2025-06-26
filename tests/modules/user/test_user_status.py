@@ -1,6 +1,6 @@
 """Tests for user status enumeration."""
 
-from backend.modules.user_status import UserStatus
+from backend.modules.user.domain.user_status import UserStatus
 
 
 class TestUserStatus:

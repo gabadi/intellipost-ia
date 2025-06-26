@@ -1,6 +1,6 @@
 """Tests for product status enumeration."""
 
-from backend.modules.product_status import ProductStatus
+from backend.modules.product.domain.product_status import ProductStatus
 
 
 class TestProductStatus:

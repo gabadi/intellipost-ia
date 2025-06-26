@@ -5,8 +5,8 @@ from uuid import uuid4
 
 import pytest
 
-from backend.modules.user_core import UserCore
-from backend.modules.user_ml_integration import UserMLIntegration
+from backend.modules.user.domain.user_core import UserCore
+from backend.modules.user.domain.user_ml_integration import UserMLIntegration
 
 
 class TestUserMLIntegration:

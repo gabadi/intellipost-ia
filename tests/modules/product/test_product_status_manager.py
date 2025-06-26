@@ -4,10 +4,10 @@ from uuid import uuid4
 
 import pytest
 
-from backend.modules.product_core import ProductCore
-from backend.modules.product_status_manager import ProductStatusManager
-from backend.modules.product_status import ProductStatus
-from backend.modules.confidence_score import ConfidenceScore
+from backend.modules.product.domain.product_core import ProductCore
+from backend.modules.product.domain.product_status_manager import ProductStatusManager
+from backend.modules.product.domain.product_status import ProductStatus
+from backend.modules.product.domain.confidence_score import ConfidenceScore
 
 
 class TestProductStatusManager:

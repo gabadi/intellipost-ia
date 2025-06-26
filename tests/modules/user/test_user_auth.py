@@ -5,9 +5,9 @@ from uuid import uuid4
 
 import pytest
 
-from backend.modules.user_core import UserCore
-from backend.modules.user_auth import UserAuth
-from backend.modules.user_status import UserStatus
+from backend.modules.user.domain.user_core import UserCore
+from backend.modules.user.domain.user_auth import UserAuth
+from backend.modules.user.domain.user_status import UserStatus
 
 
 class TestUserAuth:
