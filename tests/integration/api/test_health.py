@@ -9,7 +9,8 @@ from main import app
 @pytest.fixture
 def client():
     """Create test client for the FastAPI application."""
-    return TestClient(app)
+    with TestClient(app) as test_client:
+        yield test_client
 
 
 class TestHealthEndpoint:

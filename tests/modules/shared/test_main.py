@@ -1,4 +1,14 @@
-"""Unit tests for main application."""
+"""Integration tests for main application.
+
+These tests verify the complete FastAPI application setup including:
+- Application metadata configuration
+- Middleware setup (CORS)
+- Route registration
+- OpenAPI documentation endpoints
+
+Note: These are integration tests because they test the full application
+instance with TestClient, not isolated units of code.
+"""
 
 import pytest
 from fastapi.testclient import TestClient
@@ -12,7 +22,8 @@ class TestMainApp:
     @pytest.fixture
     def client(self):
         """Create test client."""
-        return TestClient(app)
+        with TestClient(app) as test_client:
+            yield test_client
 
     def test_app_metadata(self, client):
         """Test FastAPI application metadata."""

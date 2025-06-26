@@ -8,7 +8,7 @@ ensuring loose coupling between domain logic and infrastructure concerns.
 from typing import Protocol
 from uuid import UUID
 
-from .user import User
+from modules.user.domain.user import User
 
 
 class UserRepositoryProtocol(Protocol):

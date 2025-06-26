@@ -41,6 +41,28 @@ services:
     networks:
       - intellipost-network
 
+  # Database Migration Service
+  # Runs Alembic migrations before starting the backend
+  migrations:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      INTELLIPOST_ENVIRONMENT: development
+      INTELLIPOST_DATABASE_URL: postgresql+asyncpg://intellipost_user:intellipost_password@postgres:5432/intellipost_dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/.venv  # Don't mount the virtual environment
+    networks:
+      - intellipost-network
+    command: >
+      sh -c "alembic upgrade head && echo 'Database migrations completed successfully'"
+    profiles:
+      - migration  # Only run when explicitly requested
+
   # Backend API
   backend:
     build:
@@ -60,12 +82,16 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      # Note: Backend doesn't depend on migrations service directly
+      # Migrations should be run separately: docker compose --profile migration up migrations
     volumes:
       - ./backend:/app
       - /app/.venv  # Don't mount the virtual environment
     networks:
       - intellipost-network
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    # For development: includes migration check in startup command
+    command: >
+      sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
 
   # Frontend SvelteKit
   frontend:

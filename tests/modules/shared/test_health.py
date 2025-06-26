@@ -1,4 +1,14 @@
-"""Integration tests for health endpoint."""
+"""Integration tests for health endpoint.
+
+These tests verify the health endpoint behavior through HTTP requests
+using TestClient. They test the complete request-response cycle
+including middleware, routing, and endpoint logic.
+
+Classification: Integration tests because they:
+- Use TestClient to make actual HTTP requests
+- Test the complete application stack
+- Verify end-to-end functionality
+"""
 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,7 +19,8 @@ from backend.main import app
 @pytest.fixture
 def client():
     """Create test client for the FastAPI application."""
-    return TestClient(app)
+    with TestClient(app) as test_client:
+        yield test_client
 
 
 class TestHealthEndpoint:
