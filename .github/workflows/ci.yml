@@ -54,12 +54,12 @@ jobs:
       - name: Run backend unit tests
         working-directory: ./backend
         run: |
-          uv run pytest -v tests/unit/ --cov=modules --cov=infrastructure --cov-report=xml --cov-report=term
+          uv run pytest -v ../tests/unit/ --cov=modules --cov=infrastructure --cov-report=xml --cov-report=term
 
       - name: Run backend integration tests
         working-directory: ./backend
         run: |
-          uv run pytest -v tests/integration/ --cov=modules --cov=infrastructure --cov-report=xml --cov-report=term --cov-append
+          uv run pytest -v ../tests/integration/ --cov=modules --cov=infrastructure --cov-report=xml --cov-report=term --cov-append
 
       - name: Python Coverage Comment
         id: coverage_comment
@@ -101,16 +101,14 @@ jobs:
           npx prettier --version
           npx eslint --version
 
-      - name: Run frontend linting
+      - name: Run frontend type checking and linting
         working-directory: ./frontend
         run: |
-          # Run prettier and eslint separately for better error reporting
+          # Run svelte-kit sync first to generate .svelte-kit/tsconfig.json for ESLint
+          npm run check
+          # Now run linting with proper TypeScript configuration
           npm run format:check
           npm run lint:eslint
-
-      - name: Run frontend type checking
-        working-directory: ./frontend
-        run: npm run check
 
       - name: Run frontend build
         working-directory: ./frontend
@@ -118,7 +116,7 @@ jobs:
 
       - name: Run frontend unit tests
         working-directory: ./frontend
-        run: npm run test
+        run: npm run test:coverage
 
       - name: Check coverage files
         working-directory: ./frontend
