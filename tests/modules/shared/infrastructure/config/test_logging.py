@@ -7,7 +7,7 @@ from infrastructure.config.logging import (
     SensitiveDataFilter,
     setup_logging,
     get_logger,
-    RequestLoggingMiddleware
+    StructuredRequestLoggingMiddleware
 )
 from infrastructure.config.settings import Settings
 
@@ -32,7 +32,7 @@ class TestSensitiveDataFilter:
 
         result = filter_instance.filter(record)
         assert result is True
-        assert "[FILTERED: Sensitive data removed]" in record.msg
+        assert "[FILTERED: Contains sensitive field 'secret']" in record.msg
 
     def test_filter_sensitive_extra_fields(self):
         """Test filtering sensitive data from extra fields."""
@@ -109,7 +109,7 @@ class TestRequestLoggingMiddleware:
                 pass
 
         app = MockApp()
-        middleware = RequestLoggingMiddleware(app)
+        middleware = StructuredRequestLoggingMiddleware(app)
 
         scope = {
             "type": "http",
@@ -129,7 +129,7 @@ class TestRequestLoggingMiddleware:
                 pass
 
         app = MockApp()
-        middleware = RequestLoggingMiddleware(app)
+        middleware = StructuredRequestLoggingMiddleware(app)
 
         scope = {"type": "websocket"}
 

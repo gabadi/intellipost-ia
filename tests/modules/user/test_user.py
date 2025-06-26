@@ -1,6 +1,6 @@
 """Unit tests for User domain entity."""
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -16,7 +16,7 @@ class TestUser:
         """Test creating a user with required fields."""
         user_id = uuid4()
         email = "test@example.com"
-        created_at = datetime.utcnow()
+        created_at = datetime.now(UTC)
 
         user = User(
             id=user_id,
@@ -35,7 +35,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC)
         )
 
         # Should set updated_at
@@ -46,7 +46,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             first_name="John",
             last_name="Doe"
         )
@@ -58,7 +58,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             first_name="John"
         )
 
@@ -69,7 +69,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             last_name="Doe"
         )
 
@@ -80,7 +80,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="john.doe@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC)
         )
 
         assert user.full_name == "john.doe"
@@ -90,7 +90,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             status=UserStatus.ACTIVE
         )
 
@@ -101,7 +101,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             status=UserStatus.INACTIVE
         )
 
@@ -112,10 +112,10 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
-            ml_token_expires_at=datetime.utcnow() + timedelta(hours=1)
+            ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
         )
 
         assert user.is_ml_connected is True
@@ -125,9 +125,9 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             ml_access_token="token123",
-            ml_token_expires_at=datetime.utcnow() + timedelta(hours=1)
+            ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
         )
 
         assert user.is_ml_connected is False
@@ -137,10 +137,10 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
-            ml_token_expires_at=datetime.utcnow() - timedelta(hours=1)
+            ml_token_expires_at=datetime.now(UTC) - timedelta(hours=1)
         )
 
         assert user.is_ml_connected is False
@@ -150,8 +150,8 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
-            email_verified_at=datetime.utcnow()
+            created_at=datetime.now(UTC),
+            email_verified_at=datetime.now(UTC)
         )
 
         assert user.is_email_verified is True
@@ -161,7 +161,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC)
         )
 
         assert user.is_email_verified is False
@@ -171,7 +171,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             status=UserStatus.PENDING_VERIFICATION
         )
         initial_updated_at = user.updated_at
@@ -186,7 +186,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             status=UserStatus.ACTIVE
         )
         initial_updated_at = user.updated_at
@@ -201,7 +201,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             status=UserStatus.ACTIVE
         )
         initial_updated_at = user.updated_at
@@ -216,7 +216,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at
 
@@ -230,13 +230,13 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at
 
         access_token = "new_access_token"
         refresh_token = "new_refresh_token"
-        expires_at = datetime.utcnow() + timedelta(hours=2)
+        expires_at = datetime.now(UTC) + timedelta(hours=2)
 
         user.update_ml_tokens(access_token, refresh_token, expires_at)
 
@@ -250,7 +250,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at
 

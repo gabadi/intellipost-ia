@@ -3,6 +3,7 @@
 import pytest
 
 from backend.modules.product.domain.confidence_score import ConfidenceScore
+from backend.modules.product.domain.exceptions import InvalidConfidenceScoreError
 
 
 class TestConfidenceScore:
@@ -14,13 +15,13 @@ class TestConfidenceScore:
         assert score.score == 0.8
 
     def test_invalid_score_too_low(self):
-        """Test that scores below 0.0 raise ValueError."""
-        with pytest.raises(ValueError, match="Confidence score must be between 0.0 and 1.0"):
+        """Test that scores below 0.0 raise InvalidConfidenceScoreError."""
+        with pytest.raises(InvalidConfidenceScoreError, match="Invalid confidence score: -0.1. Must be between 0.0 and 1.0"):
             ConfidenceScore(-0.1)
 
     def test_invalid_score_too_high(self):
-        """Test that scores above 1.0 raise ValueError."""
-        with pytest.raises(ValueError, match="Confidence score must be between 0.0 and 1.0"):
+        """Test that scores above 1.0 raise InvalidConfidenceScoreError."""
+        with pytest.raises(InvalidConfidenceScoreError, match="Invalid confidence score: 1.1. Must be between 0.0 and 1.0"):
             ConfidenceScore(1.1)
 
     def test_boundary_values(self):

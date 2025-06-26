@@ -1,6 +1,6 @@
 """Application settings with environment variable support and validation."""
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -78,16 +78,17 @@ class Settings(BaseSettings):
         default=None, description="MercadoLibre API client secret"
     )
 
-    @field_validator("secret_key")
-    @classmethod
-    def validate_secret_key(cls, v: str) -> str:
+    @model_validator(mode="after")
+    def validate_secret_key_for_production(self):
         """Validate that secret key is properly set for production."""
-        # Note: In V2, we don't have access to other values during validation
-        # This would need to be handled at the model level if needed
-        if v == "dev-secret-key-change-in-production":
-            # Production check would need to be done elsewhere or via model_validator
-            pass  # Simplified for now
-        return v
+        if (
+            self.environment.lower() == "production"
+            and self.secret_key == "dev-secret-key-change-in-production"
+        ):  # nosec B105
+            raise ValueError(
+                "Secret key must be changed from default value in production"
+            )
+        return self
 
     @field_validator("log_level")
     @classmethod

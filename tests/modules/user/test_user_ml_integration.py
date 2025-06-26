@@ -1,6 +1,6 @@
 """Unit tests for User MercadoLibre integration."""
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -17,10 +17,10 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
-            ml_token_expires_at=datetime.utcnow() + timedelta(hours=1)
+            ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
         )
 
         assert UserMLIntegration.is_ml_connected(user) is True
@@ -30,9 +30,9 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             ml_access_token="token123",
-            ml_token_expires_at=datetime.utcnow() + timedelta(hours=1)
+            ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
         )
 
         assert UserMLIntegration.is_ml_connected(user) is False
@@ -42,9 +42,9 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             ml_user_id="ML123",
-            ml_token_expires_at=datetime.utcnow() + timedelta(hours=1)
+            ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
         )
 
         assert UserMLIntegration.is_ml_connected(user) is False
@@ -54,10 +54,10 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
-            ml_token_expires_at=datetime.utcnow() - timedelta(hours=1)
+            ml_token_expires_at=datetime.now(UTC) - timedelta(hours=1)
         )
 
         assert UserMLIntegration.is_ml_connected(user) is False
@@ -67,7 +67,7 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123"
         )
@@ -85,7 +85,7 @@ class TestUserMLIntegration:
 
         access_token = "new_access_token"
         refresh_token = "new_refresh_token"
-        expires_at = datetime.utcnow() + timedelta(hours=2)
+        expires_at = datetime.now(UTC) + timedelta(hours=2)
 
         UserMLIntegration.update_ml_tokens(user, access_token, refresh_token, expires_at)
 
