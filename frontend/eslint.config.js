@@ -72,7 +72,6 @@ export default [
       "template-curly-spacing": "error",
       quotes: ["error", "double", { avoidEscape: true }],
       semi: ["error", "always"],
-      "comma-dangle": ["error", "never"],
       indent: ["error", 2],
       "max-len": ["warn", { code: 100, ignoreUrls: true }],
     },
