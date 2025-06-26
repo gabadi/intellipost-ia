@@ -1,34 +1,128 @@
-# Tach Configuration - Architectural Boundary Enforcement
-# IntelliPost AI MVP - Hexagonal Architecture Validation
+interfaces = []
+exclude = []
+source_roots = [
+    ".",
+]
+root_module = "allow"
 
-source_roots = ["."]
-exact = false
-disable_logging = false
-ignore_type_checking_imports = true
-
-# Current configuration: Monolithic domain (appropriate for current empty state)
-# Future evolution: Split domain into business modules when implementation begins:
-# - backend.domain.shared (common concepts, value objects)
-# - backend.domain.users (user management, authentication)
-# - backend.domain.content (content creation, editing, templates)
-# - backend.domain.posts (social media post entities)
-# - backend.domain.social_platforms (platform integrations)
-# - backend.domain.ai_generation (AI content generation logic)
-# - backend.domain.scheduling (post scheduling, automation)
-# - backend.domain.analytics (performance tracking, metrics)
-
+# Infrastructure layer - can depend on all domain interfaces
 [[modules]]
-path = "domain"
+path = "infrastructure"
+depends_on = [
+    "modules.ai_content.domain",
+    "modules.communications.domain",
+    "modules.mercadolibre.domain",
+    "modules.product.domain",
+    "modules.user.domain",
+]
+
+# Root application - can depend on infrastructure and domain
+[[modules]]
+path = "<root>"
+depends_on = [
+    "infrastructure",
+    "modules.product.domain",
+    "modules.user.domain",
+]
+
+# AI Content module - domain is pure, infrastructure can depend on shared infrastructure
+[[modules]]
+path = "modules.ai_content.domain"
 depends_on = []
 
 [[modules]]
-path = "infrastructure"
-depends_on = ["domain"]
+path = "modules.ai_content.application"
+depends_on = []
 
 [[modules]]
-path = "application"
-depends_on = ["domain"]
+path = "modules.ai_content.infrastructure"
+depends_on = [ "infrastructure"]
 
 [[modules]]
-path = "api"
-depends_on = ["domain", "application"]
+path = "modules.ai_content.api"
+depends_on = []
+
+# Auth module - domain is pure, infrastructure can depend on shared infrastructure
+[[modules]]
+path = "modules.auth.domain"
+depends_on = []
+
+[[modules]]
+path = "modules.auth.application"
+depends_on = []
+
+[[modules]]
+path = "modules.auth.infrastructure"
+depends_on = []
+
+[[modules]]
+path = "modules.auth.api"
+depends_on = []
+
+# Communications module - domain is pure, infrastructure can depend on shared infrastructure
+[[modules]]
+path = "modules.communications.domain"
+depends_on = []
+
+[[modules]]
+path = "modules.communications.application"
+depends_on = []
+
+[[modules]]
+path = "modules.communications.infrastructure"
+depends_on = []
+
+[[modules]]
+path = "modules.communications.api"
+depends_on = []
+
+# MercadoLibre module - domain is pure, infrastructure can depend on shared infrastructure
+[[modules]]
+path = "modules.mercadolibre.domain"
+depends_on = []
+
+[[modules]]
+path = "modules.mercadolibre.application"
+depends_on = []
+
+[[modules]]
+path = "modules.mercadolibre.infrastructure"
+depends_on = [ "infrastructure"]
+
+[[modules]]
+path = "modules.mercadolibre.api"
+depends_on = []
+
+# Product module - domain is pure, infrastructure can depend on shared infrastructure
+[[modules]]
+path = "modules.product.domain"
+depends_on = []
+
+[[modules]]
+path = "modules.product.application"
+depends_on = []
+
+[[modules]]
+path = "modules.product.infrastructure"
+depends_on = [ "infrastructure"]
+
+[[modules]]
+path = "modules.product.api"
+depends_on = []
+
+# User module - domain is pure, infrastructure can depend on shared infrastructure
+[[modules]]
+path = "modules.user.domain"
+depends_on = []
+
+[[modules]]
+path = "modules.user.application"
+depends_on = []
+
+[[modules]]
+path = "modules.user.infrastructure"
+depends_on = [ "infrastructure"]
+
+[[modules]]
+path = "modules.user.api"
+depends_on = []

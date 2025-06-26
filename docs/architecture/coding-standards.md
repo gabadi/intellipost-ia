@@ -2,8 +2,8 @@
 
 ## Document Information
 - **Project:** IntelliPost AI MVP
-- **Last Updated:** June 22, 2025
-- **Scope:** Development Quality Standards
+- **Last Updated:** 2025-01-26
+- **Scope:** LLM-Optimized Development Standards
 - **Reference:** PRD Section 8.3 - Agent Coding First Principles
 
 ---
@@ -17,12 +17,14 @@
 - **Explicit Typing:** All functions and classes must have complete type annotations
 - **Consistent Structure:** Follow established patterns for LLM comprehension
 - **Modular Design:** Components must be independently testable and replaceable
+- **Tell Don't Ask:** Objects should encapsulate behavior and make decisions internally
 
-### Core Development Principles (SOLID + KISS + DRY + YAGNI)
+### Core Development Principles (SOLID + KISS + DRY + YAGNI + Tell Don't Ask)
 - **SOLID Principles:** Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion
 - **KISS (Keep It Simple, Stupid):** Simplest solution that works
 - **DRY (Don't Repeat Yourself):** Eliminate code duplication
 - **YAGNI (You Aren't Gonna Need It):** Don't implement until needed
+- **Tell Don't Ask:** Objects should do work rather than expose state for external manipulation
 - **Applied to:** Code, tests, documentation, architecture decisions
 
 ---
@@ -107,6 +109,29 @@ class AIServiceWithFallback:
         except AIServiceError:
             return await self.secondary.generate_listing(images, prompt)
 ```
+
+### Tell Don't Ask Pattern
+
+**Core:** Objects decide internally, don't expose state for external decisions
+
+```python
+# ✅ Product Publishing
+product.can_be_published() → publisher.execute_publish(product)
+# ❌ External decisions
+if product.confidence > 0.85 and product.status == "ready": publisher.publish()
+
+# ✅ AI Confidence
+confidence.create_result(content) → ContentResult
+# ❌ Threshold logic outside
+if confidence.value >= 0.85: result = ContentResult.ready_for_publish()
+
+# ✅ Image Processing
+image.process_for_listing(processor) → ProcessedImage
+# ❌ External analysis
+if image.has_complex_bg(): processor.remove_background()
+```
+
+**WHY:** Centralized business logic, consistent decisions, improved testability
 
 ### Error Handling Standards
 ```python
@@ -206,46 +231,7 @@ Consistent Terms:
 
 ---
 
-## Testing Standards (SOLID + KISS + DRY + YAGNI)
-
-### Test-Driven Development (TDD)
-```python
-async def test_should_generate_optimized_title_when_high_quality_images():
-    images = [create_test_image(quality="high")]
-    prompt = "Samsung Galaxy smartphone"
-
-    content = await ai_service.generate_listing(images, prompt)
-
-    assert content.title is not None
-    assert "Samsung Galaxy" in content.title
-    assert len(content.title) <= 60
-
-def test_should_raise_error_when_no_images_provided():
-    with pytest.raises(ValidationError):
-        ai_service.generate_listing([], "test prompt")
-
-@pytest.fixture
-def mock_gemini_api():
-    import respx
-    import httpx
-
-    with respx.mock:
-        respx.post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent").mock(
-            return_value=httpx.Response(200, json={
-                "candidates": [{"content": {"parts": [{"text": "Samsung Galaxy S24 - Excellent condition"}]}}]
-            })
-        )
-        yield
-
-async def test_should_generate_content_via_gemini_api(mock_gemini_api):
-    service = GeminiService(api_key="test-key")
-    images = [create_test_image()]
-    prompt = "Samsung smartphone"
-
-    content = await service.generate_listing(images, prompt)
-
-    assert "Samsung Galaxy" in content.title
-```
+## Testing Standards
 
 ### Testing Strategy by Layer
 
@@ -268,6 +254,16 @@ async def test_should_generate_content_via_gemini_api(mock_gemini_api):
 - **Minimum Coverage:** 80% for domain logic
 - **DRY:** Shared test utilities and factories
 - **YAGNI:** Don't test getters/setters, test business behavior
+
+### Test Behavior, Not State
+```python
+# ✅ Test behavior outcomes
+result = await publisher.publish_if_ready(product)
+assert result.is_successful()
+
+# ❌ Test internal state
+assert product._confidence == 0.85  # State exposure
+```
 
 ---
 
@@ -343,6 +339,8 @@ Before Story Completion:
 - [ ] Tests written (TDD)
 - [ ] No hardcoded secrets
 - [ ] Follows naming conventions
+- [ ] **Tell Don't Ask:** Objects make decisions internally, don't expose state for external decisions
+- [ ] **Tell Don't Ask:** Methods return behavior results, not raw data for external processing
 
 ---
 

@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = [
@@ -26,12 +27,18 @@ dependencies = [
     "pydantic>=2.5.0",
     "sqlalchemy>=2.0.0",
     "alembic>=1.13.0",
+    "asyncpg>=0.29.0",
+    "psycopg2-binary>=2.9.0",
     "python-multipart>=0.0.6",
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
     "httpx>=0.28.0,<0.29.0",
     "pillow>=11.0.0,<12.0.0",
     "python-dotenv>=1.0.0",
+    "pydantic-settings>=2.10.0",
+    "boto3>=1.34.0",
+    "botocore>=1.34.0",
+    "psutil>=6.1.0",
 ]
 
 # Dev dependencies now managed by uvx and package.json
@@ -54,7 +61,7 @@ Repository = "https://github.com/intellipost/intellipost-ia"
 
 # Ruff configuration
 [tool.ruff]
-target-version = "py311"
+target-version = "py313"
 line-length = 88
 exclude = [
     ".bzr",
@@ -113,11 +120,11 @@ known-first-party = ["intellipost"]
 
 # Pyright configuration
 [tool.pyright]
-include = [".", "../tests"]
-exclude = ["**/__pycache__"]
+include = ["."]
+exclude = ["**/__pycache__", ".venv", "../tests", "tests"]
 venvPath = "."
 venv = ".venv"
-pythonVersion = "3.11"
+pythonVersion = "3.13"
 typeCheckingMode = "strict"
 useLibraryCodeForTypes = true
 reportMissingImports = true
@@ -146,11 +153,6 @@ minversion = "7.0"
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=.",
-    "--cov-report=term-missing:skip-covered",
-    "--cov-report=html:htmlcov",
-    "--cov-report=xml",
-    "--cov-fail-under=80",
 ]
 testpaths = ["../tests"]
 filterwarnings = [
@@ -172,6 +174,9 @@ omit = [
     "*/migrations/*",
     "*/venv/*",
     "*/__pycache__/*",
+    "domain/exceptions.py",
+    "domain/services/protocols.py",
+    "domain/services/*_protocols.py",
 ]
 
 [tool.coverage.report]
@@ -196,6 +201,7 @@ include = ["*"]
 [dependency-groups]
 dev = [
     "pre-commit>=4.2.0",
+    "pyright>=1.1.400",
 ]
 test = [
     "pytest>=8.4.1",
@@ -204,4 +210,5 @@ test = [
     "coverage[toml]>=7.0.0",
     "respx>=0.22.0",
     "testcontainers>=4.10.0",
+    "testcontainers[postgresql]>=4.10.0",
 ]

@@ -1,0 +1,1 @@
+"""MercadoLibre domain ports (protocols)."""

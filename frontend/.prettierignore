@@ -1,32 +1,22 @@
-# Build output
-build/
-.svelte-kit/
-dist/
-.output/
-
 # Dependencies
 node_modules/
 
-# Logs
-*.log
+# Build outputs
+build/
+.svelte-kit/
+dist/
 
-# Environment files
-.env
-.env.local
-.env.*.local
+# Coverage reports
+coverage/
 
-# IDE
-.vscode/
-.idea/
-
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
-# Package managers
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# IDE files
+.vscode/
+.idea/
 
-# Generated files
-*.tsbuildinfo
+# Temporary files
+*.tmp
+*.temp
