@@ -16,23 +16,20 @@ export default [
         ecmaVersion: 2022,
         sourceType: "module",
         project: "./tsconfig.json",
-        extraFileExtensions: [".svelte"],
-      },
+        extraFileExtensions: [".svelte"]
+      }
     },
     plugins: {
-      "@typescript-eslint": ts,
+      "@typescript-eslint": ts
     },
     rules: {
       ...ts.configs.recommended.rules,
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_" },
-      ],
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-var-requires": "off",
-    },
+      "@typescript-eslint/no-var-requires": "off"
+    }
   },
   {
     files: ["**/*.svelte"],
@@ -41,21 +38,18 @@ export default [
       parserOptions: {
         parser: tsParser,
         project: "./tsconfig.json",
-        extraFileExtensions: [".svelte"],
-      },
+        extraFileExtensions: [".svelte"]
+      }
     },
     plugins: {
       svelte,
-      "@typescript-eslint": ts,
+      "@typescript-eslint": ts
     },
     rules: {
       ...svelte.configs.recommended.rules,
       ...ts.configs.recommended.rules,
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_" },
-      ],
-    },
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }]
+    }
   },
   {
     files: ["**/*.{js,ts,svelte}"],
@@ -73,8 +67,8 @@ export default [
       quotes: ["error", "double", { avoidEscape: true }],
       semi: ["error", "always"],
       indent: ["error", 2],
-      "max-len": ["warn", { code: 100, ignoreUrls: true }],
-    },
+      "max-len": ["warn", { code: 100, ignoreUrls: true }]
+    }
   },
   prettier,
   {
@@ -86,7 +80,7 @@ export default [
       "coverage/**",
       "*.config.js",
       "*.config.ts",
-      "vite.config.*",
-    ],
-  },
+      "vite.config.*"
+    ]
+  }
 ];

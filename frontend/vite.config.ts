@@ -12,7 +12,7 @@ export default defineConfig({
     coverage: {
       reporter: ["text", "json", "json-summary", "html"],
       include: ["src/**/*"],
-      exclude: ["src/**/*.{test,spec}.{js,ts}", "src/test-setup.ts"],
-    },
-  },
+      exclude: ["src/**/*.{test,spec}.{js,ts}", "src/test-setup.ts"]
+    }
+  }
 });

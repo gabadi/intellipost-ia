@@ -32,15 +32,16 @@ repos:
         types: [python]
         pass_filenames: false
 
-  # Frontend hooks
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
+  # Frontend hooks - using alternative prettier pre-commit hook since mirrors-prettier is archived
+  - repo: local
     hooks:
       - id: prettier
         name: prettier-format
-        files: ^frontend/
-        types_or: [javascript, jsx, ts, tsx, json, yaml, markdown]
-        exclude: ^frontend/(node_modules|dist|build)/
+        entry: sh -c 'cd frontend && npx prettier --write --ignore-unknown'
+        language: system
+        files: ^frontend/.*\.(js|jsx|ts|tsx|svelte|json|yaml|yml|md)$
+        exclude: ^frontend/(node_modules|dist|build|coverage)/
+        pass_filenames: false
 
   # ESLint via npm workspace - temporarily disabled during config conflict resolution
   # - repo: local
@@ -65,7 +66,7 @@ repos:
 
   # General hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -81,7 +82,7 @@ repos:
 
   # Commit message hooks
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.0.0
+    rev: v4.2.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
