@@ -2,8 +2,8 @@
 
 ## Document Information
 - **Project:** IntelliPost AI MVP
-- **Last Updated:** June 22, 2025
-- **Scope:** Development Quality Standards
+- **Last Updated:** 2024-12-26
+- **Scope:** LLM-Optimized Development Standards
 - **Reference:** PRD Section 8.3 - Agent Coding First Principles
 
 ---
@@ -110,157 +110,68 @@ class AIServiceWithFallback:
             return await self.secondary.generate_listing(images, prompt)
 ```
 
-### Tell Don't Ask Pattern Examples
+### Tell Don't Ask Pattern (Domain-Specific)
 
-**Core Principle:** Objects should encapsulate behavior and make decisions internally rather than exposing state for external decision-making.
+**Core Principle:** Objects encapsulate behavior and make decisions internally
 
+#### Publication Decision Pattern
 ```python
-# ✅ Tell Don't Ask - Object makes decisions internally
-class ProductPublisher:
-    def __init__(self, confidence_threshold: float = 0.85):
-        self._confidence_threshold = confidence_threshold
-
-    async def publish_if_ready(self, product: Product) -> PublishResult:
-        """Object decides whether to publish based on internal logic."""
-        if product.is_ready_for_publication(self._confidence_threshold):
-            return await self._publish_to_mercadolibre(product)
-        else:
-            return PublishResult.needs_review(product.get_review_suggestions())
-
-    async def _publish_to_mercadolibre(self, product: Product) -> PublishResult:
-        # Publishing logic encapsulated
-        pass
-
+# ✅ DO: Object makes decision
 class Product:
-    def is_ready_for_publication(self, threshold: float) -> bool:
-        """Product decides its own readiness state."""
-        return (
-            self.confidence_score.value >= threshold and
-            self.has_required_content() and
-            self.images_are_processed()
-        )
-
-    def get_review_suggestions(self) -> List[ReviewSuggestion]:
-        """Product provides its own improvement suggestions."""
-        suggestions = []
-        if self.confidence_score.value < 0.7:
-            suggestions.append(ReviewSuggestion.improve_description())
-        if not self.has_category():
-            suggestions.append(ReviewSuggestion.select_category())
-        return suggestions
-
-# ❌ Ask Don't Tell - External code makes decisions
-class BadProductPublisher:
-    async def publish_product_old_way(self, product: Product) -> PublishResult:
-        # External code asking for state and making decisions
-        confidence = product.confidence_score.value  # Asking for state
-        if confidence >= 0.85:  # External decision making
-            if product.images and len(product.images) > 0:  # More asking
-                if product.title and product.description:  # More asking
-                    return await self._publish(product)
-        return PublishResult.failed("Not ready")
-```
-
-**Real-World Application Examples:**
-
-```python
-# ✅ AI Service encapsulates confidence decision logic
-class AIContentGenerator:
-    async def generate_with_confidence_handling(self, images: List[ImageData], prompt: str) -> ContentResult:
-        """Service decides how to handle confidence internally."""
-        content = await self._generate_content(images, prompt)
-        confidence = await self._calculate_confidence(content)
-
-        # Internal decision making
-        if confidence.requires_manual_review():
-            return ContentResult.needs_review(content, confidence.get_improvement_hints())
-        elif confidence.is_publication_ready():
-            return ContentResult.ready_for_publish(content)
-        else:
-            return ContentResult.needs_minor_edits(content, confidence.get_quick_fixes())
-
-class ConfidenceScore:
-    def __init__(self, value: float, factors: Dict[str, float]):
-        self._value = value
-        self._factors = factors
-
-    def requires_manual_review(self) -> bool:
-        """Score decides its own interpretation."""
-        return self._value < 0.7 or self._factors.get('category_match', 1.0) < 0.5
-
-    def is_publication_ready(self) -> bool:
-        """Score decides publication readiness."""
-        return self._value >= 0.85 and all(f >= 0.7 for f in self._factors.values())
-
-    def get_improvement_hints(self) -> List[str]:
-        """Score provides its own improvement suggestions."""
-        hints = []
-        if self._factors.get('title_quality', 1.0) < 0.7:
-            hints.append("Consider improving the title with more descriptive keywords")
-        if self._factors.get('description_completeness', 1.0) < 0.7:
-            hints.append("Add more details about product condition and features")
-        return hints
-
-# ✅ Image processor makes processing decisions internally
-class ImageProcessor:
-    async def process_for_listing(self, raw_images: List[RawImage]) -> ProcessedImageSet:
-        """Processor decides how to handle different image scenarios."""
-        result = ProcessedImageSet()
-
-        for image in raw_images:
-            # Internal decision making based on image characteristics
-            if image.needs_background_removal():
-                processed = await self._remove_background(image)
-                result.add_main_image(processed)
-            elif image.is_suitable_for_thumbnail():
-                processed = await self._optimize_for_thumbnail(image)
-                result.add_thumbnail(processed)
-            else:
-                processed = await self._standard_optimization(image)
-                result.add_gallery_image(processed)
-
-        return result.ensure_ml_requirements()  # Final validation internally
-
-class RawImage:
-    def needs_background_removal(self) -> bool:
-        """Image decides if it needs background processing."""
-        return self._has_complex_background() and self._is_product_focused()
-
-    def is_suitable_for_thumbnail(self) -> bool:
-        """Image decides its own best use case."""
-        return self._aspect_ratio_is_square() and self._has_clear_product_focus()
-```
-
-**Common Anti-Patterns to Avoid:**
-
-```python
-# ❌ Don't expose internal state for external decisions
-class BadProduct:
-    @property
-    def confidence_score(self) -> float:  # Exposing raw state
-        return self._confidence
-
-    @property
-    def processing_status(self) -> str:  # Exposing raw state
-        return self._status
-
-# External code making decisions (violates Tell Don't Ask)
-if product.confidence_score > 0.85 and product.processing_status == "completed":
-    publisher.publish(product)
-
-# ✅ Instead, encapsulate the decision
-class GoodProduct:
     def can_be_published(self) -> bool:
-        """Product makes its own publication decision."""
-        return self._confidence >= 0.85 and self._status == ProcessingStatus.COMPLETED
+        return self._confidence >= 0.85 and self._has_required_content()
 
     def publish_via(self, publisher: ProductPublisher) -> PublishResult:
-        """Product coordinates its own publishing."""
-        if self.can_be_published():
-            return publisher.execute_publish(self)
-        else:
-            return PublishResult.not_ready(self._get_readiness_blockers())
+        return publisher.execute_publish(self) if self.can_be_published() else PublishResult.not_ready()
+
+# ❌ DON'T: External decision making
+if product.confidence_score > 0.85 and product.processing_status == "completed":
+    publisher.publish(product)
 ```
+**WHY:** Eliminates scattered business logic, improves testability
+
+#### AI Confidence Handling Pattern
+```python
+# ✅ DO: Service decides confidence handling
+class AIContentGenerator:
+    async def generate_with_confidence_handling(self, images: List[ImageData]) -> ContentResult:
+        content = await self._generate_content(images)
+        confidence = await self._calculate_confidence(content)
+        return confidence.create_result(content)  # Confidence decides result type
+
+class ConfidenceScore:
+    def create_result(self, content: GeneratedContent) -> ContentResult:
+        if self._value >= 0.85: return ContentResult.ready_for_publish(content)
+        if self._value >= 0.7: return ContentResult.needs_minor_edits(content)
+        return ContentResult.needs_review(content, self._get_improvement_hints())
+
+# ❌ DON'T: External confidence interpretation
+confidence = await ai_service.calculate_confidence(content)
+if confidence.value >= 0.85:
+    result = ContentResult.ready_for_publish(content)
+elif confidence.value >= 0.7:
+    result = ContentResult.needs_minor_edits(content)
+```
+**WHY:** Centralizes confidence interpretation logic, prevents inconsistent thresholds
+
+#### Image Processing Decision Pattern
+```python
+# ✅ DO: Image decides its processing needs
+class RawImage:
+    def process_for_listing(self, processor: ImageProcessor) -> ProcessedImage:
+        if self._needs_background_removal():
+            return processor.remove_background(self)
+        elif self._is_suitable_for_thumbnail():
+            return processor.optimize_for_thumbnail(self)
+        return processor.standard_optimization(self)
+
+# ❌ DON'T: External processing decisions
+if image.has_complex_background() and image.is_product_focused():
+    processed = processor.remove_background(image)
+elif image.aspect_ratio == 1.0 and image.has_clear_focus():
+    processed = processor.optimize_for_thumbnail(image)
+```
+**WHY:** Image characteristics determine processing needs, not external logic
 
 ### Error Handling Standards
 ```python
@@ -360,102 +271,55 @@ Consistent Terms:
 
 ---
 
-## Testing Standards (SOLID + KISS + DRY + YAGNI)
-
-### Test-Driven Development (TDD)
-```python
-async def test_should_generate_optimized_title_when_high_quality_images():
-    images = [create_test_image(quality="high")]
-    prompt = "Samsung Galaxy smartphone"
-
-    content = await ai_service.generate_listing(images, prompt)
-
-    assert content.title is not None
-    assert "Samsung Galaxy" in content.title
-    assert len(content.title) <= 60
-
-def test_should_raise_error_when_no_images_provided():
-    with pytest.raises(ValidationError):
-        ai_service.generate_listing([], "test prompt")
-
-@pytest.fixture
-def mock_gemini_api():
-    import respx
-    import httpx
-
-    with respx.mock:
-        respx.post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent").mock(
-            return_value=httpx.Response(200, json={
-                "candidates": [{"content": {"parts": [{"text": "Samsung Galaxy S24 - Excellent condition"}]}}]
-            })
-        )
-        yield
-
-async def test_should_generate_content_via_gemini_api(mock_gemini_api):
-    service = GeminiService(api_key="test-key")
-    images = [create_test_image()]
-    prompt = "Samsung smartphone"
-
-    content = await service.generate_listing(images, prompt)
-
-    assert "Samsung Galaxy" in content.title
-```
+## Testing Standards
 
 ### Testing Strategy by Layer
+```yaml
+Unit Tests:
+  Domain: Pure functions, no mocks
+  Application: Mock external services only
+  Coverage: 80%+ for domain logic
 
-**Unit Tests:**
-- **Domain Logic:** Pure functions, no mocks needed
-- **Application Use Cases:** Mock external services only (AIContentGenerator, ImageProcessor)
-- **SOLID:** Each test has single responsibility
+Integration Tests:
+  Database: Real DB (test containers)
+  External APIs: httpx-mock + respx (Gemini, PhotoRoom, MercadoLibre)
 
-**Integration Tests:**
-- **Database:** Real database (test containers), no mocking
-- **Internal Services:** Real implementations, no mocking
-- **External APIs:** httpx-mock + respx for external services (Gemini, PhotoRoom, MercadoLibre)
+E2E Tests:
+  Focus: Critical user journeys only
+  Mock: External services only
+```
 
-**E2E Tests:**
-- **External Services:** httpx-mock + respx for Gemini API, PhotoRoom API, MercadoLibre API
-- **Internal Services:** Real database, real application logic, real infrastructure
-- **Focus:** Critical user journeys only
-
-### Coverage Requirements
-- **Minimum Coverage:** 80% for domain logic
-- **DRY:** Shared test utilities and factories
-- **YAGNI:** Don't test getters/setters, test business behavior
-
-### Testing Tell Don't Ask Patterns
-
+### Test Behavior, Not State
 ```python
-# ✅ Test behavior, not state exposure
-async def test_should_publish_when_product_is_ready():
-    # Arrange
+# ✅ DO: Test behavior outcomes
+async def test_should_publish_when_ready():
     product = create_high_confidence_product()
-    publisher = ProductPublisher(confidence_threshold=0.8)
-
-    # Act - Tell the object what to do
     result = await publisher.publish_if_ready(product)
-
-    # Assert - Test the behavior outcome
     assert result.is_successful()
-    assert result.listing_id is not None
 
-async def test_should_request_review_when_confidence_low():
-    # Arrange
+# ❌ DON'T: Test internal state
+def test_confidence_value():
+    assert product._confidence == 0.85  # Internal state exposure
+```
+
+### Domain-Specific Test Patterns
+```python
+# AI Content Generation
+async def test_ai_should_generate_title_from_images():
+    content = await ai_service.generate_listing(images, "Samsung Galaxy")
+    assert "Samsung Galaxy" in content.title and len(content.title) <= 60
+
+# Product Publishing Decision
+async def test_product_should_reject_low_confidence():
     product = create_low_confidence_product()
-    publisher = ProductPublisher(confidence_threshold=0.8)
-
-    # Act
     result = await publisher.publish_if_ready(product)
-
-    # Assert - Test decision behavior
     assert result.needs_review()
-    assert "improve_description" in [s.type for s in result.suggestions]
 
-# ❌ Don't test internal state directly
-def test_bad_state_testing():
-    product = Product()
-    # Don't test: assert product._confidence == 0.75
-    # Do test: assert product.can_be_published() == True
+# Image Processing Decision
+def test_image_should_choose_background_removal():
+    image = create_complex_background_image()
+    result = image.process_for_listing(processor)
+    assert isinstance(result, BackgroundRemovedImage)
 ```
 
 ---
