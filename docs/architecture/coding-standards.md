@@ -2,7 +2,7 @@
 
 ## Document Information
 - **Project:** IntelliPost AI MVP
-- **Last Updated:** 2024-12-26
+- **Last Updated:** 2025-01-26
 - **Scope:** LLM-Optimized Development Standards
 - **Reference:** PRD Section 8.3 - Agent Coding First Principles
 
@@ -110,68 +110,28 @@ class AIServiceWithFallback:
             return await self.secondary.generate_listing(images, prompt)
 ```
 
-### Tell Don't Ask Pattern (Domain-Specific)
+### Tell Don't Ask Pattern
 
-**Core Principle:** Objects encapsulate behavior and make decisions internally
+**Core:** Objects decide internally, don't expose state for external decisions
 
-#### Publication Decision Pattern
 ```python
-# ✅ DO: Object makes decision
-class Product:
-    def can_be_published(self) -> bool:
-        return self._confidence >= 0.85 and self._has_required_content()
+# ✅ Product Publishing
+product.can_be_published() → publisher.execute_publish(product)
+# ❌ External decisions
+if product.confidence > 0.85 and product.status == "ready": publisher.publish()
 
-    def publish_via(self, publisher: ProductPublisher) -> PublishResult:
-        return publisher.execute_publish(self) if self.can_be_published() else PublishResult.not_ready()
+# ✅ AI Confidence
+confidence.create_result(content) → ContentResult
+# ❌ Threshold logic outside
+if confidence.value >= 0.85: result = ContentResult.ready_for_publish()
 
-# ❌ DON'T: External decision making
-if product.confidence_score > 0.85 and product.processing_status == "completed":
-    publisher.publish(product)
+# ✅ Image Processing
+image.process_for_listing(processor) → ProcessedImage
+# ❌ External analysis
+if image.has_complex_bg(): processor.remove_background()
 ```
-**WHY:** Eliminates scattered business logic, improves testability
 
-#### AI Confidence Handling Pattern
-```python
-# ✅ DO: Service decides confidence handling
-class AIContentGenerator:
-    async def generate_with_confidence_handling(self, images: List[ImageData]) -> ContentResult:
-        content = await self._generate_content(images)
-        confidence = await self._calculate_confidence(content)
-        return confidence.create_result(content)  # Confidence decides result type
-
-class ConfidenceScore:
-    def create_result(self, content: GeneratedContent) -> ContentResult:
-        if self._value >= 0.85: return ContentResult.ready_for_publish(content)
-        if self._value >= 0.7: return ContentResult.needs_minor_edits(content)
-        return ContentResult.needs_review(content, self._get_improvement_hints())
-
-# ❌ DON'T: External confidence interpretation
-confidence = await ai_service.calculate_confidence(content)
-if confidence.value >= 0.85:
-    result = ContentResult.ready_for_publish(content)
-elif confidence.value >= 0.7:
-    result = ContentResult.needs_minor_edits(content)
-```
-**WHY:** Centralizes confidence interpretation logic, prevents inconsistent thresholds
-
-#### Image Processing Decision Pattern
-```python
-# ✅ DO: Image decides its processing needs
-class RawImage:
-    def process_for_listing(self, processor: ImageProcessor) -> ProcessedImage:
-        if self._needs_background_removal():
-            return processor.remove_background(self)
-        elif self._is_suitable_for_thumbnail():
-            return processor.optimize_for_thumbnail(self)
-        return processor.standard_optimization(self)
-
-# ❌ DON'T: External processing decisions
-if image.has_complex_background() and image.is_product_focused():
-    processed = processor.remove_background(image)
-elif image.aspect_ratio == 1.0 and image.has_clear_focus():
-    processed = processor.optimize_for_thumbnail(image)
-```
-**WHY:** Image characteristics determine processing needs, not external logic
+**WHY:** Centralized business logic, consistent decisions, improved testability
 
 ### Error Handling Standards
 ```python
@@ -273,53 +233,16 @@ Consistent Terms:
 
 ## Testing Standards
 
-### Testing Strategy by Layer
-```yaml
-Unit Tests:
-  Domain: Pure functions, no mocks
-  Application: Mock external services only
-  Coverage: 80%+ for domain logic
+**Strategy:** Domain (no mocks) | Application (mock externals) | E2E (critical journeys only)
+**Coverage:** 80%+ for domain logic | Mock external APIs: Gemini, PhotoRoom, MercadoLibre
 
-Integration Tests:
-  Database: Real DB (test containers)
-  External APIs: httpx-mock + respx (Gemini, PhotoRoom, MercadoLibre)
-
-E2E Tests:
-  Focus: Critical user journeys only
-  Mock: External services only
-```
-
-### Test Behavior, Not State
 ```python
-# ✅ DO: Test behavior outcomes
-async def test_should_publish_when_ready():
-    product = create_high_confidence_product()
-    result = await publisher.publish_if_ready(product)
-    assert result.is_successful()
+# ✅ Test behavior outcomes
+result = await publisher.publish_if_ready(product)
+assert result.is_successful()
 
-# ❌ DON'T: Test internal state
-def test_confidence_value():
-    assert product._confidence == 0.85  # Internal state exposure
-```
-
-### Domain-Specific Test Patterns
-```python
-# AI Content Generation
-async def test_ai_should_generate_title_from_images():
-    content = await ai_service.generate_listing(images, "Samsung Galaxy")
-    assert "Samsung Galaxy" in content.title and len(content.title) <= 60
-
-# Product Publishing Decision
-async def test_product_should_reject_low_confidence():
-    product = create_low_confidence_product()
-    result = await publisher.publish_if_ready(product)
-    assert result.needs_review()
-
-# Image Processing Decision
-def test_image_should_choose_background_removal():
-    image = create_complex_background_image()
-    result = image.process_for_listing(processor)
-    assert isinstance(result, BackgroundRemovedImage)
+# ❌ Test internal state
+assert product._confidence == 0.85  # State exposure
 ```
 
 ---
