@@ -1,34 +1,44 @@
 interfaces = []
-exclude = ["domain/entities", "domain/services"]
+exclude = []
 source_roots = [
     ".",
 ]
-root_module = "allow"
 
 [[modules]]
 path = "<root>"
 depends_on = []
 
 [[modules]]
-path = "modules.user"
-depends_on = []
+path = "modules.ai_content"
+depends_on = [
+    "<root>",
+    "modules.product",
+]
 
 [[modules]]
-path = "modules.product"
-depends_on = []
+path = "modules.auth"
+depends_on = [
+    "modules.user",
+]
 
 [[modules]]
 path = "modules.communications"
 depends_on = []
 
 [[modules]]
-path = "modules.ai_content"
-depends_on = ["modules.product"]
-
-[[modules]]
 path = "modules.mercadolibre"
-depends_on = ["modules.product"]
+depends_on = [
+    "<root>",
+]
 
 [[modules]]
-path = "modules.auth"
-depends_on = ["modules.user"]
+path = "modules.product"
+depends_on = [
+    "<root>",
+]
+
+[[modules]]
+path = "modules.user"
+depends_on = [
+    "<root>",
+]

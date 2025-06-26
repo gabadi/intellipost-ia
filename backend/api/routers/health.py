@@ -1,6 +1,6 @@
 """Health check API router."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from fastapi import APIRouter
 
@@ -18,5 +18,5 @@ async def health_check() -> HealthResponse:
     This endpoint is used by monitoring systems and load balancers.
     """
     return HealthResponse(
-        status="healthy", timestamp=datetime.utcnow().isoformat(), version="1.0.0"
+        status="healthy", timestamp=datetime.now(UTC).isoformat(), version="1.0.0"
     )

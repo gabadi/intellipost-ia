@@ -8,6 +8,8 @@ Based on PR feedback, implementing numeric confidence scores instead of enum.
 from dataclasses import dataclass
 from typing import ClassVar
 
+from .exceptions import InvalidConfidenceScoreError
+
 
 @dataclass(frozen=True)
 class ConfidenceScore:
@@ -28,9 +30,7 @@ class ConfidenceScore:
     def __post_init__(self) -> None:
         """Validate score is within valid range."""
         if not (0.0 <= self.score <= 1.0):
-            raise ValueError(
-                f"Confidence score must be between 0.0 and 1.0, got {self.score}"
-            )
+            raise InvalidConfidenceScoreError(self.score)
 
     @property
     def is_high(self) -> bool:

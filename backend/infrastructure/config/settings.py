@@ -120,7 +120,8 @@ class Settings(BaseSettings):
     class Config:
         """Pydantic configuration."""
 
-        env_file = ".env"
+        # Look for .env file in project root (one level up from backend)
+        env_file = "../.env"
         env_file_encoding = "utf-8"
         case_sensitive = False
 

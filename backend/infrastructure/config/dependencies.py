@@ -27,7 +27,9 @@ def get_app_logger(name: str = "main"):
 
 # Type aliases for dependency injection
 SettingsDep = Annotated[Settings, Depends(get_settings)]
-LoggerDep = Annotated[Any, Depends(get_app_logger)]  # Will be properly typed when logger interface is defined
+LoggerDep = Annotated[
+    Any, Depends(get_app_logger)
+]  # Will be properly typed when logger interface is defined
 
 
 # Repository protocol dependencies (to be implemented by infrastructure layer)
