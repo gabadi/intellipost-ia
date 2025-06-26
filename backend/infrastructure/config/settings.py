@@ -3,6 +3,37 @@ Application settings and configuration management.
 
 This module provides centralized configuration management using Pydantic Settings
 with environment variable support and validation.
+
+Architectural Decision: Centralized vs Module-Specific Configuration
+================================================================
+
+This implementation uses a CENTRALIZED configuration approach rather than
+module-specific configs for the following reasons:
+
+1. **Environment Consistency**: All configurations use the same environment
+   variable prefix (INTELLIPOST_) and loading mechanism
+
+2. **Cross-Module Dependencies**: Many settings are shared across modules:
+   - Database URL used by all repository implementations
+   - S3 credentials used by multiple services
+   - Security settings needed by auth and API layers
+
+3. **Deployment Simplicity**: Single configuration file makes deployment
+   and environment management easier
+
+4. **Type Safety**: Centralized validation ensures all settings are
+   properly typed and validated at startup
+
+5. **Configuration Discovery**: Developers can see all available settings
+   in one place without hunting through multiple modules
+
+For applications with truly independent modules, module-specific configs
+would be more appropriate. For this application's modular monolith architecture,
+centralized configuration provides better cohesion and maintainability.
+
+Future Evolution: If modules become fully independent services, this can be
+refactored to use module-specific settings classes that inherit from a base
+configuration class.
 """
 
 from pydantic import Field, field_validator
@@ -16,6 +47,14 @@ class Settings(BaseSettings):
     This class defines all configuration options for the IntelliPost AI backend,
     including database connections, security settings, and environment-specific
     configurations.
+
+    Note: This centralized approach is chosen over module-specific configs because:
+    - Shared infrastructure settings (DB, S3, security) are used across modules
+    - Single source of truth for deployment configuration
+    - Easier environment variable management with consistent INTELLIPOST_ prefix
+    - Better type safety and validation at application startup
+
+    For microservices architecture, this would be split into module-specific configs.
     """
 
     # Environment configuration

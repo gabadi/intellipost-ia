@@ -3,6 +3,36 @@ Enhanced structured logging configuration for the IntelliPost AI backend.
 
 This module provides comprehensive structured logging with JSON format,
 correlation IDs, performance metrics, security events, and observability features.
+
+Architectural Decision: Custom Structured Logger vs Simple Logger
+===============================================================
+
+This implementation uses a CUSTOM STRUCTURED LOGGER rather than a simple
+logging setup for the following reasons:
+
+1. **Observability Requirements**: Modern applications need structured logs
+   for effective monitoring, alerting, and debugging in production
+
+2. **Correlation Tracking**: Distributed systems require request tracing
+   across multiple services and components
+
+3. **Security Monitoring**: Built-in security event detection and filtering
+   for compliance and threat detection
+
+4. **Performance Monitoring**: Automatic performance metrics collection
+   for application optimization
+
+5. **Sensitive Data Protection**: Automatic filtering of sensitive information
+   from logs to prevent data leaks
+
+6. **Production Readiness**: JSON format integrates with log aggregation
+   systems like ELK stack, Splunk, or CloudWatch
+
+For simple applications, basic logging would suffice. For production
+applications requiring observability, structured logging is essential.
+
+The custom implementation provides more control than third-party solutions
+while maintaining compatibility with standard Python logging.
 """
 
 import contextvars

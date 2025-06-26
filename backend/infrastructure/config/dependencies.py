@@ -46,7 +46,10 @@ class DependencyContainer:
 
     Architectural Decision: Custom Container vs Pure FastAPI Depends()
     ================================================================
-    While FastAPI's Depends() is more idiomatic, this container approach is chosen for:
+
+    **PR Review Question**: "Is this OK? why not directly the fastapi depends for everything?"
+
+    **Answer**: While FastAPI's Depends() is more idiomatic, this container approach is chosen for:
 
     - **Protocol Enforcement**: Forces infrastructure to register Protocol implementations,
       maintaining clean hexagonal architecture boundaries
@@ -58,6 +61,30 @@ class DependencyContainer:
     - Container manages Protocol registration and lifecycle
     - FastAPI Depends() handles actual injection in route handlers
     - Best of both worlds: architectural control + framework integration
+
+    **Comparison with Pure FastAPI Depends()**:
+
+    Pure FastAPI approach would look like:
+    ```python
+    # Without container - directly in route handlers
+    @app.get("/users")
+    async def get_users(repo: UserRepository = Depends(get_user_repository)):
+        return await repo.get_all()
+    ```
+
+    Current container approach:
+    ```python
+    # With container - explicit registration and validation
+    container.register_user_repository(SqlUserRepository())
+
+    @app.get("/users")
+    async def get_users(repo: UserRepositoryDep):
+        return await repo.get_all()
+    ```
+
+    **Trade-offs**:
+    - Pure FastAPI: More idiomatic, less boilerplate
+    - Container: Better architecture enforcement, fail-fast validation
 
     For simpler applications, pure FastAPI Depends() would suffice.
     For modular systems with Protocol-based architecture, this approach provides better
