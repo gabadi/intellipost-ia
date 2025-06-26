@@ -57,9 +57,10 @@ IntelliPost AI is a mobile-first AI-powered platform that transforms the Mercado
 1. **Core Domain Independence**: Business logic isolated from external concerns
 2. **Go-Style Protocols**: "Accept interfaces, return instances" - no explicit adapters
 3. **Duck Typing + Static Validation**: Pyright validates Protocol compatibility automatically
-4. **Mobile-First Design**: All components optimized for mobile performance
-5. **AI-Service Agnostic**: Easy switching between providers via Protocol compatibility
-6. **Real-time Processing**: WebSocket updates during async operations
+4. **Tell Don't Ask**: Objects contain behavior and make decisions, not expose state for external decisions
+5. **Mobile-First Design**: All components optimized for mobile performance
+6. **AI-Service Agnostic**: Easy switching between providers via Protocol compatibility
+7. **Real-time Processing**: WebSocket updates during async operations
 
 ---
 
