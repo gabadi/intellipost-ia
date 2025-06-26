@@ -1,25 +1,23 @@
 {
   "useTabs": false,
-  "tabWidth": 2,
-  "singleQuote": false,
-  "trailingComma": "none",
+  "singleQuote": true,
+  "trailingComma": "es5",
   "printWidth": 100,
+  "tabWidth": 2,
   "semi": true,
+  "quoteProps": "as-needed",
+  "jsxSingleQuote": true,
   "bracketSpacing": true,
+  "bracketSameLine": false,
   "arrowParens": "avoid",
   "endOfLine": "lf",
+  "embeddedLanguageFormatting": "auto",
   "plugins": ["prettier-plugin-svelte"],
   "overrides": [
     {
       "files": "*.svelte",
       "options": {
         "parser": "svelte"
-      }
-    },
-    {
-      "files": ["*.json", "*.yml", "*.yaml"],
-      "options": {
-        "tabWidth": 2
       }
     }
   ]

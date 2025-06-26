@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let title = "IntelliPost AI";
+  export let title = 'IntelliPost AI';
 </script>
 
 <main>
