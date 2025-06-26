@@ -35,30 +35,30 @@ workflow:
         A1 -->|Yes| B[Dev: Implement Story]
         A1 -->|No| A2[PO: Approve Story<br/>Skip Epic if <7 days]
         A2 --> B
-    
+
         B --> C{Dev: Pre-Review<br/>Validation DoD}
         C -->|Pass| D[Architect: Review<br/>Technical Design]
         C -->|Fail| C2[Dev: Fix Issues<br/>max 3 retries]
         C2 --> C
-    
+
         D -->|Issues Found| E[Dev: Implement<br/>Architect Fixes]
         D -->|Pass| F[Architect: Learning<br/>Triage Capture]
         E --> E2{Dev: Validate Fixes}
         E2 -->|Pass| F
         E2 -->|Fail| E3[Dev: Additional Fixes<br/>max 2 retries]
         E3 --> E2
-    
+
         F --> G[Dev: Commit &<br/>Prepare PR Context]
         G --> H[SM: Update<br/>Epic Progress]
         H --> I[PO: Create<br/>Comprehensive PR]
         I --> J[Story: Complete<br/>PR Delivered]
-    
+
         %% Styling
         classDef simple fill:#e1f5fe
         classDef validation fill:#fff3e0
         classDef implementation fill:#f3e5f5
         classDef delivery fill:#e8f5e8
-    
+
         class A1,A2 simple
         class C,D,E,E2 validation
         class B,E,E3 implementation
