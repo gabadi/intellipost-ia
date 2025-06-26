@@ -5,7 +5,7 @@ This module provides dependency injection setup for the hexagonal architecture,
 ensuring loose coupling between layers through Protocol-based interfaces.
 """
 
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
 
@@ -27,17 +27,39 @@ def get_app_logger(name: str = "main"):
 
 # Type aliases for dependency injection
 SettingsDep = Annotated[Settings, Depends(get_settings)]
-LoggerDep = Annotated[any, Depends(get_app_logger)]
+LoggerDep = Annotated[Any, Depends(get_app_logger)]  # Will be properly typed when logger interface is defined
 
 
 # Repository protocol dependencies (to be implemented by infrastructure layer)
 class DependencyContainer:
     """
-    Container for managing service dependencies.
+    Container for managing service dependencies in hexagonal architecture.
 
-    This class acts as a registry for Protocol implementations,
-    allowing the infrastructure layer to register concrete implementations
-    that the application layer can use through dependency injection.
+    This approach provides several benefits over pure FastAPI Depends():
+    1. Explicit dependency registration during application startup with fail-fast validation
+    2. Protocol-based contracts ensuring proper hexagonal architecture boundaries
+    3. Centralized dependency management for better testing and mocking
+    4. Clear separation between infrastructure and application concerns
+    5. Startup-time dependency validation prevents runtime configuration errors
+
+    Architectural Decision: Custom Container vs Pure FastAPI Depends()
+    ================================================================
+    While FastAPI's Depends() is more idiomatic, this container approach is chosen for:
+
+    - **Protocol Enforcement**: Forces infrastructure to register Protocol implementations,
+      maintaining clean hexagonal architecture boundaries
+    - **Fail-Fast Behavior**: Missing dependencies are caught at startup, not at runtime
+    - **Test Simplicity**: Easy dependency substitution without FastAPI override machinery
+    - **Explicit Wiring**: Clear visibility of all application dependencies in one place
+
+    The container works WITH FastAPI Depends(), not instead of it:
+    - Container manages Protocol registration and lifecycle
+    - FastAPI Depends() handles actual injection in route handlers
+    - Best of both worlds: architectural control + framework integration
+
+    For simpler applications, pure FastAPI Depends() would suffice.
+    For modular systems with Protocol-based architecture, this approach provides better
+    separation of concerns and maintainability.
     """
 
     def __init__(self):
@@ -131,10 +153,10 @@ def get_email_service():
 
 
 # Dependency type annotations for FastAPI
-UserRepositoryDep = Annotated[
-    any, Depends(get_user_repository)
-]  # Will be typed when implemented
-ProductRepositoryDep = Annotated[any, Depends(get_product_repository)]
-AIContentServiceDep = Annotated[any, Depends(get_ai_content_service)]
-MercadoLibreServiceDep = Annotated[any, Depends(get_mercadolibre_service)]
-EmailServiceDep = Annotated[any, Depends(get_email_service)]
+# Note: These use Any temporarily - will be replaced with proper Protocol types
+# when concrete implementations are created
+UserRepositoryDep = Annotated[Any, Depends(get_user_repository)]
+ProductRepositoryDep = Annotated[Any, Depends(get_product_repository)]
+AIContentServiceDep = Annotated[Any, Depends(get_ai_content_service)]
+MercadoLibreServiceDep = Annotated[Any, Depends(get_mercadolibre_service)]
+EmailServiceDep = Annotated[Any, Depends(get_email_service)]
