@@ -25,7 +25,6 @@ files:
     - party-mode-learning-review.md
     - commit-and-prepare-pr.md
     - create-comprehensive-pr.md
-    - update-epic-progress.md
     - epic-party-mode-retrospective.md
 
   checklists: []

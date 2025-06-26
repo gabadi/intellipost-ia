@@ -4,253 +4,103 @@
 
 **Agent:** sm
 **Action Type:** feedback-consolidation
-**Duration:** 10-15 minutes
-**LLM-Optimized:** Token-efficient structured consolidation
+**Duration:** 5-8 minutes
+**Purpose:** Extract actionable items from review feedback
 
 ## Purpose
 
-Consolidate feedback from all Round 1 reviews into prioritized action plan with REQUIRED-FOR-COMPLETION/QUALITY-STANDARD/IMPROVEMENT/SCOPE-CREEP classification for efficient implementation while maintaining story focus.
-
-## Context
-
-Central coordination after 5 parallel Round 1 reviews:
-
-- Architecture, Business, Process, QA, UX feedback streams
-- Priority classification and conflict resolution
-- Coherent implementation roadmap generation
-- Overlap elimination and action sequencing
+Analyze 5 review outputs, identify blocking issues and required decisions, output actionable items only.
 
 ## Inputs
 
-### Required
-
-- `story_file` (string): Path to the story file being reviewed
-- `architecture_feedback` (object): Results from architect review
-- `business_feedback` (object): Results from business/PO review
-- `process_feedback` (object): Results from process/SM review
-- `qa_feedback` (object): Results from QA review
-- `ux_feedback` (object): Results from UX expert review
+- Architecture review results
+- Business review results
+- Process review results
+- QA review results
+- UX review results
 
 ## Outputs
 
-- `consolidated_feedback` (object): Unified feedback with priority classification
-- `implementation_plan` (string): Step-by-step fix implementation sequence
-- `story_file` (string): Updated story file with consolidation summary
+- `blocking_issues` (array): Issues that block story completion
+- `technical_decisions` (array): Technical decisions required
+- `constraints_discovered` (array): Technical constraints found
 
 ## Instructions
 
-### Step 1: Pre-Consolidation Analysis
+### Step 1: Extract Blocking Issues (2-3 minutes)
 
-**Original Story Analysis (CRITICAL FIRST STEP):**
+Review all 5 feedback sources and identify:
 
-1. Read original user story and ALL acceptance criteria from story file
-2. Identify explicit requirements vs implicit assumptions
-3. Note any performance, testing, or quality requirements in original AC
-4. Establish baseline: "What was originally agreed as MVP scope?"
+**Issues that block story completion:**
 
-**Feedback Source Review:**
+- Build/compilation errors
+- Test failures
+- Missing core functionality
+- Business requirement gaps
 
-- Architecture: Technical design and implementation issues
-- Business: Requirements and value delivery gaps
-- Process: DoD compliance and workflow adherence
-- QA: Quality standards and testing coverage
-- UX: User experience and accessibility concerns
+**Technical decisions needed:**
 
-**Scope Assessment:**
+- Architecture choices requiring decision
+- Library/framework selections
+- Implementation approach options
 
-```
-FEEDBACK_ANALYSIS:
-- Total items: [count]
-- Original AC items: [count]
-- Scope expansion items: [count]
-- Overlapping issues: [count]
-- Conflicts identified: [count]
-- Implementation effort: [HIGH/MEDIUM/LOW]
-```
+### Step 2: Filter Out Non-Actionables (1-2 minutes)
 
-### Step 2: Priority Classification
+**IGNORE (not actionable):**
 
-**SCOPE-CREEP DETECTION (Scrum Master Responsibility):**
-Before classification, compare ALL feedback against original story acceptance criteria:
+- "Review completed successfully"
+- "Meets requirements" confirmations
+- Process compliance statements
+- General approval comments
+- Scope expansion suggestions
 
-- Read original user story and acceptance criteria from story file
-- Compare each suggestion against original requirements
-- Flag anything NOT explicitly required by acceptance criteria
-- Identify tests/standards beyond project minimums
-- Mark nice-to-have additions that expand scope
-- Apply "strict AC compliance" - if not in original AC = potential scope creep
-- Consult architect for complex technical feasibility questions if needed
+**INCLUDE (actionable):**
 
-**REQUIRED-FOR-COMPLETION** (Blocks story completion):
+- Specific errors to fix
+- Missing functionality to implement
+- Technical choices to make
+- Performance issues to resolve
 
-- Acceptance criteria gaps
-- Critical functionality breaks
-- Business rule violations
-- User journey blockers
-- Core feature missing/incorrect
+### Step 3: Structure Output Data (2-3 minutes)
 
-**QUALITY-STANDARD** (Project standard violations):
+Return structured data:
 
-- Test coverage below requirements
-- Code quality standard violations
-- Performance threshold failures
-- Required accessibility non-compliance
-- Security scan failures
-- Architecture pattern violations
+```yaml
+blocking_issues:
+  - issue: "CSS syntax error in PanicButton.svelte:23"
+    location: "PanicButton.svelte:23"
+    type: "build_error"
+  - issue: "Missing test coverage for error handling"
+    location: "utils/auth.js"
+    type: "missing_functionality"
 
-**IMPROVEMENT** (Future enhancement opportunities):
+technical_decisions:
+  - decision: "State management approach"
+    options: ["Svelte store", "props drilling"]
+    criteria: "Simplicity vs consistency"
+  - decision: "Styling approach"
+    options: ["CSS modules", "Tailwind"]
+    criteria: "Component isolation"
 
-- Code optimization suggestions
-- UX polish improvements
-- Technical debt reduction
-- Extended functionality ideas
-- Documentation enhancements
-- Process improvements
-
-**SCOPE-CREEP** (Outside original story scope - IGNORE):
-
-- Features not in original acceptance criteria
-- Tests beyond project minimum standards (unless AC specifies performance requirements)
-- Functionality belonging to future stories
-- Nice-to-have additions not in user story
-- Optimizations not needed for story completion
-- Requirements that expand original scope beyond MVP intent
-- "Should also do X" suggestions where X is not in AC
-
-**Classification Format (Max 50 tokens/item):**
-
-```
-[PRIORITY]: [Issue] - [Domain] - [Effort: S/M/L] - [Impact: H/M/L]
+constraints_discovered:
+  - constraint: "Must work with legacy auth system"
+    impact: "Cannot use modern auth patterns"
+  - constraint: "Performance requirement <200ms"
+    impact: "Must optimize rendering"
 ```
 
-### Step 3: Conflict Resolution (2-3 minutes)
-
-**Conflict Resolution Protocol:**
-
-- Technical vs Business conflicts → Acceptance criteria priority
-- Similar issues → Consolidate into single action
-- Priority disputes → Story completion impact assessment
-- Reviewer disagreements → Consult with relevant expert (architect for technical, PO for business)
-- Complex technical conflicts → Escalate to architect consultation
-
-### Step 4: Implementation Sequencing (3-4 minutes)
-
-**Sequencing Rules:**
-
-1. SCOPE-CREEP items → IGNORE (do not implement)
-2. REQUIRED-FOR-COMPLETION (dependency order)
-3. QUALITY-STANDARD (grouped by domain)
-4. Dependencies: Backend → Frontend → Integration
-5. Validation checkpoints after major changes
-
-**Implementation Groups:**
-
-```
-PHASE_1: [Critical fixes] - Est: [time]
-PHASE_2: [Quality standards] - Est: [time]
-VALIDATION: [Testing approach] - Est: [time]
-```
-
-### Step 5: Documentation Update (2 minutes)
-
-Update story file with:
-
-```markdown
-## Review Consolidation Summary
-
-**Scrum Master:** [Name] | **Date:** [YYYY-MM-DD] | **Duration:** [X minutes]
-
-### Round 1 Review Results
-
-- Architecture: [PASS/ISSUES] ([X] items)
-- Business: [PASS/ISSUES] ([X] items)
-- Process: [PASS/ISSUES] ([X] items)
-- QA: [PASS/ISSUES] ([X] items)
-- UX: [PASS/ISSUES] ([X] items)
-
-### Consolidated Actions
-
-#### REQUIRED-FOR-COMPLETION ([X] items)
-
-- [Issue] - [Domain] - [Effort] - [Impact] | Max 50 tokens
-
-#### QUALITY-STANDARD ([X] items)
-
-- [Issue] - [Domain] - [Standard] - [Effort] | Max 50 tokens
-
-#### IMPROVEMENT ([X] items)
-
-- [Issue] - [Domain] - [Effort] - [Value] | Max 50 tokens
-
-#### SCOPE-CREEP ([X] items - IGNORED)
-
-- [Issue] - [Domain] - [Reason: Outside AC/Future Story/Nice-to-have] | Max 50 tokens
-
-### Implementation Sequence
-
-**Phase 1:** [Critical fixes] - Est: [time] - Items: [count]
-**Phase 2:** [Quality fixes] - Est: [time] - Items: [count]
-**Validation:** [Testing approach] - Est: [time]
-
-**Total Effort:** [time estimate] | **Priority Items:** [count]
-```
-
-7. **Create implementation roadmap**
-   - Provide clear, actionable steps for developer
-   - Include specific technical requirements
-   - Note any coordination needs with other agents
-   - Specify validation criteria for each fix
+**Max 20 actionable items total. Focus on actions, not analysis.**
 
 ## Success Criteria
 
-- [ ] All 5 review streams analyzed and categorized
-- [ ] Original acceptance criteria reviewed and compared against all feedback
-- [ ] Scope creep identified by Scrum Master and marked as IGNORE
-- [ ] Conflicts resolved with clear rationale (architect consulted for technical disputes)
-- [ ] Priority classification complete (4 categories)
-- [ ] Implementation sequence with time estimates
-- [ ] Story file updated with structured summary
-- [ ] Action items under 50 tokens each
-- [ ] Ready for efficient developer implementation
-
-## Failure Conditions
-
-- Conflicting feedback not resolved
-- Missing critical review input
-- Unclear or unactionable implementation steps
-- Priority classification incomplete
-- Implementation sequence illogical
-
-## Error Handling
-
-If feedback is incomplete or unclear:
-
-1. Identify specific gaps in review feedback
-2. Request clarification from relevant reviewer
-3. Document assumptions made in consolidation
-4. Proceed with best available information
-5. Flag uncertainties for developer attention
-
-If conflicts cannot be resolved:
-
-1. Escalate to Product Owner for business priority decisions
-2. Make technical recommendations based on architecture principles
-3. Document the conflict and resolution approach
-4. Ensure MVP-BLOCKING classification takes precedence
-
-## LLM Optimization Notes
-
-- Token limits enforce brevity and focus
-- Structured classification enables rapid scanning
-- Time estimates prevent scope creep
-- Evidence-based priority prevents subjective interpretation
-- Phase sequencing optimizes implementation efficiency
-- Clear success criteria enable objective validation
+- [ ] All blocking issues identified with specific locations
+- [ ] All required decisions extracted with clear options
+- [ ] Output contains only actionable items
+- [ ] No process documentation or approval confirmations
+- [ ] Ready for implementation phase
 
 ## Integration Points
 
-- **Input from:** Round 1 reviews (architect, po, sm, qa, ux-expert)
-- **Output to:** implement-consolidated-fixes task (dev agent)
-- **Dependencies:** All Round 1 review checklists must be complete
-- **Consultation:** Architect available for complex technical dispute resolution
-- **Validation:** Next phase will validate using story docs + Playwright MCP
+- **Input from:** Round 1 reviews (5 agents)
+- **Output to:** implement-consolidated-fixes task
+- **Data format:** Structured YAML objects

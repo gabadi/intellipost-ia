@@ -3,9 +3,30 @@ workflow:
   name: Simple Story - UX/Content/Minor Changes
   description: >-
     Streamlined workflow for UI improvements, content changes, simple bug fixes, and minor backend adjustments.
+    Uses temp folder for coordination, outputs actionable items only, includes automatic cleanup.
     Optimized for changes that don't require comprehensive cross-specialist validation.
-    Includes complexity validation warnings to ensure appropriate workflow selection.
   type: story-simple
+
+  temp_folder_configuration:
+    working_directory: ".story-implementation/"
+    cleanup_before_pr: true
+    final_story_pattern: "epic{epic_number}.story{story_number}.story.md"
+
+  documentation_limits:
+    max_lines_per_temp_file: 30
+    actionable_items_only: true
+    no_process_documentation: true
+
+  variables:
+    temp_folder: ".story-implementation/"
+    issues_file: "{temp_folder}issues-found.md"
+    decisions_file: "{temp_folder}decisions-needed.md"
+    implementation_file: "{temp_folder}implementation-summary.md"
+    learning_items_file: "{temp_folder}learning-items.md"
+    learning_final_file: "{temp_folder}learning-final.md"
+    fixes_summary_file: "{temp_folder}fixes-summary.md"
+    validation_results_file: "{temp_folder}validation-results.md"
+    approval_notes_file: "{temp_folder}approval-notes.md"
 
   visualization: |
     ```mermaid
@@ -75,8 +96,10 @@ workflow:
       inputs:
         - epic_number
         - story_number
+        - approval_threshold: 90
       condition: "skip_epic_validation_if_same_epic_within_7_days"
-      notes: "REQUIRED: Use Task tool for execution - Validate story readiness, skip epic validation if same epic validated within 7 days"
+      success_criteria: "CRITICAL: Story must achieve minimum 90% approval threshold (4.5/5 validation criteria) to proceed to development"
+      notes: "REQUIRED: Use Task tool for execution - Validate story readiness with 90% threshold requirement, skip epic validation if same epic validated within 7 days"
       story_status_update: "Approved"
 
     - step: implement_story
@@ -101,25 +124,38 @@ workflow:
       story_status_update: "Review"
       checklist_completion_tracking: true
 
-    - step: architect_review
-      agent: architect
-      action: execute-checklist
+    - step: setup_temp_workspace
+      action: internal
       requires: pre_review_validation
+      create_directory: "{temp_folder}"
+      notes: "Create temporary workspace for workflow coordination"
+
+    - step: technical_review
+      agent: qa
+      action: review-story
+      requires: setup_temp_workspace
       inputs:
         - story_file
-      checklist: story-dod-checklist.md
-      notes: "REQUIRED: Use Task tool for execution - Single specialist review for simple changes - validates technical design and implementation"
-      checklist_completion_tracking: true
+      outputs:
+        - review_results (object)
+        - issues_found (array)
+      notes: "REQUIRED: Use Task tool for execution - Senior developer code review with direct refactoring capability for simple changes"
 
     - step: implement_fixes
       agent: dev
       action: implement-consolidated-fixes
-      requires: architect_review
+      requires: technical_review
       inputs:
         - story_file
-        - architect_feedback
-      condition: "if_architect_review_has_issues"
-      notes: "REQUIRED: Use Task tool for execution - Implement fixes from architect review if issues identified"
+        - issues_found
+      outputs:
+        - fixes_summary (object)
+        - fixes_status (string)
+      condition: "if_technical_review_has_issues"
+      file_outputs:
+        - file: "{fixes_summary_file}"
+          content: "fixes_summary"
+      notes: "REQUIRED: Use Task tool for execution - Implement fixes from senior developer review if issues identified"
 
     - step: validate_fixes
       agent: architect
@@ -127,20 +163,32 @@ workflow:
       requires: implement_fixes
       inputs:
         - story_file
-        - original_feedback
-        - implemented_fixes
+        - issues_found
+        - fixes_summary
+      outputs:
+        - validation_approved (boolean)
+        - validation_notes (string)
       condition: "if_fixes_were_implemented"
+      file_outputs:
+        - file: "{approval_notes_file}"
+          content: "validation_notes"
       notes: "REQUIRED: Use Task tool for execution - Architect validates fixes using story docs"
       story_status_update: "Implementation Validated"
 
     - step: capture_basic_learning
       agent: architect
       action: capture-learning-triage
-      requires: [architect_review, validate_fixes]
+      requires: [technical_review, validate_fixes]
       inputs:
         - story_file
-        - review_feedback
-        - implementation_fixes
+        - review_results
+        - fixes_summary
+      outputs:
+        - basic_learning_items (array)
+        - improvement_suggestions (array)
+      file_outputs:
+        - file: "{learning_items_file}"
+          content: "basic_learning_items"
       notes: "REQUIRED: Use Task tool for execution - Extract learnings into structured categories for simple story context"
       story_status_update: "Learning Extracted"
 
@@ -150,44 +198,53 @@ workflow:
       requires: capture_basic_learning
       inputs:
         - story_file
-        - learning_items
-        - implementation_changes
+        - basic_learning_items
+        - fixes_summary
+      outputs:
+        - commit_info (object)
+        - pr_context (string)
       notes: "REQUIRED: Use Task tool for execution - Commit implementation changes and prepare comprehensive PR context"
       story_status_update: "Changes Committed"
-
-    - step: update_epic_progress
-      agent: sm
-      action: update-epic-progress
-      requires: commit_and_prepare_pr
-      inputs:
-        - story_file
-        - epic_number
-        - commit_information
-        - learning_items
-      notes: "REQUIRED: Use Task tool for execution - Update epic progress tracking before PR creation"
-      story_status_update: "Epic Progress Updated"
 
     - step: create_comprehensive_pr
       agent: po
       action: create-comprehensive-pr
-      requires: update_epic_progress
+      requires: commit_and_prepare_pr
       inputs:
         - story_file
-        - commit_information
+        - commit_info
         - pr_context
-        - epic_progress_update
-      notes: "REQUIRED: Use Task tool for execution - Create PR with business summary, technical changes, and learning extraction"
+        - basic_learning_items
+        - epic_number
+      outputs:
+        - pr_title (string)
+        - pr_description (string)
+        - story_update (object)
+      file_outputs:
+        - action: update_story_file
+          file: "docs/stories/epic{epic_number}.story{story_number}.story.md"
+          content: "story_update"
+        - action: create_github_pr
+          title: "pr_title"
+          description: "pr_description"
+      notes: "REQUIRED: Use Task tool for execution - Create simple PR with essential context"
       story_status_update: "Done - Delivered"
+
+    - step: cleanup_temp_workspace
+      action: internal
+      requires: create_comprehensive_pr
+      remove_directory: "{temp_folder}"
+      notes: "Clean up temporary workspace after PR creation"
 
   success_criteria:
     - Story approved for development (epic validation may be skipped if recent)
     - Story implementation completed with all validations passing
     - Pre-review validation confirms project quality gates pass
-    - Single architect review validates technical implementation
+    - Single senior developer review validates technical implementation with refactoring
     - Any identified issues are resolved and validated
     - Learning extraction completed with basic triage
     - Implementation committed with comprehensive context
-    - Epic progress updated with story completion
+    - Epic completion status auto-calculated during PR creation
     - PR created with business summary and technical details
     - Story status updated to "Done - Delivered"
 
@@ -209,9 +266,9 @@ workflow:
       - Retry: "Re-run pre_review_validation after fixes"
       - Max_retries: 5
 
-    architect_review_failure:
-      - Issue: "Technical design or implementation issues identified"
-      - Action: "Dev implements architect feedback through implement_fixes step"
+    technical_review_failure:
+      - Issue: "Technical design or implementation issues identified by senior developer"
+      - Action: "Dev implements senior developer feedback through implement_fixes step"
       - Retry: "Proceed to implement_fixes (no retry at review level)"
       - Notes: "Review outcome flows to fix implementation regardless of pass/fail"
 
@@ -236,19 +293,12 @@ workflow:
       - Max_retries: 3
       - Notes: "Ensure all quality gates pass before commit"
 
-    epic_progress_failure:
-      - Issue: "Epic progress update fails or tracking incomplete"
-      - Action: "SM addresses epic file issues and completes progress tracking"
-      - Retry: "Re-run update_epic_progress after resolving tracking issues"
-      - Max_retries: 2
-      - Notes: "Ensure learning integration before PR creation"
-
     pr_creation_failure:
       - Issue: "PR creation fails or context incomplete"
       - Action: "PO addresses GitHub/PR platform issues and completes description"
       - Retry: "Re-run create_comprehensive_pr after resolving platform issues"
       - Max_retries: 3
-      - Notes: "Ensure comprehensive business and technical context"
+      - Notes: "Ensure comprehensive business and technical context, and epic completion auto-calculation"
 
   complexity_validation:
     simple_story_indicators:
@@ -299,12 +349,11 @@ workflow:
   handoff_prompts:
     po_validate_story: "Validate story {epic_number}.{story_number} readiness - may skip epic validation if same epic validated within 7 days"
     dev_implement: "Story approved. Implement story {epic_number}.{story_number} with validation (project quality gates required)"
-    pre_review: "Implementation complete. Run final validation before architect review - ensure project quality gates pass"
-    architect_review: "Pre-review passed. Conduct technical design and implementation review for simple story"
-    implement_fixes: "Architect review complete. Implement any identified fixes and document changes in story"
+    pre_review: "Implementation complete. Run final validation before senior developer review - ensure project quality gates pass"
+    technical_review: "Pre-review passed. Conduct senior developer code review with refactoring capability for simple story"
+    implement_fixes: "Senior developer review complete. Implement any identified fixes and document changes in story"
     validate_fixes: "Fixes implemented. Validate fixes using story documentation"
     capture_learning: "Implementation validated. Extract learnings into structured categories for simple story context"
     commit_prepare: "Learning extraction complete. Commit implementation changes and prepare comprehensive PR context"
-    update_epic: "Implementation committed. Update epic progress tracking before PR creation"
-    create_pr: "Epic progress updated. Create PR with business summary, technical changes, and learning extraction"
-    workflow_complete: "Story {epic_number}.{story_number} delivered via simple workflow. Epic progress updated with learning integration."
+    create_pr: "Implementation committed. Create PR with business summary, technical changes, learning extraction, and auto-calculate epic completion status"
+    workflow_complete: "Story {epic_number}.{story_number} delivered via simple workflow. Epic completion status auto-calculated. Retrospective: {TRIGGERED/NOT_TRIGGERED} based on completion detection."
