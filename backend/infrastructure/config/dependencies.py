@@ -1,9 +1,4 @@
-"""
-Dependency injection configuration for FastAPI.
-
-This module provides dependency injection setup for the hexagonal architecture,
-ensuring loose coupling between layers through Protocol-based interfaces.
-"""
+"""Dependency injection configuration for FastAPI."""
 
 from typing import Annotated, Any
 
@@ -32,64 +27,8 @@ LoggerDep = Annotated[
 ]  # Will be properly typed when logger interface is defined
 
 
-# Repository protocol dependencies (to be implemented by infrastructure layer)
 class DependencyContainer:
-    """
-    Container for managing service dependencies in hexagonal architecture.
-
-    This approach provides several benefits over pure FastAPI Depends():
-    1. Explicit dependency registration during application startup with fail-fast validation
-    2. Protocol-based contracts ensuring proper hexagonal architecture boundaries
-    3. Centralized dependency management for better testing and mocking
-    4. Clear separation between infrastructure and application concerns
-    5. Startup-time dependency validation prevents runtime configuration errors
-
-    Architectural Decision: Custom Container vs Pure FastAPI Depends()
-    ================================================================
-
-    **PR Review Question**: "Is this OK? why not directly the fastapi depends for everything?"
-
-    **Answer**: While FastAPI's Depends() is more idiomatic, this container approach is chosen for:
-
-    - **Protocol Enforcement**: Forces infrastructure to register Protocol implementations,
-      maintaining clean hexagonal architecture boundaries
-    - **Fail-Fast Behavior**: Missing dependencies are caught at startup, not at runtime
-    - **Test Simplicity**: Easy dependency substitution without FastAPI override machinery
-    - **Explicit Wiring**: Clear visibility of all application dependencies in one place
-
-    The container works WITH FastAPI Depends(), not instead of it:
-    - Container manages Protocol registration and lifecycle
-    - FastAPI Depends() handles actual injection in route handlers
-    - Best of both worlds: architectural control + framework integration
-
-    **Comparison with Pure FastAPI Depends()**:
-
-    Pure FastAPI approach would look like:
-    ```python
-    # Without container - directly in route handlers
-    @app.get("/users")
-    async def get_users(repo: UserRepository = Depends(get_user_repository)):
-        return await repo.get_all()
-    ```
-
-    Current container approach:
-    ```python
-    # With container - explicit registration and validation
-    container.register_user_repository(SqlUserRepository())
-
-    @app.get("/users")
-    async def get_users(repo: UserRepositoryDep):
-        return await repo.get_all()
-    ```
-
-    **Trade-offs**:
-    - Pure FastAPI: More idiomatic, less boilerplate
-    - Container: Better architecture enforcement, fail-fast validation
-
-    For simpler applications, pure FastAPI Depends() would suffice.
-    For modular systems with Protocol-based architecture, this approach provides better
-    separation of concerns and maintainability.
-    """
+    """Container for managing service dependencies with fail-fast validation."""
 
     def __init__(self):
         self._user_repository = None
@@ -181,9 +120,7 @@ def get_email_service():
     return container.get_email_service()
 
 
-# Dependency type annotations for FastAPI
-# Note: These use Any temporarily - will be replaced with proper Protocol types
-# when concrete implementations are created
+# Dependency type annotations for FastAPI routes
 UserRepositoryDep = Annotated[Any, Depends(get_user_repository)]
 ProductRepositoryDep = Annotated[Any, Depends(get_product_repository)]
 AIContentServiceDep = Annotated[Any, Depends(get_ai_content_service)]
