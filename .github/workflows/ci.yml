@@ -39,7 +39,7 @@ jobs:
       - name: Run backend type checking
         working-directory: ./backend
         run: |
-          uvx pyright
+          uv run pyright
 
       - name: Run backend architectural checks
         working-directory: ./backend
