@@ -233,9 +233,29 @@ Consistent Terms:
 
 ## Testing Standards
 
-**Strategy:** Domain (no mocks) | Application (mock externals) | E2E (critical journeys only)
-**Coverage:** 80%+ for domain logic | Mock external APIs: Gemini, PhotoRoom, MercadoLibre
+### Testing Strategy by Layer
 
+**Unit Tests:**
+- **Domain Logic:** Pure functions, no mocks needed
+- **Application Use Cases:** Mock external services only (AIContentGenerator, ImageProcessor)
+- **SOLID:** Each test has single responsibility
+
+**Integration Tests:**
+- **Database:** Real database (test containers), no mocking
+- **Internal Services:** Real implementations, no mocking
+- **External APIs:** httpx-mock + respx for external services (Gemini, PhotoRoom, MercadoLibre)
+
+**E2E Tests:**
+- **External Services:** httpx-mock + respx for Gemini API, PhotoRoom API, MercadoLibre API
+- **Internal Services:** Real database, real application logic, real infrastructure
+- **Focus:** Critical user journeys only
+
+### Coverage Requirements
+- **Minimum Coverage:** 80% for domain logic
+- **DRY:** Shared test utilities and factories
+- **YAGNI:** Don't test getters/setters, test business behavior
+
+### Test Behavior, Not State
 ```python
 # ✅ Test behavior outcomes
 result = await publisher.publish_if_ready(product)
