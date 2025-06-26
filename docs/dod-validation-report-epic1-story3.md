@@ -1,8 +1,8 @@
 # Story Definition of Done (DoD) Validation Report
 ## Epic 1, Story 3: Basic Frontend Application Framework (Svelte)
 
-**Validation Date**: 2025-06-26  
-**Validator**: Dev Agent (Claude Sonnet 4)  
+**Validation Date**: 2025-06-26
+**Validator**: Dev Agent (Claude Sonnet 4)
 **Story Status**: Complete → Review Ready
 
 ## Checklist Validation Results

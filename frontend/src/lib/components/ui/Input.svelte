@@ -1,18 +1,21 @@
 <script lang="ts">
-  export let type: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' = 'text';
+  export let type: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'file' =
+    'text';
   export let value: string = '';
   export let placeholder: string = '';
   export let label: string = '';
   export let error: string = '';
+  export let success: string = '';
+  export let help: string = '';
   export let disabled: boolean = false;
+  export let readonly: boolean = false;
   export let required: boolean = false;
   export let id: string = '';
   export let name: string = '';
-  // Removed autocomplete for TypeScript strict compatibility
   export let maxlength: number | undefined = undefined;
   export let minlength: number | undefined = undefined;
   export let pattern: string = '';
-  export let readonly: boolean = false;
+  export let size: 'sm' | 'md' | 'lg' = 'md';
 
   // Real-time validation props
   export let validateOnInput: boolean = true;
@@ -29,7 +32,8 @@
 
   // Combined error (external or internal)
   $: displayError = error || (touched ? internalError : '');
-  $: isValid = !displayError;
+  $: isValid = !displayError && success;
+  $: hasSuccess = success && !displayError;
 
   // Real-time validation function
   function validateInput(inputValue: string): string {
@@ -131,15 +135,17 @@
 
 <div class="input-group">
   {#if label}
-    <label for={inputId} class="input-label">
+    <label for={inputId} class="input-label" class:input-label--required={required}>
       {label}
-      {#if required}
-        <span class="required-asterisk">*</span>
-      {/if}
     </label>
   {/if}
 
-  <div class="input-wrapper">
+  <div
+    class="input-wrapper"
+    class:input-wrapper--valid={hasSuccess}
+    class:input-wrapper--error={displayError}
+    class:input-wrapper--with-end-icon={hasSuccess || displayError}
+  >
     <input
       {type}
       {placeholder}
@@ -151,10 +157,11 @@
       {pattern}
       id={inputId}
       name={name || inputId}
-      class="input"
-      class:error={displayError}
-      class:valid={isValid && touched && value}
-      class:disabled
+      class="input input--{size}"
+      class:input--valid={hasSuccess}
+      class:input--error={displayError}
+      class:input--search={type === 'search'}
+      class:input--file={type === 'file'}
       {value}
       on:input={handleInput}
       on:focus={handleFocus}
@@ -163,137 +170,39 @@
       on:keydown
       on:keyup
       aria-invalid={!!displayError}
-      aria-describedby={displayError ? `${inputId}-error` : undefined}
+      aria-describedby={displayError
+        ? `${inputId}-error`
+        : hasSuccess
+          ? `${inputId}-success`
+          : help
+            ? `${inputId}-help`
+            : undefined}
     />
 
-    {#if isValid && touched && value}
-      <div class="validation-icon valid-icon" aria-hidden="true">✓</div>
+    {#if hasSuccess}
+      <div class="validation-icon validation-icon--valid" aria-hidden="true">✓</div>
     {:else if displayError}
-      <div class="validation-icon error-icon" aria-hidden="true">⚠</div>
+      <div class="validation-icon validation-icon--error" aria-hidden="true">⚠</div>
     {/if}
   </div>
 
+  {#if help && !displayError && !hasSuccess}
+    <div class="input-help" id="{inputId}-help">
+      {help}
+    </div>
+  {/if}
+
+  {#if hasSuccess}
+    <div class="input-success" id="{inputId}-success">
+      {success}
+    </div>
+  {/if}
+
   {#if displayError}
-    <div class="error-message" role="alert" id="{inputId}-error">
+    <div class="input-error" role="alert" id="{inputId}-error">
       {displayError}
     </div>
   {/if}
 </div>
 
-<style>
-  .input-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .input-label {
-    font-weight: 500;
-    color: var(--color-gray-700);
-    font-size: var(--text-sm);
-    line-height: var(--leading-tight);
-  }
-
-  .required-asterisk {
-    color: var(--color-error);
-    margin-left: var(--space-1);
-  }
-
-  .input-wrapper {
-    position: relative;
-  }
-
-  .validation-icon {
-    position: absolute;
-    right: var(--space-3);
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: var(--text-base);
-    font-weight: 600;
-    pointer-events: none;
-  }
-
-  .valid-icon {
-    color: var(--color-success);
-  }
-
-  .error-icon {
-    color: var(--color-error);
-  }
-
-  .input {
-    width: 100%;
-    padding: var(--space-3);
-    padding-right: calc(var(--space-3) + 24px); /* Space for validation icon */
-    border: 1px solid var(--color-gray-300);
-    border-radius: var(--radius-md);
-    font-size: var(--text-base);
-    line-height: var(--leading-normal);
-    background-color: white;
-    transition: all 0.2s ease;
-    min-height: var(--touch-target-min);
-    box-sizing: border-box;
-  }
-
-  .input.valid {
-    border-color: var(--color-success);
-    background-color: #f0fdf4; /* Very light green */
-  }
-
-  .input.valid:focus {
-    border-color: var(--color-success);
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-  }
-
-  .input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
-  }
-
-  .input:hover:not(:disabled):not(.error) {
-    border-color: var(--color-gray-400);
-  }
-
-  .input.error {
-    border-color: var(--color-error);
-  }
-
-  .input.error:focus {
-    border-color: var(--color-error);
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-  }
-
-  .input:disabled,
-  .input.disabled {
-    background-color: var(--color-gray-100);
-    color: var(--color-gray-500);
-    cursor: not-allowed;
-  }
-
-  .input:read-only {
-    background-color: var(--color-gray-50);
-    cursor: default;
-  }
-
-  .input::placeholder {
-    color: var(--color-gray-400);
-  }
-
-  .error-message {
-    color: var(--color-error);
-    font-size: var(--text-sm);
-    line-height: var(--leading-tight);
-  }
-
-  /* Auto-fill styling */
-  .input:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0 30px white inset;
-    -webkit-text-fill-color: var(--color-gray-900);
-  }
-
-  .input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 30px white inset;
-    -webkit-text-fill-color: var(--color-gray-900);
-  }
-</style>
+<!-- No component-specific styles needed - handled by semantic CSS classes -->

@@ -1,0 +1,16 @@
+/* Utilities Index - IntelliPost AI */
+/* Imports all utility classes in correct order */
+
+@import './layout.css';
+@import './spacing.css';
+@import './sizing.css';
+@import './typography.css';
+@import './colors.css';
+@import './borders.css';
+@import './effects.css';
+@import './interactivity.css';
+
+/* UX Enhancement Utilities */
+@import './micro-interactions.css';
+@import './loading-states.css';
+@import './enhanced-focus.css';

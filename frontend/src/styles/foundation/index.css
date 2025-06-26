@@ -1,0 +1,6 @@
+/* Foundation Index - IntelliPost AI */
+/* Imports all foundation styles in correct order */
+
+@import './tokens.css';
+@import './reset.css';
+@import './base.css';

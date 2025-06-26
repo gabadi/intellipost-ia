@@ -1,4 +1,8 @@
 {
+  "options": {
+    "doNotFollow": "node_modules",
+    "includeOnly": "^src/"
+  },
   "forbidden": [
     {
       "name": "no-circular",
@@ -64,9 +68,5 @@
         "path": "^src/lib/components/"
       }
     }
-  ],
-  "options": {
-    "doNotFollow": "node_modules",
-    "includeOnly": "^src/"
-  }
+  ]
 }

@@ -33,30 +33,30 @@
 </svelte:head>
 
 <div class="container">
-  <div class="dashboard">
-    <header class="dashboard-header">
+  <div class="py-6" style="min-height: calc(100vh - 70px);">
+    <header class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
       <p class="text-gray-600 mt-2">Welcome to IntelliPost AI Control Panel</p>
     </header>
 
-    <div class="status-section">
+    <div class="mb-8">
       <h2 class="text-xl font-semibold text-gray-900 mb-4">System Status</h2>
 
-      <div class="status-card">
-        <div class="status-header">
+      <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
           <h3 class="font-medium text-gray-900">Backend Connection</h3>
           {#if isLoading}
-            <div class="status-indicator loading">
+            <div class="flex items-center gap-2">
               <span class="loading-spinner"></span>
               <span class="text-sm text-gray-500">Checking...</span>
             </div>
           {:else if healthStatus}
-            <div class="status-indicator success">
+            <div class="flex items-center gap-2">
               <span class="status-dot success"></span>
               <span class="text-sm text-gray-600">Healthy</span>
             </div>
           {:else}
-            <div class="status-indicator error">
+            <div class="flex items-center gap-2">
               <span class="status-dot error"></span>
               <span class="text-sm text-gray-600">Disconnected</span>
             </div>
@@ -64,26 +64,26 @@
         </div>
 
         {#if healthStatus}
-          <div class="status-details">
-            <div class="detail-row">
-              <span class="detail-label">Status:</span>
-              <span class="detail-value success">{healthStatus.status}</span>
+          <div class="flex flex-col gap-2 pt-4 border-t border-gray-100">
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-500">Status:</span>
+              <span class="text-sm text-green-600 font-medium">{healthStatus.status}</span>
             </div>
-            <div class="detail-row">
-              <span class="detail-label">Version:</span>
-              <span class="detail-value">{healthStatus.version}</span>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-500">Version:</span>
+              <span class="text-sm text-gray-900 font-medium">{healthStatus.version}</span>
             </div>
-            <div class="detail-row">
-              <span class="detail-label">Last Check:</span>
-              <span class="detail-value">{new Date(healthStatus.timestamp).toLocaleString()}</span>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-500">Last Check:</span>
+              <span class="text-sm text-gray-900 font-medium">{new Date(healthStatus.timestamp).toLocaleString()}</span>
             </div>
           </div>
         {:else if healthError}
-          <div class="error-details">
+          <div class="pt-4 border-t border-gray-100">
             <p class="text-sm text-gray-600 mb-2">Connection Error:</p>
-            <p class="text-sm error">{healthError}</p>
+            <p class="text-sm text-red-600 mb-3">{healthError}</p>
             <button
-              class="retry-button"
+              class="btn btn--primary btn--sm"
               on:click={() => {
                 isLoading = true;
                 checkBackendHealth();
@@ -96,18 +96,18 @@
       </div>
     </div>
 
-    <div class="quick-actions">
+    <div>
       <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-      <div class="action-grid">
+      <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
         <a href="/products/new" class="action-card">
-          <div class="action-icon">➕</div>
-          <h3 class="font-medium text-gray-900">Create Product</h3>
+          <div class="text-2xl mb-3">➕</div>
+          <h3 class="font-medium text-gray-900 mb-2">Create Product</h3>
           <p class="text-sm text-gray-500">Start a new AI-powered product listing</p>
         </a>
 
         <a href="/products" class="action-card">
-          <div class="action-icon">📦</div>
-          <h3 class="font-medium text-gray-900">View Products</h3>
+          <div class="text-2xl mb-3">📦</div>
+          <h3 class="font-medium text-gray-900 mb-2">View Products</h3>
           <p class="text-sm text-gray-500">Manage your existing product listings</p>
         </a>
       </div>
@@ -116,40 +116,7 @@
 </div>
 
 <style>
-  .dashboard {
-    padding: var(--space-6) 0;
-    min-height: calc(100vh - 70px);
-  }
-
-  .dashboard-header {
-    margin-bottom: var(--space-8);
-  }
-
-  .status-section {
-    margin-bottom: var(--space-8);
-  }
-
-  .status-card {
-    background: white;
-    border: 1px solid var(--color-gray-200);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .status-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-4);
-  }
-
-  .status-indicator {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-
+  /* Minimal component-specific styles using design tokens */
   .status-dot {
     width: 8px;
     height: 8px;
@@ -170,73 +137,16 @@
     border: 2px solid var(--color-gray-300);
     border-top-color: var(--color-primary);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin var(--duration-1000) linear infinite;
   }
 
-  .status-details {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--color-gray-100);
-  }
-
-  .detail-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .detail-label {
-    font-size: var(--text-sm);
-    color: var(--color-gray-500);
-  }
-
-  .detail-value {
-    font-size: var(--text-sm);
-    color: var(--color-gray-900);
-    font-weight: 500;
-  }
-
-  .detail-value.success {
-    color: var(--color-success);
-  }
-
-  .error-details {
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--color-gray-100);
-  }
-
-  .retry-button {
-    margin-top: var(--space-3);
-    padding: var(--space-2) var(--space-4);
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    cursor: pointer;
-    min-height: var(--touch-target-min);
-    transition: background-color 0.2s ease;
-  }
-
-  .retry-button:hover {
-    background-color: var(--color-primary-hover);
-  }
-
-  .action-grid {
-    display: grid;
-    gap: var(--space-4);
-    grid-template-columns: 1fr;
-  }
-
-  @media (min-width: 640px) {
-    .action-grid {
-      grid-template-columns: repeat(2, 1fr);
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
     }
   }
 
+  /* Action Card Component */
   .action-card {
     display: block;
     background: white;
@@ -244,7 +154,7 @@
     border-radius: var(--radius-lg);
     padding: var(--space-6);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all var(--duration-200) var(--ease-out);
     box-shadow: var(--shadow-sm);
     min-height: var(--touch-target-min);
   }
@@ -253,20 +163,5 @@
     border-color: var(--color-primary);
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
-  }
-
-  .action-icon {
-    font-size: var(--text-2xl);
-    margin-bottom: var(--space-3);
-  }
-
-  .action-card h3 {
-    margin-bottom: var(--space-2);
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
   }
 </style>

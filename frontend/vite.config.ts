@@ -11,14 +11,28 @@ export default defineConfig({
   },
   build: {
     target: 'es2022',
-    cssMinify: true,
+    cssMinify: 'esbuild',
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['svelte', '@sveltejs/kit'],
         },
+        // Optimize CSS asset organization
+        assetFileNames: assetInfo => {
+          const info = assetInfo.name?.split('.') ?? [];
+          const extType = info[info.length - 1];
+          if (/css/i.test(extType)) {
+            return 'assets/css/[name]-[hash][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
       },
     },
+    cssCodeSplit: true,
+  },
+  css: {
+    postcss: './postcss.config.js',
+    devSourcemap: true,
   },
   // @ts-expect-error - vitest config in vite config
   test: {
