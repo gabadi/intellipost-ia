@@ -1,9 +1,7 @@
-<main>
-  <slot />
-</main>
+<script>
+  import Layout from "$lib/components/Layout.svelte";
+</script>
 
-<style>
-  main {
-    padding: 1rem;
-  }
-</style>
+<Layout>
+  <slot />
+</Layout>
