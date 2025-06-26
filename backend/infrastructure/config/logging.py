@@ -9,6 +9,9 @@ import time
 import uuid
 from typing import Any
 
+# Import ASGI types from starlette
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
 from .settings import Settings
 
 # Context variables for request tracing
@@ -375,27 +378,27 @@ class StructuredLogger:
         self.logger = get_logger(name)
         self.name = name
 
-    def info(self, message: str, **kwargs):
+    def info(self, message: str, **kwargs: Any) -> None:
         """Log info message with structured data."""
         self.logger.info(message, extra=kwargs)
 
-    def debug(self, message: str, **kwargs):
+    def debug(self, message: str, **kwargs: Any) -> None:
         """Log debug message with structured data."""
         self.logger.debug(message, extra=kwargs)
 
-    def warning(self, message: str, **kwargs):
+    def warning(self, message: str, **kwargs: Any) -> None:
         """Log warning message with structured data."""
         self.logger.warning(message, extra=kwargs)
 
-    def error(self, message: str, **kwargs):
+    def error(self, message: str, **kwargs: Any) -> None:
         """Log error message with structured data."""
         self.logger.error(message, extra=kwargs)
 
-    def critical(self, message: str, **kwargs):
+    def critical(self, message: str, **kwargs: Any) -> None:
         """Log critical message with structured data."""
         self.logger.critical(message, extra=kwargs)
 
-    def performance(self, operation: str, duration_ms: float, **kwargs):
+    def performance(self, operation: str, duration_ms: float, **kwargs: Any) -> None:
         """Log performance metrics."""
         self.logger.info(
             f"Performance: {operation}",
@@ -407,7 +410,9 @@ class StructuredLogger:
             },
         )
 
-    def security_event(self, event_type: str, severity: str = "medium", **kwargs):
+    def security_event(
+        self, event_type: str, severity: str = "medium", **kwargs: Any
+    ) -> None:
         """Log security events."""
         security_logger = logging.getLogger("intellipost.security")
         security_logger.warning(
@@ -420,7 +425,7 @@ class StructuredLogger:
             },
         )
 
-    def audit(self, action: str, resource: str, **kwargs):
+    def audit(self, action: str, resource: str, **kwargs: Any) -> None:
         """Log audit events."""
         self.logger.info(
             f"Audit: {action} on {resource}",
@@ -450,11 +455,16 @@ def get_structured_logger(name: str) -> StructuredLogger:
 class StructuredRequestLoggingMiddleware:
     """Enhanced middleware for structured HTTP request/response logging."""
 
-    def __init__(self, app):
+    def __init__(self, app: ASGIApp) -> None:
         self.app = app
         self.logger = get_structured_logger("request")
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(
+        self,
+        scope: Scope,
+        receive: Receive,
+        send: Send,
+    ) -> None:
         """Process request with structured logging."""
         if scope["type"] == "http":
             # Generate request tracking IDs
@@ -478,9 +488,9 @@ class StructuredRequestLoggingMiddleware:
             )
 
             # Wrap send to log response
-            async def logging_send(message):
+            async def logging_send(message: Message) -> None:
                 if message["type"] == "http.response.start":
-                    status_code = message["status"]
+                    status_code: int = message["status"]
                     duration_ms = (time.time() - start_time) * 1000
 
                     # Log request completion

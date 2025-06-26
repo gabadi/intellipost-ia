@@ -5,6 +5,7 @@ This module defines abstract base class for product domain services.
 """
 
 from abc import ABC, abstractmethod
+from typing import Any
 from uuid import UUID
 
 from .product import Product
@@ -14,7 +15,9 @@ class ProductDomainService(ABC):
     """Abstract base class for product domain services."""
 
     @abstractmethod
-    async def create_product(self, user_id: UUID, product_data: dict) -> Product:
+    async def create_product(
+        self, user_id: UUID, product_data: dict[str, Any]
+    ) -> Product:
         """Create a new product."""
         ...
 

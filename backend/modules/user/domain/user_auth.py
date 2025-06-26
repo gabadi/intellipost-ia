@@ -4,7 +4,7 @@ User authentication and verification logic.
 This module contains methods for managing user authentication state.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from .user_core import UserCore
 from .user_status import UserStatus
@@ -26,29 +26,29 @@ class UserAuth:
     @staticmethod
     def verify_email(user: UserCore) -> None:
         """Mark user's email as verified."""
-        user.email_verified_at = datetime.utcnow()
-        user.updated_at = datetime.utcnow()
+        user.email_verified_at = datetime.now(UTC)
+        user.updated_at = datetime.now(UTC)
 
     @staticmethod
     def record_login(user: UserCore) -> None:
         """Record user login timestamp."""
-        user.last_login_at = datetime.utcnow()
-        user.updated_at = datetime.utcnow()
+        user.last_login_at = datetime.now(UTC)
+        user.updated_at = datetime.now(UTC)
 
     @staticmethod
     def activate(user: UserCore) -> None:
         """Activate user account."""
         user.status = UserStatus.ACTIVE
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(UTC)
 
     @staticmethod
     def deactivate(user: UserCore) -> None:
         """Deactivate user account."""
         user.status = UserStatus.INACTIVE
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(UTC)
 
     @staticmethod
     def suspend(user: UserCore) -> None:
         """Suspend user account."""
         user.status = UserStatus.SUSPENDED
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(UTC)

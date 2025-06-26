@@ -47,15 +47,16 @@ class HealthChecker:
             result.fetchone()
 
             # Connection pool info (if available)
-            pool_info = {}
+            pool_info: dict[str, Any] = {}
             try:
                 if hasattr(session.bind, "pool") and session.bind.pool is not None:  # type: ignore[attr-defined]
                     pool = session.bind.pool  # type: ignore[attr-defined]
+                    # Use type-ignored pool information extraction
                     pool_info = {
-                        "pool_size": getattr(pool, "size", lambda: 0)(),
-                        "checked_out": getattr(pool, "checkedout", lambda: 0)(),
-                        "overflow": getattr(pool, "overflow", lambda: 0)(),
-                        "invalid": getattr(pool, "invalid", lambda: 0)(),
+                        "pool_size": getattr(pool, "size", lambda: 0)(),  # type: ignore[misc]
+                        "checked_out": getattr(pool, "checkedout", lambda: 0)(),  # type: ignore[misc]
+                        "overflow": getattr(pool, "overflow", lambda: 0)(),  # type: ignore[misc]
+                        "invalid": getattr(pool, "invalid", lambda: 0)(),  # type: ignore[misc]
                     }
             except AttributeError:
                 pool_info = {"info": "Pool information not available"}
@@ -90,7 +91,7 @@ class HealthChecker:
         Returns:
             Dictionary containing external service health status
         """
-        services = {}
+        services: dict[str, Any] = {}
 
         # Check MercadoLibre API (if configured)
         if self.settings.mercadolibre_client_id:
@@ -149,7 +150,7 @@ class HealthChecker:
             start_time = time.time()
 
             # Create S3 client
-            s3_client = boto3.client(
+            s3_client = boto3.client(  # type: ignore[attr-defined]
                 "s3",
                 endpoint_url=self.settings.s3_endpoint_url,
                 aws_access_key_id=self.settings.s3_access_key,
@@ -158,11 +159,11 @@ class HealthChecker:
             )
 
             # List buckets (lightweight operation)
-            response = s3_client.list_buckets()
+            response = s3_client.list_buckets()  # type: ignore[attr-defined]
 
             response_time = (time.time() - start_time) * 1000
 
-            bucket_count = len(response.get("Buckets", []))
+            bucket_count = len(response.get("Buckets", []))  # type: ignore[attr-defined]
 
             return {
                 "status": "healthy",
@@ -256,7 +257,7 @@ class HealthChecker:
         """
         start_time = time.time()
 
-        health_report = {
+        health_report: dict[str, Any] = {
             "timestamp": time.time(),
             "overall_status": "healthy",
             "checks": {},
@@ -264,33 +265,39 @@ class HealthChecker:
         }
 
         # Check system resources
-        health_report["checks"]["system"] = self.check_system_resources()
+        checks_dict = health_report["checks"]
+        if isinstance(checks_dict, dict):
+            checks_dict["system"] = self.check_system_resources()
 
-        # Check database if session provided
-        if session:
-            health_report["checks"]["database"] = await self.check_database(session)
+            # Check database if session provided
+            if session:
+                checks_dict["database"] = await self.check_database(session)
 
-        # Check external services
-        health_report["checks"][
-            "external_services"
-        ] = await self.check_external_services()
+            # Check external services
+            checks_dict["external_services"] = await self.check_external_services()
 
         # Determine overall status
-        all_checks = []
+        all_checks: list[str] = []
 
         # Collect statuses from all checks
-        for _check_category, check_result in health_report["checks"].items():
-            if isinstance(check_result, dict):
-                if "status" in check_result:
-                    all_checks.append(check_result["status"])
-                else:
-                    # For nested checks (like external_services)
-                    for _service_name, service_check in check_result.items():
-                        if (
-                            isinstance(service_check, dict)
-                            and "status" in service_check
-                        ):
-                            all_checks.append(service_check["status"])
+        checks_data = health_report["checks"]
+        if isinstance(checks_data, dict):
+            for _check_category, check_result in checks_data.items():  # type: ignore[misc]
+                if isinstance(check_result, dict):
+                    if "status" in check_result:
+                        status_value = check_result["status"]  # type: ignore[misc]
+                        if isinstance(status_value, str):
+                            all_checks.append(status_value)
+                    else:
+                        # For nested checks (like external_services)
+                        for _service_name, service_check in check_result.items():  # type: ignore[misc]
+                            if (
+                                isinstance(service_check, dict)
+                                and "status" in service_check
+                            ):
+                                nested_status = service_check["status"]  # type: ignore[misc]
+                                if isinstance(nested_status, str):
+                                    all_checks.append(nested_status)
 
         # Determine overall status
         if "unhealthy" in all_checks:

@@ -3,13 +3,13 @@ exclude = []
 source_roots = [
     ".",
 ]
+root_module = "allow"
 
 # Infrastructure layer - can depend on all domain interfaces
 [[modules]]
 path = "infrastructure"
 depends_on = [
     "modules.ai_content.domain",
-    "modules.auth.domain",
     "modules.communications.domain",
     "modules.mercadolibre.domain",
     "modules.product.domain",
@@ -21,10 +21,6 @@ depends_on = [
 path = "<root>"
 depends_on = [
     "infrastructure",
-    "modules.ai_content.domain",
-    "modules.auth.domain",
-    "modules.communications.domain",
-    "modules.mercadolibre.domain",
     "modules.product.domain",
     "modules.user.domain",
 ]
@@ -36,15 +32,15 @@ depends_on = []
 
 [[modules]]
 path = "modules.ai_content.application"
-depends_on = ["modules.ai_content.domain"]
+depends_on = []
 
 [[modules]]
 path = "modules.ai_content.infrastructure"
-depends_on = ["modules.ai_content.domain", "infrastructure"]
+depends_on = [ "infrastructure"]
 
 [[modules]]
 path = "modules.ai_content.api"
-depends_on = ["modules.ai_content.domain", "modules.ai_content.application"]
+depends_on = []
 
 # Auth module - domain is pure, infrastructure can depend on shared infrastructure
 [[modules]]
@@ -53,15 +49,15 @@ depends_on = []
 
 [[modules]]
 path = "modules.auth.application"
-depends_on = ["modules.auth.domain"]
+depends_on = []
 
 [[modules]]
 path = "modules.auth.infrastructure"
-depends_on = ["modules.auth.domain", "infrastructure"]
+depends_on = []
 
 [[modules]]
 path = "modules.auth.api"
-depends_on = ["modules.auth.domain", "modules.auth.application"]
+depends_on = []
 
 # Communications module - domain is pure, infrastructure can depend on shared infrastructure
 [[modules]]
@@ -70,15 +66,15 @@ depends_on = []
 
 [[modules]]
 path = "modules.communications.application"
-depends_on = ["modules.communications.domain"]
+depends_on = []
 
 [[modules]]
 path = "modules.communications.infrastructure"
-depends_on = ["modules.communications.domain", "infrastructure"]
+depends_on = []
 
 [[modules]]
 path = "modules.communications.api"
-depends_on = ["modules.communications.domain", "modules.communications.application"]
+depends_on = []
 
 # MercadoLibre module - domain is pure, infrastructure can depend on shared infrastructure
 [[modules]]
@@ -87,15 +83,15 @@ depends_on = []
 
 [[modules]]
 path = "modules.mercadolibre.application"
-depends_on = ["modules.mercadolibre.domain"]
+depends_on = []
 
 [[modules]]
 path = "modules.mercadolibre.infrastructure"
-depends_on = ["modules.mercadolibre.domain", "infrastructure"]
+depends_on = [ "infrastructure"]
 
 [[modules]]
 path = "modules.mercadolibre.api"
-depends_on = ["modules.mercadolibre.domain", "modules.mercadolibre.application"]
+depends_on = []
 
 # Product module - domain is pure, infrastructure can depend on shared infrastructure
 [[modules]]
@@ -104,15 +100,15 @@ depends_on = []
 
 [[modules]]
 path = "modules.product.application"
-depends_on = ["modules.product.domain"]
+depends_on = []
 
 [[modules]]
 path = "modules.product.infrastructure"
-depends_on = ["modules.product.domain", "infrastructure"]
+depends_on = [ "infrastructure"]
 
 [[modules]]
 path = "modules.product.api"
-depends_on = ["modules.product.domain", "modules.product.application"]
+depends_on = []
 
 # User module - domain is pure, infrastructure can depend on shared infrastructure
 [[modules]]
@@ -121,12 +117,12 @@ depends_on = []
 
 [[modules]]
 path = "modules.user.application"
-depends_on = ["modules.user.domain"]
+depends_on = []
 
 [[modules]]
 path = "modules.user.infrastructure"
-depends_on = ["modules.user.domain", "infrastructure"]
+depends_on = [ "infrastructure"]
 
 [[modules]]
 path = "modules.user.api"
-depends_on = ["modules.user.domain", "modules.user.application"]
+depends_on = []

@@ -4,7 +4,7 @@ User MercadoLibre integration logic.
 This module contains methods for managing MercadoLibre integration.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from .user_core import UserCore
 
@@ -19,7 +19,7 @@ class UserMLIntegration:
             user.ml_user_id is not None
             and user.ml_access_token is not None
             and user.ml_token_expires_at is not None
-            and user.ml_token_expires_at > datetime.utcnow()
+            and user.ml_token_expires_at > datetime.now(UTC)
         )
 
     @staticmethod
@@ -30,4 +30,4 @@ class UserMLIntegration:
         user.ml_access_token = access_token
         user.ml_refresh_token = refresh_token
         user.ml_token_expires_at = expires_at
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(UTC)

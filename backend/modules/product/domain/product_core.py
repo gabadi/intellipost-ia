@@ -5,7 +5,7 @@ This module contains the core Product entity dataclass and basic properties.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 from .confidence_score import ConfidenceScore
@@ -49,5 +49,5 @@ class ProductCore:
     def __post_init__(self) -> None:
         """Post-initialization validation and setup."""
         if self.created_at is None:
-            self.created_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+            self.created_at = datetime.now(UTC)
+        self.updated_at = datetime.now(UTC)

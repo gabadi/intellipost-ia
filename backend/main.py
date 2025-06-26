@@ -5,6 +5,9 @@ This module contains the main FastAPI application with hexagonal architecture
 following the specifications from Epic1.Story2.
 """
 
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -23,6 +26,21 @@ settings = Settings()
 setup_logging(settings)
 logger = get_logger(__name__)
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
+    """Application lifespan event handler."""
+    # Startup
+    logger.info("Starting IntelliPost AI Backend...")
+    logger.info(f"Environment: {settings.environment}")
+    logger.info(f"Debug mode: {settings.debug}")
+
+    yield
+
+    # Shutdown
+    logger.info("Shutting down IntelliPost AI Backend...")
+
+
 # Create FastAPI application
 app = FastAPI(
     title="IntelliPost AI Backend",
@@ -30,6 +48,7 @@ app = FastAPI(
     description="Intelligent social media posting platform with AI content generation",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Include routers
@@ -46,20 +65,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def startup_event() -> None:
-    """Application startup event handler."""
-    logger.info("Starting IntelliPost AI Backend...")
-    logger.info(f"Environment: {settings.environment}")
-    logger.info(f"Debug mode: {settings.debug}")
-
-
-@app.on_event("shutdown")
-async def shutdown_event() -> None:
-    """Application shutdown event handler."""
-    logger.info("Shutting down IntelliPost AI Backend...")
 
 
 @app.get("/")
