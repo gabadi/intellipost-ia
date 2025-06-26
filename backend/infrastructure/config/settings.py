@@ -83,8 +83,8 @@ class Settings(BaseSettings):
         """Validate that secret key is properly set for production."""
         if (
             self.environment.lower() == "production"
-            and self.secret_key == "dev-secret-key-change-in-production"
-        ):  # nosec B105
+            and self.secret_key == "dev-secret-key-change-in-production"  # nosec B105
+        ):
             raise ValueError(
                 "Secret key must be changed from default value in production"
             )
