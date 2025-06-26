@@ -44,7 +44,8 @@ class Settings(BaseSettings):
     )
 
     # API configuration
-    api_host: str = Field(default="0.0.0.0", description="API host")
+    # Default to localhost for security. Use INTELLIPOST_API_HOST="0.0.0.0" in production if needed
+    api_host: str = Field(default="127.0.0.1", description="API host")  # nosec B104
     api_port: int = Field(default=8000, description="API port")
 
     # CORS configuration
