@@ -1,0 +1,406 @@
+/* Micro-interactions Utilities - IntelliPost AI */
+/* High-impact UX enhancement system for smooth, responsive interactions */
+
+/* Animation Keyframes */
+@keyframes bounce-subtle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--color-primary-500);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 4px var(--color-primary-200);
+    opacity: 0.8;
+  }
+}
+
+@keyframes scale-in {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Hover Effects */
+.hover-lift {
+  transition:
+    transform var(--duration-200) var(--ease-out),
+    box-shadow var(--duration-200) var(--ease-out);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-scale {
+  transition: transform var(--duration-200) var(--ease-out);
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-glow {
+  transition: box-shadow var(--duration-300) var(--ease-out);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px var(--color-primary-300);
+}
+
+.hover-border-grow {
+  position: relative;
+  overflow: hidden;
+}
+
+.hover-border-grow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+  transition: left var(--duration-500) var(--ease-out);
+}
+
+.hover-border-grow:hover::before {
+  left: 100%;
+}
+
+/* Focus Effects */
+.focus-ring-inset {
+  outline: none;
+  box-shadow: inset 0 0 0 2px transparent;
+  transition: box-shadow var(--duration-200) var(--ease-out);
+}
+
+.focus-ring-inset:focus {
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+.focus-glow {
+  outline: none;
+  transition: box-shadow var(--duration-200) var(--ease-out);
+}
+
+.focus-glow:focus {
+  box-shadow: 0 0 0 3px var(--color-primary-200);
+}
+
+.focus-pulse {
+  outline: none;
+}
+
+.focus-pulse:focus {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Click/Active Effects */
+.active-press {
+  transition: transform var(--duration-100) var(--ease-in);
+}
+
+.active-press:active {
+  transform: scale(0.98);
+}
+
+.active-bounce {
+  transition: transform var(--duration-150) var(--ease-out);
+}
+
+.active-bounce:active {
+  animation: bounce-subtle 0.3s ease-out;
+}
+
+/* Ripple Effect for Touch Interfaces */
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: var(--color-primary-200);
+  transform: translate(-50%, -50%);
+  transition:
+    width var(--duration-300) ease-out,
+    height var(--duration-300) ease-out;
+}
+
+.ripple-effect:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Smooth State Transitions */
+.smooth-state {
+  transition: all var(--duration-200) var(--ease-out);
+}
+
+.smooth-color {
+  transition:
+    color var(--duration-200) var(--ease-out),
+    background-color var(--duration-200) var(--ease-out),
+    border-color var(--duration-200) var(--ease-out);
+}
+
+.smooth-transform {
+  transition: transform var(--duration-300) var(--ease-out);
+}
+
+/* Entry Animations */
+.animate-in {
+  animation: scale-in var(--duration-300) var(--ease-out);
+}
+
+.slide-in {
+  animation: slide-up var(--duration-300) var(--ease-out);
+}
+
+/* Interaction Feedback */
+.feedback-success {
+  background-color: var(--color-success-50);
+  border-color: var(--color-success-300);
+  transition: all var(--duration-200) var(--ease-out);
+}
+
+.feedback-error {
+  background-color: var(--color-error-50);
+  border-color: var(--color-error-300);
+  transition: all var(--duration-200) var(--ease-out);
+}
+
+.feedback-warning {
+  background-color: var(--color-warning-50);
+  border-color: var(--color-warning-300);
+  transition: all var(--duration-200) var(--ease-out);
+}
+
+/* Loading State Transitions */
+.loading-fade {
+  opacity: 0.7;
+  transition: opacity var(--duration-200) var(--ease-out);
+}
+
+.loading-pulse {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* Interactive Elements */
+.interactive {
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.interactive:hover {
+  opacity: 0.9;
+}
+
+.interactive:active {
+  transform: scale(0.98);
+}
+
+/* Disabled State Override */
+.disabled,
+[disabled],
+[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.3);
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .hover-glow:hover {
+    box-shadow: 0 0 20px var(--color-text);
+  }
+
+  .focus-glow:focus {
+    box-shadow: 0 0 0 3px var(--color-text);
+  }
+
+  .focus-pulse:focus {
+    animation: none;
+    box-shadow: 0 0 0 3px var(--color-text);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift,
+  .hover-scale,
+  .active-press,
+  .active-bounce,
+  .smooth-state,
+  .smooth-color,
+  .smooth-transform,
+  .ripple-effect,
+  .loading-fade {
+    transition: none;
+    animation: none;
+  }
+
+  .animate-in,
+  .slide-in,
+  .loading-pulse,
+  .focus-pulse {
+    animation: none;
+  }
+
+  .hover-lift:hover {
+    transform: none;
+    box-shadow: var(--shadow-md);
+  }
+
+  .hover-scale:hover,
+  .active-press:active {
+    transform: none;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .hover-lift:hover,
+  .hover-scale:hover,
+  .hover-glow:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .ripple-effect:active::before {
+    width: 200px;
+    height: 200px;
+    transition-duration: var(--duration-200);
+  }
+
+  .interactive:active {
+    transform: scale(0.95);
+    transition: transform var(--duration-100) var(--ease-out);
+  }
+}
+
+/* Dark Mode Adjustments */
+:root[data-theme='dark'] .hover-glow:hover {
+  box-shadow: 0 0 20px var(--color-primary-400);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .hover-glow:hover {
+    box-shadow: 0 0 20px var(--color-primary-400);
+  }
+}
+
+:root[data-theme='dark'] .focus-glow:focus {
+  box-shadow: 0 0 0 3px var(--color-primary-400);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .focus-glow:focus {
+    box-shadow: 0 0 0 3px var(--color-primary-400);
+  }
+}
+
+/* Performance Optimizations */
+.gpu-accelerated {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+/* Utility Combinations - Remove @apply directives for better compatibility */
+.btn-micro {
+  transition:
+    transform var(--duration-200) var(--ease-out),
+    box-shadow var(--duration-200) var(--ease-out),
+    all var(--duration-200) var(--ease-out);
+}
+
+.btn-micro:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-micro:active {
+  transform: scale(0.98);
+}
+
+.btn-micro:focus {
+  box-shadow: 0 0 0 3px var(--color-primary-200);
+}
+
+.card-micro {
+  transition:
+    transform var(--duration-200) var(--ease-out),
+    box-shadow var(--duration-200) var(--ease-out),
+    all var(--duration-200) var(--ease-out);
+  animation: scale-in var(--duration-300) var(--ease-out);
+}
+
+.card-micro:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.input-micro {
+  outline: none;
+  box-shadow: inset 0 0 0 2px transparent;
+  transition:
+    box-shadow var(--duration-200) var(--ease-out),
+    color var(--duration-200) var(--ease-out),
+    background-color var(--duration-200) var(--ease-out),
+    border-color var(--duration-200) var(--ease-out);
+}
+
+.input-micro:focus {
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}

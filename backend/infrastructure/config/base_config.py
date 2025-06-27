@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class BaseModuleConfig(BaseSettings, ABC):
@@ -33,12 +33,9 @@ class BaseModuleConfig(BaseSettings, ABC):
     log_level: str = Field(default="INFO", description="Module-specific logging level")
     log_format: str = Field(default="json", description="Log format (json/text)")
 
-    class Config:
-        """Pydantic configuration."""
-
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False
+    )
 
     @property
     def is_development(self) -> bool:

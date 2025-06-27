@@ -1,0 +1,568 @@
+/* Interactivity Utilities - IntelliPost AI */
+
+/* Accent Color */
+.accent-auto {
+  accent-color: auto;
+}
+.accent-primary {
+  accent-color: var(--color-primary);
+}
+.accent-secondary {
+  accent-color: var(--color-secondary);
+}
+.accent-success {
+  accent-color: var(--color-success);
+}
+.accent-warning {
+  accent-color: var(--color-warning);
+}
+.accent-error {
+  accent-color: var(--color-error);
+}
+.accent-info {
+  accent-color: var(--color-info);
+}
+
+/* Appearance */
+.appearance-none {
+  appearance: none;
+}
+.appearance-auto {
+  appearance: auto;
+}
+
+/* Cursor */
+.cursor-auto {
+  cursor: auto;
+}
+.cursor-default {
+  cursor: default;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.cursor-wait {
+  cursor: wait;
+}
+.cursor-text {
+  cursor: text;
+}
+.cursor-move {
+  cursor: move;
+}
+.cursor-help {
+  cursor: help;
+}
+.cursor-not-allowed {
+  cursor: not-allowed;
+}
+.cursor-none {
+  cursor: none;
+}
+.cursor-context-menu {
+  cursor: context-menu;
+}
+.cursor-progress {
+  cursor: progress;
+}
+.cursor-cell {
+  cursor: cell;
+}
+.cursor-crosshair {
+  cursor: crosshair;
+}
+.cursor-vertical-text {
+  cursor: vertical-text;
+}
+.cursor-alias {
+  cursor: alias;
+}
+.cursor-copy {
+  cursor: copy;
+}
+.cursor-no-drop {
+  cursor: no-drop;
+}
+.cursor-grab {
+  cursor: grab;
+}
+.cursor-grabbing {
+  cursor: grabbing;
+}
+.cursor-all-scroll {
+  cursor: all-scroll;
+}
+.cursor-col-resize {
+  cursor: col-resize;
+}
+.cursor-row-resize {
+  cursor: row-resize;
+}
+.cursor-n-resize {
+  cursor: n-resize;
+}
+.cursor-e-resize {
+  cursor: e-resize;
+}
+.cursor-s-resize {
+  cursor: s-resize;
+}
+.cursor-w-resize {
+  cursor: w-resize;
+}
+.cursor-ne-resize {
+  cursor: ne-resize;
+}
+.cursor-nw-resize {
+  cursor: nw-resize;
+}
+.cursor-se-resize {
+  cursor: se-resize;
+}
+.cursor-sw-resize {
+  cursor: sw-resize;
+}
+.cursor-ew-resize {
+  cursor: ew-resize;
+}
+.cursor-ns-resize {
+  cursor: ns-resize;
+}
+.cursor-nesw-resize {
+  cursor: nesw-resize;
+}
+.cursor-nwse-resize {
+  cursor: nwse-resize;
+}
+.cursor-zoom-in {
+  cursor: zoom-in;
+}
+.cursor-zoom-out {
+  cursor: zoom-out;
+}
+
+/* Caret Color */
+.caret-inherit {
+  caret-color: inherit;
+}
+.caret-current {
+  caret-color: currentColor;
+}
+.caret-transparent {
+  caret-color: transparent;
+}
+.caret-black {
+  caret-color: #000000;
+}
+.caret-white {
+  caret-color: #ffffff;
+}
+.caret-primary {
+  caret-color: var(--color-primary);
+}
+.caret-secondary {
+  caret-color: var(--color-secondary);
+}
+.caret-success {
+  caret-color: var(--color-success);
+}
+.caret-warning {
+  caret-color: var(--color-warning);
+}
+.caret-error {
+  caret-color: var(--color-error);
+}
+.caret-info {
+  caret-color: var(--color-info);
+}
+.caret-gray-300 {
+  caret-color: var(--color-gray-300);
+}
+.caret-gray-400 {
+  caret-color: var(--color-gray-400);
+}
+.caret-gray-500 {
+  caret-color: var(--color-gray-500);
+}
+.caret-gray-600 {
+  caret-color: var(--color-gray-600);
+}
+.caret-gray-700 {
+  caret-color: var(--color-gray-700);
+}
+.caret-gray-800 {
+  caret-color: var(--color-gray-800);
+}
+.caret-gray-900 {
+  caret-color: var(--color-gray-900);
+}
+
+/* Pointer Events */
+.pointer-events-none {
+  pointer-events: none;
+}
+.pointer-events-auto {
+  pointer-events: auto;
+}
+
+/* Resize */
+.resize-none {
+  resize: none;
+}
+.resize {
+  resize: both;
+}
+.resize-y {
+  resize: vertical;
+}
+.resize-x {
+  resize: horizontal;
+}
+
+/* Scroll Behavior */
+.scroll-auto {
+  scroll-behavior: auto;
+}
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+/* Scroll Margin */
+.scroll-m-0 {
+  scroll-margin: var(--space-0);
+}
+.scroll-m-px {
+  scroll-margin: var(--space-px);
+}
+.scroll-m-0-5 {
+  scroll-margin: var(--space-0-5);
+}
+.scroll-m-1 {
+  scroll-margin: var(--space-1);
+}
+.scroll-m-1-5 {
+  scroll-margin: var(--space-1-5);
+}
+.scroll-m-2 {
+  scroll-margin: var(--space-2);
+}
+.scroll-m-2-5 {
+  scroll-margin: var(--space-2-5);
+}
+.scroll-m-3 {
+  scroll-margin: var(--space-3);
+}
+.scroll-m-3-5 {
+  scroll-margin: var(--space-3-5);
+}
+.scroll-m-4 {
+  scroll-margin: var(--space-4);
+}
+.scroll-m-5 {
+  scroll-margin: var(--space-5);
+}
+.scroll-m-6 {
+  scroll-margin: var(--space-6);
+}
+.scroll-m-7 {
+  scroll-margin: var(--space-7);
+}
+.scroll-m-8 {
+  scroll-margin: var(--space-8);
+}
+.scroll-m-9 {
+  scroll-margin: var(--space-9);
+}
+.scroll-m-10 {
+  scroll-margin: var(--space-10);
+}
+.scroll-m-11 {
+  scroll-margin: var(--space-11);
+}
+.scroll-m-12 {
+  scroll-margin: var(--space-12);
+}
+.scroll-m-14 {
+  scroll-margin: var(--space-14);
+}
+.scroll-m-16 {
+  scroll-margin: var(--space-16);
+}
+.scroll-m-20 {
+  scroll-margin: var(--space-20);
+}
+.scroll-m-24 {
+  scroll-margin: var(--space-24);
+}
+.scroll-m-28 {
+  scroll-margin: var(--space-28);
+}
+.scroll-m-32 {
+  scroll-margin: var(--space-32);
+}
+
+/* Scroll Padding */
+.scroll-p-0 {
+  scroll-padding: var(--space-0);
+}
+.scroll-p-px {
+  scroll-padding: var(--space-px);
+}
+.scroll-p-0-5 {
+  scroll-padding: var(--space-0-5);
+}
+.scroll-p-1 {
+  scroll-padding: var(--space-1);
+}
+.scroll-p-1-5 {
+  scroll-padding: var(--space-1-5);
+}
+.scroll-p-2 {
+  scroll-padding: var(--space-2);
+}
+.scroll-p-2-5 {
+  scroll-padding: var(--space-2-5);
+}
+.scroll-p-3 {
+  scroll-padding: var(--space-3);
+}
+.scroll-p-3-5 {
+  scroll-padding: var(--space-3-5);
+}
+.scroll-p-4 {
+  scroll-padding: var(--space-4);
+}
+.scroll-p-5 {
+  scroll-padding: var(--space-5);
+}
+.scroll-p-6 {
+  scroll-padding: var(--space-6);
+}
+.scroll-p-7 {
+  scroll-padding: var(--space-7);
+}
+.scroll-p-8 {
+  scroll-padding: var(--space-8);
+}
+.scroll-p-9 {
+  scroll-padding: var(--space-9);
+}
+.scroll-p-10 {
+  scroll-padding: var(--space-10);
+}
+.scroll-p-11 {
+  scroll-padding: var(--space-11);
+}
+.scroll-p-12 {
+  scroll-padding: var(--space-12);
+}
+.scroll-p-14 {
+  scroll-padding: var(--space-14);
+}
+.scroll-p-16 {
+  scroll-padding: var(--space-16);
+}
+.scroll-p-20 {
+  scroll-padding: var(--space-20);
+}
+.scroll-p-24 {
+  scroll-padding: var(--space-24);
+}
+.scroll-p-28 {
+  scroll-padding: var(--space-28);
+}
+.scroll-p-32 {
+  scroll-padding: var(--space-32);
+}
+
+/* Scroll Snap Align */
+.snap-start {
+  scroll-snap-align: start;
+}
+.snap-end {
+  scroll-snap-align: end;
+}
+.snap-center {
+  scroll-snap-align: center;
+}
+.snap-align-none {
+  scroll-snap-align: none;
+}
+
+/* Scroll Snap Stop */
+.snap-normal {
+  scroll-snap-stop: normal;
+}
+.snap-always {
+  scroll-snap-stop: always;
+}
+
+/* Scroll Snap Type */
+.snap-none {
+  scroll-snap-type: none;
+}
+.snap-x {
+  scroll-snap-type: x mandatory;
+}
+.snap-y {
+  scroll-snap-type: y mandatory;
+}
+.snap-both {
+  scroll-snap-type: both mandatory;
+}
+.snap-mandatory {
+  scroll-snap-type: both mandatory;
+}
+.snap-proximity {
+  scroll-snap-type: both proximity;
+}
+
+/* Touch Action */
+.touch-auto {
+  touch-action: auto;
+}
+.touch-none {
+  touch-action: none;
+}
+.touch-pan-x {
+  touch-action: pan-x;
+}
+.touch-pan-left {
+  touch-action: pan-left;
+}
+.touch-pan-right {
+  touch-action: pan-right;
+}
+.touch-pan-y {
+  touch-action: pan-y;
+}
+.touch-pan-up {
+  touch-action: pan-up;
+}
+.touch-pan-down {
+  touch-action: pan-down;
+}
+.touch-pinch-zoom {
+  touch-action: pinch-zoom;
+}
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* User Select */
+.select-none {
+  user-select: none;
+}
+.select-text {
+  user-select: text;
+}
+.select-all {
+  user-select: all;
+}
+.select-auto {
+  user-select: auto;
+}
+
+/* Will Change */
+.will-change-auto {
+  will-change: auto;
+}
+.will-change-scroll {
+  will-change: scroll-position;
+}
+.will-change-contents {
+  will-change: contents;
+}
+.will-change-transform {
+  will-change: transform;
+}
+
+/* Forced Color Adjust */
+.forced-color-adjust-auto {
+  forced-color-adjust: auto;
+}
+.forced-color-adjust-none {
+  forced-color-adjust: none;
+}
+
+/* Print Color Adjust */
+.print-color-adjust-economy {
+  print-color-adjust: economy;
+}
+.print-color-adjust-exact {
+  print-color-adjust: exact;
+}
+
+/* Focus utilities for improved accessibility */
+.focus-ring {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.focus-ring-primary:focus {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.focus-ring-secondary:focus {
+  outline: var(--focus-ring-width) solid var(--color-secondary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.focus-ring-success:focus {
+  outline: var(--focus-ring-width) solid var(--color-success);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.focus-ring-warning:focus {
+  outline: var(--focus-ring-width) solid var(--color-warning);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.focus-ring-error:focus {
+  outline: var(--focus-ring-width) solid var(--color-error);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.focus-ring-info:focus {
+  outline: var(--focus-ring-width) solid var(--color-info);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Touch target utilities for mobile accessibility */
+.touch-target {
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+}
+
+.touch-target-lg {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.touch-target-xl {
+  min-height: 56px;
+  min-width: 56px;
+}
+
+/* Interactive state utilities */
+.interactive:hover {
+  opacity: 0.8;
+  transition: opacity var(--duration-200) var(--ease-out);
+}
+
+.interactive:focus {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.interactive:active {
+  transform: scale(0.98);
+  transition: transform var(--duration-75) var(--ease-out);
+}
+
+.interactive:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}

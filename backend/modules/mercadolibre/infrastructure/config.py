@@ -8,6 +8,7 @@ including API settings, rate limiting, and marketplace-specific configurations.
 from typing import Any
 
 from pydantic import Field
+from pydantic_settings import SettingsConfigDict
 
 from infrastructure.config.base_config import BaseModuleConfig, ExternalServiceMixin
 
@@ -107,10 +108,12 @@ class MercadoLibreModuleConfig(BaseModuleConfig, ExternalServiceMixin):
         default=30, description="Webhook processing timeout"
     )
 
-    class Config(BaseModuleConfig.Config):
-        """Pydantic configuration for MercadoLibre module."""
-
-        env_prefix = "INTELLIPOST_MERCADOLIBRE_"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        env_prefix="INTELLIPOST_MERCADOLIBRE_",
+    )
 
     def get_module_specific_settings(self) -> dict[str, Any]:
         """Get MercadoLibre module specific settings."""

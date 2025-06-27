@@ -1,6 +1,6 @@
 <script lang="ts">
-  export let appName = "IntelliPost AI";
-  export let subtitle = "AI-Powered MercadoLibre Listing Assistant";
+  export let appName = 'IntelliPost AI';
+  export let subtitle = 'AI-Powered MercadoLibre Listing Assistant';
 </script>
 
 <div class="welcome">

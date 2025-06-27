@@ -1,0 +1,659 @@
+/* Typography Utilities - IntelliPost AI */
+
+/* Font Family */
+.font-sans {
+  font-family: var(--font-family-sans);
+}
+.font-serif {
+  font-family: var(--font-family-serif);
+}
+.font-mono {
+  font-family: var(--font-family-mono);
+}
+
+/* Font Size */
+.text-xs {
+  font-size: var(--font-size-xs);
+}
+.text-sm {
+  font-size: var(--font-size-sm);
+}
+.text-base {
+  font-size: var(--font-size-base);
+}
+.text-lg {
+  font-size: var(--font-size-lg);
+}
+.text-xl {
+  font-size: var(--font-size-xl);
+}
+.text-2xl {
+  font-size: var(--font-size-2xl);
+}
+.text-3xl {
+  font-size: var(--font-size-3xl);
+}
+.text-4xl {
+  font-size: var(--font-size-4xl);
+}
+.text-5xl {
+  font-size: var(--font-size-5xl);
+}
+.text-6xl {
+  font-size: var(--font-size-6xl);
+}
+
+/* Font Weight */
+.font-thin {
+  font-weight: var(--font-weight-thin);
+}
+.font-light {
+  font-weight: var(--font-weight-light);
+}
+.font-normal {
+  font-weight: var(--font-weight-normal);
+}
+.font-medium {
+  font-weight: var(--font-weight-medium);
+}
+.font-semibold {
+  font-weight: var(--font-weight-semibold);
+}
+.font-bold {
+  font-weight: var(--font-weight-bold);
+}
+.font-extrabold {
+  font-weight: var(--font-weight-extrabold);
+}
+.font-black {
+  font-weight: var(--font-weight-black);
+}
+
+/* Line Height */
+.leading-none {
+  line-height: var(--line-height-none);
+}
+.leading-tight {
+  line-height: var(--line-height-tight);
+}
+.leading-snug {
+  line-height: var(--line-height-snug);
+}
+.leading-normal {
+  line-height: var(--line-height-normal);
+}
+.leading-relaxed {
+  line-height: var(--line-height-relaxed);
+}
+.leading-loose {
+  line-height: var(--line-height-loose);
+}
+
+/* Letter Spacing */
+.tracking-tighter {
+  letter-spacing: var(--letter-spacing-tighter);
+}
+.tracking-tight {
+  letter-spacing: var(--letter-spacing-tight);
+}
+.tracking-normal {
+  letter-spacing: var(--letter-spacing-normal);
+}
+.tracking-wide {
+  letter-spacing: var(--letter-spacing-wide);
+}
+.tracking-wider {
+  letter-spacing: var(--letter-spacing-wider);
+}
+.tracking-widest {
+  letter-spacing: var(--letter-spacing-widest);
+}
+
+/* Text Alignment */
+.text-left {
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.text-justify {
+  text-align: justify;
+}
+.text-start {
+  text-align: start;
+}
+.text-end {
+  text-align: end;
+}
+
+/* Text Color */
+/* Primary Colors */
+.text-primary-50 {
+  color: var(--color-primary-50);
+}
+.text-primary-100 {
+  color: var(--color-primary-100);
+}
+.text-primary-200 {
+  color: var(--color-primary-200);
+}
+.text-primary-300 {
+  color: var(--color-primary-300);
+}
+.text-primary-400 {
+  color: var(--color-primary-400);
+}
+.text-primary-500 {
+  color: var(--color-primary-500);
+}
+.text-primary-600 {
+  color: var(--color-primary-600);
+}
+.text-primary-700 {
+  color: var(--color-primary-700);
+}
+.text-primary-800 {
+  color: var(--color-primary-800);
+}
+.text-primary-900 {
+  color: var(--color-primary-900);
+}
+.text-primary {
+  color: var(--color-primary);
+}
+
+/* Secondary Colors */
+.text-secondary-50 {
+  color: var(--color-secondary-50);
+}
+.text-secondary-100 {
+  color: var(--color-secondary-100);
+}
+.text-secondary-200 {
+  color: var(--color-secondary-200);
+}
+.text-secondary-300 {
+  color: var(--color-secondary-300);
+}
+.text-secondary-400 {
+  color: var(--color-secondary-400);
+}
+.text-secondary-500 {
+  color: var(--color-secondary-500);
+}
+.text-secondary-600 {
+  color: var(--color-secondary-600);
+}
+.text-secondary-700 {
+  color: var(--color-secondary-700);
+}
+.text-secondary-800 {
+  color: var(--color-secondary-800);
+}
+.text-secondary-900 {
+  color: var(--color-secondary-900);
+}
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+/* Gray Scale */
+.text-gray-50 {
+  color: var(--color-gray-50);
+}
+.text-gray-100 {
+  color: var(--color-gray-100);
+}
+.text-gray-200 {
+  color: var(--color-gray-200);
+}
+.text-gray-300 {
+  color: var(--color-gray-300);
+}
+.text-gray-400 {
+  color: var(--color-gray-400);
+}
+.text-gray-500 {
+  color: var(--color-gray-500);
+}
+.text-gray-600 {
+  color: var(--color-gray-600);
+}
+.text-gray-700 {
+  color: var(--color-gray-700);
+}
+.text-gray-800 {
+  color: var(--color-gray-800);
+}
+.text-gray-900 {
+  color: var(--color-gray-900);
+}
+
+/* Semantic Text Colors */
+.text-current {
+  color: currentColor;
+}
+.text-transparent {
+  color: transparent;
+}
+.text-black {
+  color: #000000;
+}
+.text-white {
+  color: #ffffff;
+}
+
+/* Text System Colors */
+.text-default {
+  color: var(--color-text);
+}
+.text-muted {
+  color: var(--color-text-muted);
+}
+.text-secondary-text {
+  color: var(--color-text-secondary);
+}
+.text-tertiary {
+  color: var(--color-text-tertiary);
+}
+.text-inverse {
+  color: var(--color-text-inverse);
+}
+.text-disabled {
+  color: var(--color-text-disabled);
+}
+
+/* Status Colors */
+.text-success {
+  color: var(--color-success);
+}
+.text-warning {
+  color: var(--color-warning);
+}
+.text-error {
+  color: var(--color-error);
+}
+.text-info {
+  color: var(--color-info);
+}
+
+/* Accent Colors */
+.text-accent {
+  color: var(--color-accent);
+}
+
+/* Text Decoration */
+.underline {
+  text-decoration-line: underline;
+}
+.overline {
+  text-decoration-line: overline;
+}
+.line-through {
+  text-decoration-line: line-through;
+}
+.no-underline {
+  text-decoration-line: none;
+}
+
+/* Text Decoration Color */
+.decoration-primary {
+  text-decoration-color: var(--color-primary);
+}
+.decoration-secondary {
+  text-decoration-color: var(--color-secondary);
+}
+.decoration-success {
+  text-decoration-color: var(--color-success);
+}
+.decoration-warning {
+  text-decoration-color: var(--color-warning);
+}
+.decoration-error {
+  text-decoration-color: var(--color-error);
+}
+.decoration-info {
+  text-decoration-color: var(--color-info);
+}
+
+/* Text Decoration Style */
+.decoration-solid {
+  text-decoration-style: solid;
+}
+.decoration-double {
+  text-decoration-style: double;
+}
+.decoration-dotted {
+  text-decoration-style: dotted;
+}
+.decoration-dashed {
+  text-decoration-style: dashed;
+}
+.decoration-wavy {
+  text-decoration-style: wavy;
+}
+
+/* Text Decoration Thickness */
+.decoration-auto {
+  text-decoration-thickness: auto;
+}
+.decoration-from-font {
+  text-decoration-thickness: from-font;
+}
+.decoration-0 {
+  text-decoration-thickness: 0px;
+}
+.decoration-1 {
+  text-decoration-thickness: 1px;
+}
+.decoration-2 {
+  text-decoration-thickness: 2px;
+}
+.decoration-4 {
+  text-decoration-thickness: 4px;
+}
+.decoration-8 {
+  text-decoration-thickness: 8px;
+}
+
+/* Text Underline Offset */
+.underline-offset-auto {
+  text-underline-offset: auto;
+}
+.underline-offset-0 {
+  text-underline-offset: 0px;
+}
+.underline-offset-1 {
+  text-underline-offset: 1px;
+}
+.underline-offset-2 {
+  text-underline-offset: 2px;
+}
+.underline-offset-4 {
+  text-underline-offset: 4px;
+}
+.underline-offset-8 {
+  text-underline-offset: 8px;
+}
+
+/* Text Transform */
+.uppercase {
+  text-transform: uppercase;
+}
+.lowercase {
+  text-transform: lowercase;
+}
+.capitalize {
+  text-transform: capitalize;
+}
+.normal-case {
+  text-transform: none;
+}
+
+/* Font Style */
+.italic {
+  font-style: italic;
+}
+.not-italic {
+  font-style: normal;
+}
+
+/* Font Variant Numeric */
+.normal-nums {
+  font-variant-numeric: normal;
+}
+.ordinal {
+  font-variant-numeric: ordinal;
+}
+.slashed-zero {
+  font-variant-numeric: slashed-zero;
+}
+.lining-nums {
+  font-variant-numeric: lining-nums;
+}
+.oldstyle-nums {
+  font-variant-numeric: oldstyle-nums;
+}
+.proportional-nums {
+  font-variant-numeric: proportional-nums;
+}
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+.diagonal-fractions {
+  font-variant-numeric: diagonal-fractions;
+}
+.stacked-fractions {
+  font-variant-numeric: stacked-fractions;
+}
+
+/* Text Overflow */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-ellipsis {
+  text-overflow: ellipsis;
+}
+.text-clip {
+  text-overflow: clip;
+}
+
+/* Text Wrap */
+.text-wrap {
+  text-wrap: wrap;
+}
+.text-nowrap {
+  text-wrap: nowrap;
+}
+.text-balance {
+  text-wrap: balance;
+}
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* White Space */
+.whitespace-normal {
+  white-space: normal;
+}
+.whitespace-nowrap {
+  white-space: nowrap;
+}
+.whitespace-pre {
+  white-space: pre;
+}
+.whitespace-pre-line {
+  white-space: pre-line;
+}
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
+}
+.whitespace-break-spaces {
+  white-space: break-spaces;
+}
+
+/* Word Break */
+.break-normal {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.break-words {
+  overflow-wrap: break-word;
+}
+.break-all {
+  word-break: break-all;
+}
+.break-keep {
+  word-break: keep-all;
+}
+
+/* Hyphens */
+.hyphens-none {
+  hyphens: none;
+}
+.hyphens-manual {
+  hyphens: manual;
+}
+.hyphens-auto {
+  hyphens: auto;
+}
+
+/* Content */
+.content-none {
+  content: none;
+}
+
+/* List Style Type */
+.list-none {
+  list-style-type: none;
+}
+.list-disc {
+  list-style-type: disc;
+}
+.list-decimal {
+  list-style-type: decimal;
+}
+
+/* List Style Position */
+.list-inside {
+  list-style-position: inside;
+}
+.list-outside {
+  list-style-position: outside;
+}
+
+/* Placeholder Color */
+.placeholder-gray-100::placeholder {
+  color: var(--color-gray-100);
+}
+.placeholder-gray-200::placeholder {
+  color: var(--color-gray-200);
+}
+.placeholder-gray-300::placeholder {
+  color: var(--color-gray-300);
+}
+.placeholder-gray-400::placeholder {
+  color: var(--color-gray-400);
+}
+.placeholder-gray-500::placeholder {
+  color: var(--color-gray-500);
+}
+.placeholder-gray-600::placeholder {
+  color: var(--color-gray-600);
+}
+.placeholder-gray-700::placeholder {
+  color: var(--color-gray-700);
+}
+.placeholder-gray-800::placeholder {
+  color: var(--color-gray-800);
+}
+.placeholder-gray-900::placeholder {
+  color: var(--color-gray-900);
+}
+
+/* Text Indent */
+.indent-0 {
+  text-indent: 0px;
+}
+.indent-px {
+  text-indent: 1px;
+}
+.indent-0-5 {
+  text-indent: var(--space-0-5);
+}
+.indent-1 {
+  text-indent: var(--space-1);
+}
+.indent-1-5 {
+  text-indent: var(--space-1-5);
+}
+.indent-2 {
+  text-indent: var(--space-2);
+}
+.indent-2-5 {
+  text-indent: var(--space-2-5);
+}
+.indent-3 {
+  text-indent: var(--space-3);
+}
+.indent-3-5 {
+  text-indent: var(--space-3-5);
+}
+.indent-4 {
+  text-indent: var(--space-4);
+}
+.indent-5 {
+  text-indent: var(--space-5);
+}
+.indent-6 {
+  text-indent: var(--space-6);
+}
+.indent-7 {
+  text-indent: var(--space-7);
+}
+.indent-8 {
+  text-indent: var(--space-8);
+}
+.indent-9 {
+  text-indent: var(--space-9);
+}
+.indent-10 {
+  text-indent: var(--space-10);
+}
+.indent-11 {
+  text-indent: var(--space-11);
+}
+.indent-12 {
+  text-indent: var(--space-12);
+}
+.indent-14 {
+  text-indent: var(--space-14);
+}
+.indent-16 {
+  text-indent: var(--space-16);
+}
+.indent-20 {
+  text-indent: var(--space-20);
+}
+.indent-24 {
+  text-indent: var(--space-24);
+}
+.indent-28 {
+  text-indent: var(--space-28);
+}
+.indent-32 {
+  text-indent: var(--space-32);
+}
+
+/* Vertical Alignment */
+.align-baseline {
+  vertical-align: baseline;
+}
+.align-top {
+  vertical-align: top;
+}
+.align-middle {
+  vertical-align: middle;
+}
+.align-bottom {
+  vertical-align: bottom;
+}
+.align-text-top {
+  vertical-align: text-top;
+}
+.align-text-bottom {
+  vertical-align: text-bottom;
+}
+.align-sub {
+  vertical-align: sub;
+}
+.align-super {
+  vertical-align: super;
+}

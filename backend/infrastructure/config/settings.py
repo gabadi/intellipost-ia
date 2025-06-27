@@ -1,7 +1,7 @@
 """Application settings with environment variable support and validation."""
 
 from pydantic import Field, field_validator, model_validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -15,11 +15,11 @@ class Settings(BaseSettings):
 
     # Database configuration
     database_url: str = Field(
-        default="postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5432/intellipost_dev",
+        default="postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5443/intellipost_dev",
         description="Database connection URL",
     )
     database_test_url: str = Field(
-        default="postgresql+asyncpg://test_user:test_password@localhost:5433/intellipost_test",
+        default="postgresql+asyncpg://test_user:test_password@localhost:5443/intellipost_test",
         description="Test database connection URL",
     )
 
@@ -108,16 +108,14 @@ class Settings(BaseSettings):
             raise ValueError(f"Log format must be one of: {allowed_formats}")
         return v.lower()
 
-    class Config:
-        """Pydantic configuration."""
-
+    model_config = SettingsConfigDict(
         # Look for .env file in project root (one level up from backend)
-        env_file = "../.env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-
+        env_file="../.env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
         # Allow environment variables to override defaults
-        env_prefix = "INTELLIPOST_"
+        env_prefix="INTELLIPOST_",
+    )
 
     @property
     def is_development(self) -> bool:

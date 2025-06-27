@@ -1,0 +1,11 @@
+/* Main CSS File - IntelliPost AI */
+/* Complete CSS architecture import hierarchy */
+
+/* Foundation Layer - Design tokens, reset, and base styles */
+@import './foundation/index.css';
+
+/* Utilities Layer - Atomic utility classes */
+@import './utilities/index.css';
+
+/* Components Layer - Semantic component styles */
+@import './components/index.css';

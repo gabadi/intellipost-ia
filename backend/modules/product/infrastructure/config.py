@@ -8,6 +8,7 @@ including image processing, AI analysis, and product validation settings.
 from typing import Any
 
 from pydantic import Field
+from pydantic_settings import SettingsConfigDict
 
 from infrastructure.config.base_config import (
     BaseModuleConfig,
@@ -94,10 +95,12 @@ class ProductModuleConfig(BaseModuleConfig, DatabaseMixin, ExternalServiceMixin)
     )
     cache_ttl_seconds: int = Field(default=300, description="Cache TTL in seconds")
 
-    class Config(BaseModuleConfig.Config):
-        """Pydantic configuration for product module."""
-
-        env_prefix = "INTELLIPOST_PRODUCT_"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        env_prefix="INTELLIPOST_PRODUCT_",
+    )
 
     def get_module_specific_settings(self) -> dict[str, Any]:
         """Get product module specific settings."""

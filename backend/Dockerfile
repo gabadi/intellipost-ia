@@ -6,7 +6,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PATH=/app/.venv/bin:$PATH \
+    UV_CACHE_DIR=/tmp/uv-cache
 
 # Install only essential system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -31,19 +33,29 @@ RUN uv sync --no-dev
 # Copy application code
 COPY . .
 
+# Create docker-specific virtual environment to avoid conflicts
+RUN uv venv .venv_docker && uv sync --no-dev
+
 # Expose port
 EXPOSE 8000
 
 # Create non-root user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Change ownership to non-root user
+# Create cache directory for UV and set permissions
+RUN mkdir -p /tmp/uv-cache && chown -R appuser:appuser /tmp/uv-cache
+
+# Create a startup script to properly activate the docker virtual environment
+RUN echo '#!/bin/bash\nsource /app/.venv_docker/bin/activate\nexec "$@"' > /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
+
+# Change ownership to non-root user (including the entrypoint script)
 RUN chown -R appuser:appuser /app
 USER appuser
 
-# Health check using Python instead of curl (removed curl dependency)
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+
+# Set entrypoint to activate virtual environment
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Run the application with optimized settings
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--loop", "uvloop"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--loop", "uvloop"]
