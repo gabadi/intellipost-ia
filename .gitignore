@@ -309,3 +309,8 @@ docker-compose.override.yml
 # Local configuration
 local_config.py
 local_settings.py
+
+# Testing artifacts
+frontend/playwright-report/
+frontend/test-results/
+test-results/

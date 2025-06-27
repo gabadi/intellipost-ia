@@ -33,8 +33,8 @@ RUN uv sync --no-dev
 # Copy application code
 COPY . .
 
-# Recreate virtual environment with correct container paths
-RUN rm -rf .venv && uv sync --no-dev
+# Create docker-specific virtual environment to avoid conflicts
+RUN uv venv .venv_docker && uv sync --no-dev
 
 # Expose port
 EXPOSE 8000
@@ -45,17 +45,14 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 # Create cache directory for UV and set permissions
 RUN mkdir -p /tmp/uv-cache && chown -R appuser:appuser /tmp/uv-cache
 
-# Create a startup script to properly activate the virtual environment
-RUN echo '#!/bin/bash\nsource /app/.venv/bin/activate\nexec "$@"' > /app/entrypoint.sh && \
+# Create a startup script to properly activate the docker virtual environment
+RUN echo '#!/bin/bash\nsource /app/.venv_docker/bin/activate\nexec "$@"' > /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
 
 # Change ownership to non-root user (including the entrypoint script)
 RUN chown -R appuser:appuser /app
 USER appuser
 
-# Disabled health check for faster development shutdown
-# HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-#     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # Set entrypoint to activate virtual environment
 ENTRYPOINT ["/app/entrypoint.sh"]
