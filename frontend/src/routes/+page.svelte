@@ -8,8 +8,8 @@
 
   async function checkBackendHealth() {
     try {
-      // eslint-disable-next-line no-undef
-      const response = await fetch('http://localhost:8000/health');
+      // For browser-side requests, always use localhost (host machine)
+      const response = await fetch('http://localhost:8080/health');
       if (!response.ok) {
         throw new Error(`Backend health check failed: ${response.status}`);
       }

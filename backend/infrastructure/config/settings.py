@@ -15,11 +15,11 @@ class Settings(BaseSettings):
 
     # Database configuration
     database_url: str = Field(
-        default="postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5432/intellipost_dev",
+        default="postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5443/intellipost_dev",
         description="Database connection URL",
     )
     database_test_url: str = Field(
-        default="postgresql+asyncpg://test_user:test_password@localhost:5433/intellipost_test",
+        default="postgresql+asyncpg://test_user:test_password@localhost:5443/intellipost_test",
         description="Test database connection URL",
     )
 

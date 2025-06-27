@@ -28,7 +28,10 @@
   - paragraph: Welcome to IntelliPost AI Control Panel
   - heading "System Status" [level=2]
   - heading "Backend Connection" [level=3]
-  - text: "Healthy Status: healthy Version: 1.0.0 Last Check: 6/26/2025, 5:46:46 PM"
+  - text: Disconnected
+  - paragraph: "Connection Error:"
+  - paragraph: Failed to fetch
+  - button "Retry Connection"
   - heading "Quick Actions" [level=2]
   - link "➕ Create Product Start a new AI-powered product listing":
     - /url: /products/new

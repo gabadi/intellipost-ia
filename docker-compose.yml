@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: intellipost_user
       POSTGRES_PASSWORD: intellipost_password
     ports:
-      - "5432:5432"
+      - "5443:5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
@@ -28,8 +28,8 @@ services:
       MINIO_ROOT_USER: dev_access_key
       MINIO_ROOT_PASSWORD: dev_secret_key
     ports:
-      - "9001:9000"  # API port
-      - "9090:9090"  # Console port
+      - "9002:9000"  # API port
+      - "9091:9090"  # Console port
     command: server /data --console-address ":9090"
     volumes:
       - minio_dev_data:/data
@@ -53,9 +53,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./backend:/app
-      - /app/.venv  # Don't mount the virtual environment
     networks:
       - intellipost-network
     command: >
@@ -63,7 +60,7 @@ services:
     profiles:
       - migration  # Only run when explicitly requested
 
-  # Backend API
+  # Backend API (Production-like testing)
   backend:
     build:
       context: ./backend
@@ -76,7 +73,9 @@ services:
       INTELLIPOST_S3_SECRET_KEY: dev_secret_key
       INTELLIPOST_S3_BUCKET_NAME: intellipost-storage
     ports:
-      - "8000:8000"
+      - "8080:8000"
+    stop_grace_period: 1s
+    stop_signal: SIGKILL
     depends_on:
       postgres:
         condition: service_healthy
@@ -84,14 +83,44 @@ services:
         condition: service_healthy
       # Note: Backend doesn't depend on migrations service directly
       # Migrations should be run separately: docker compose --profile migration up migrations
+    networks:
+      - intellipost-network
+    # For production-like testing: runs migrations and starts uvicorn (no hot reload)
+    command: >
+      sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1 --loop uvloop"
+
+  # Backend API (Development with hot reload)
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      INTELLIPOST_ENVIRONMENT: development
+      INTELLIPOST_DATABASE_URL: postgresql+asyncpg://intellipost_user:intellipost_password@postgres:5432/intellipost_dev
+      INTELLIPOST_S3_ENDPOINT_URL: http://minio:9000
+      INTELLIPOST_S3_ACCESS_KEY: dev_access_key
+      INTELLIPOST_S3_SECRET_KEY: dev_secret_key
+      INTELLIPOST_S3_BUCKET_NAME: intellipost-storage
+    ports:
+      - "8080:8000"
+    stop_grace_period: 1s
+    stop_signal: SIGKILL
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     volumes:
       - ./backend:/app
       - /app/.venv  # Don't mount the virtual environment
     networks:
       - intellipost-network
-    # For development: includes migration check in startup command
+    entrypoint: ["/app/entrypoint-dev.sh"]
+    # For development: includes migration check and hot reload
     command: >
       sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    profiles:
+      - dev  # Only run when explicitly requested
 
   # Frontend SvelteKit
   frontend:
@@ -100,9 +129,11 @@ services:
       dockerfile: Dockerfile
     environment:
       NODE_ENV: development
-      VITE_API_URL: http://localhost:8000
+      VITE_API_URL: http://localhost:8080
     ports:
-      - "3000:3000"
+      - "4000:3000"
+    stop_grace_period: 1s
+    stop_signal: SIGTERM
     depends_on:
       - backend
     volumes:
