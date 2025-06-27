@@ -1,6 +1,6 @@
 """Unit tests for User authentication."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
@@ -18,7 +18,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             status=UserStatus.ACTIVE
         )
 
@@ -29,7 +29,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             status=UserStatus.INACTIVE
         )
 
@@ -40,8 +40,8 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
-            email_verified_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            email_verified_at=datetime.now(timezone.utc)
         )
 
         assert UserAuth.is_email_verified(user) is True
@@ -89,7 +89,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             status=UserStatus.PENDING_VERIFICATION
         )
         initial_updated_at = user.updated_at
@@ -104,7 +104,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             status=UserStatus.ACTIVE
         )
         initial_updated_at = user.updated_at
@@ -119,7 +119,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             status=UserStatus.ACTIVE
         )
         initial_updated_at = user.updated_at

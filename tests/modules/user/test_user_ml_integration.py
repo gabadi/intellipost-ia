@@ -79,7 +79,7 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at
 

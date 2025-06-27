@@ -8,6 +8,7 @@ including authentication settings, session management, and user-specific feature
 from typing import Any
 
 from pydantic import Field
+from pydantic_settings import SettingsConfigDict
 
 from infrastructure.config.base_config import BaseModuleConfig, DatabaseMixin
 
@@ -78,10 +79,12 @@ class UserModuleConfig(BaseModuleConfig, DatabaseMixin):
         description="Allowed profile image formats",
     )
 
-    class Config(BaseModuleConfig.Config):
-        """Pydantic configuration for user module."""
-
-        env_prefix = "INTELLIPOST_USER_"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        env_prefix="INTELLIPOST_USER_",
+    )
 
     def get_module_specific_settings(self) -> dict[str, Any]:
         """Get user module specific settings."""

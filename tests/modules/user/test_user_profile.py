@@ -1,6 +1,6 @@
 """Unit tests for User profile management."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
@@ -17,7 +17,7 @@ class TestUserProfile:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             first_name="John",
             last_name="Doe"
         )
@@ -29,7 +29,7 @@ class TestUserProfile:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             first_name="John"
         )
 
@@ -40,7 +40,7 @@ class TestUserProfile:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             last_name="Doe"
         )
 

@@ -1,7 +1,7 @@
 """Application settings with environment variable support and validation."""
 
 from pydantic import Field, field_validator, model_validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -108,16 +108,14 @@ class Settings(BaseSettings):
             raise ValueError(f"Log format must be one of: {allowed_formats}")
         return v.lower()
 
-    class Config:
-        """Pydantic configuration."""
-
+    model_config = SettingsConfigDict(
         # Look for .env file in project root (one level up from backend)
-        env_file = "../.env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-
+        env_file="../.env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
         # Allow environment variables to override defaults
-        env_prefix = "INTELLIPOST_"
+        env_prefix="INTELLIPOST_",
+    )
 
     @property
     def is_development(self) -> bool:

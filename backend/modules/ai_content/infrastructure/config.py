@@ -8,6 +8,7 @@ including provider settings, model configurations, and content processing parame
 from typing import Any
 
 from pydantic import Field
+from pydantic_settings import SettingsConfigDict
 
 from infrastructure.config.base_config import BaseModuleConfig, ExternalServiceMixin
 
@@ -116,10 +117,12 @@ class AIContentModuleConfig(BaseModuleConfig, ExternalServiceMixin):
         default=100.0, description="Monthly cost limit in USD"
     )
 
-    class Config(BaseModuleConfig.Config):
-        """Pydantic configuration for AI Content module."""
-
-        env_prefix = "INTELLIPOST_AI_CONTENT_"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        env_prefix="INTELLIPOST_AI_CONTENT_",
+    )
 
     def get_module_specific_settings(self) -> dict[str, Any]:
         """Get AI Content module specific settings."""

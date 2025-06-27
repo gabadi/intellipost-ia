@@ -1,6 +1,6 @@
 """Health check API schemas."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class HealthResponse(BaseModel):
@@ -10,13 +10,12 @@ class HealthResponse(BaseModel):
     timestamp: str
     version: str
 
-    class Config:
-        """Pydantic configuration."""
-
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "status": "healthy",
                 "timestamp": "2023-01-01T00:00:00.000000",
                 "version": "1.0.0",
             }
         }
+    )

@@ -98,9 +98,9 @@ class StructuredFormatter(logging.Formatter):
 class SensitiveDataFilter(logging.Filter):
     """Enhanced filter to remove sensitive data from log records."""
 
-    SENSITIVE_FIELDS = {
-        "password",
+    SENSITIVE_FIELDS = [
         "secret",
+        "password",
         "key",
         "token",
         "api_key",
@@ -115,7 +115,7 @@ class SensitiveDataFilter(logging.Filter):
         "session_id",
         "cookie",
         "csrf",
-    }
+    ]
 
     def filter(self, record: logging.LogRecord) -> bool:
         """Filter sensitive data from log records."""
