@@ -17,6 +17,7 @@ class TestUserProfile:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(timezone.utc),
             first_name="John",
             last_name="Doe"
@@ -29,6 +30,7 @@ class TestUserProfile:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(timezone.utc),
             first_name="John"
         )
@@ -40,6 +42,7 @@ class TestUserProfile:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(timezone.utc),
             last_name="Doe"
         )
@@ -51,6 +54,7 @@ class TestUserProfile:
         user = UserCore(
             id=uuid4(),
             email="john.doe@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.utcnow()
         )
 

@@ -1,6 +1,6 @@
 /**
  * Authentication form validation utilities.
- * 
+ *
  * Provides validation functions for email, password, and form data
  * with real-time feedback for user experience.
  */
@@ -39,9 +39,9 @@ export function validatePassword(password: string): PasswordValidation {
     isValid: false,
   };
 
-  validation.isValid = validation.minLength && 
-                      validation.hasUpperCase && 
-                      validation.hasLowerCase && 
+  validation.isValid = validation.minLength &&
+                      validation.hasUpperCase &&
+                      validation.hasLowerCase &&
                       validation.hasNumber;
 
   return validation;
@@ -52,9 +52,9 @@ export function validatePassword(password: string): PasswordValidation {
  */
 export function getPasswordStrength(password: string): 'weak' | 'medium' | 'strong' {
   const validation = validatePassword(password);
-  
+
   if (!validation.minLength) return 'weak';
-  
+
   const criteriaCount = [
     validation.hasUpperCase,
     validation.hasLowerCase,
@@ -112,18 +112,18 @@ export function validateRegisterForm(
   lastName?: string
 ): {
   isValid: boolean;
-  errors: { 
-    email?: string; 
-    password?: string; 
-    firstName?: string; 
-    lastName?: string 
+  errors: {
+    email?: string;
+    password?: string;
+    firstName?: string;
+    lastName?: string
   };
 } {
-  const errors: { 
-    email?: string; 
-    password?: string; 
-    firstName?: string; 
-    lastName?: string 
+  const errors: {
+    email?: string;
+    password?: string;
+    firstName?: string;
+    lastName?: string
   } = {};
 
   const emailValidation = validateEmail(email);

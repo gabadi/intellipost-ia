@@ -1,6 +1,6 @@
 /**
  * Authentication store for managing user authentication state.
- * 
+ *
  * Provides reactive authentication state, login/logout functionality,
  * and automatic token refresh with localStorage persistence.
  */
@@ -71,7 +71,7 @@ function createAuthStore() {
 
   return {
     subscribe,
-    
+
     /**
      * Set loading state
      */
@@ -157,7 +157,7 @@ function createAuthStore() {
 
       try {
         const response = await authAPI.register(data);
-        
+
         const newState: AuthState = {
           user: response.user,
           accessToken: response.tokens.access_token,
@@ -194,7 +194,7 @@ function createAuthStore() {
 
       try {
         const response = await authAPI.login(data);
-        
+
         const newState: AuthState = {
           user: response.user,
           accessToken: response.tokens.access_token,
@@ -265,7 +265,7 @@ function createAuthStore() {
      */
     refreshToken: async () => {
       const currentState = get(authStore);
-      
+
       if (!currentState.refreshToken) {
         throw new Error('No refresh token available');
       }
@@ -311,10 +311,10 @@ function createAuthStore() {
      */
     initialize: async () => {
       const currentState = get(authStore);
-      
+
       if (currentState.accessToken) {
         authAPI.setAuthToken(currentState.accessToken);
-        
+
         // Optionally verify token is still valid
         try {
           await authAPI.getCurrentUser();

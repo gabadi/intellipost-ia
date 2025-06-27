@@ -1,6 +1,6 @@
 <!--
   Registration form component with progressive disclosure and validation.
-  
+
   Features:
   - Mobile-first design with 44px touch targets
   - Progressive disclosure for optional fields
@@ -35,22 +35,22 @@
     last_name: '',
   };
 
-  let formErrors: { 
-    email?: string; 
-    password?: string; 
-    first_name?: string; 
-    last_name?: string 
+  let formErrors: {
+    email?: string;
+    password?: string;
+    first_name?: string;
+    last_name?: string
   } = {};
-  
+
   let isSubmitting = false;
   let submitError = '';
   let showOptionalFields = false;
 
   // Reactive validation
   $: validation = validateRegisterForm(
-    formData.email, 
-    formData.password, 
-    formData.first_name, 
+    formData.email,
+    formData.password,
+    formData.first_name,
     formData.last_name
   );
   $: canSubmit = validation.isValid && !isSubmitting;
@@ -58,7 +58,7 @@
   // Handle form submission
   async function handleSubmit(event: Event) {
     event.preventDefault();
-    
+
     if (!canSubmit) return;
 
     isSubmitting = true;
@@ -78,7 +78,7 @@
 
       if (result.success) {
         dispatch('success', { user: result.user });
-        
+
         // Redirect if specified
         if (redirectTo && typeof window !== 'undefined') {
           window.location.href = redirectTo;
@@ -99,14 +99,14 @@
   // Handle real-time validation
   function validateField(field: keyof typeof formErrors) {
     const currentValidation = validateRegisterForm(
-      formData.email, 
-      formData.password, 
-      formData.first_name, 
+      formData.email,
+      formData.password,
+      formData.first_name,
       formData.last_name
     );
     // Map field names correctly
-    const errorField = field === 'first_name' ? 'firstName' : 
-                      field === 'last_name' ? 'lastName' : 
+    const errorField = field === 'first_name' ? 'firstName' :
+                      field === 'last_name' ? 'lastName' :
                       field;
     formErrors = { ...formErrors, [field]: currentValidation.errors[errorField as keyof typeof currentValidation.errors] };
   }

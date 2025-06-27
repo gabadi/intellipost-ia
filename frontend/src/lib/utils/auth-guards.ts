@@ -1,6 +1,6 @@
 /**
  * Authentication guards for route protection.
- * 
+ *
  * Provides utilities for protecting routes and handling authentication redirects
  * in SvelteKit applications.
  */
@@ -23,7 +23,7 @@ export function requireAuth(redirectTo?: string): Promise<boolean> {
         } else if (typeof window !== 'undefined') {
           loginUrl.searchParams.set('redirect', window.location.pathname + window.location.search);
         }
-        
+
         goto(loginUrl.toString());
         resolve(false);
       } else {
@@ -71,13 +71,13 @@ export function getCurrentUser() {
  */
 export function hasPermission(permission: string): boolean {
   const user = getCurrentUser();
-  
+
   // For MVP, all authenticated users have all permissions
   if (!user) return false;
-  
+
   // Future: implement role-based permissions
   // return user.permissions?.includes(permission) || user.role === 'admin';
-  
+
   return true;
 }
 
@@ -91,9 +91,9 @@ export async function authGuard(options?: {
   permission?: string;
 }) {
   const { requireAuth: needsAuth, requireGuest: needsGuest, redirectTo, permission } = options || {};
-  
+
   const authenticated = isUserAuthenticated();
-  
+
   // Check authentication requirement
   if (needsAuth && !authenticated) {
     const loginUrl = new URL('/auth/login', window.location.origin);
@@ -101,7 +101,7 @@ export async function authGuard(options?: {
       const redirect = redirectTo || (window.location.pathname + window.location.search);
       loginUrl.searchParams.set('redirect', redirect);
     }
-    
+
     throw new Response(null, {
       status: 302,
       headers: {
@@ -109,7 +109,7 @@ export async function authGuard(options?: {
       },
     });
   }
-  
+
   // Check guest requirement
   if (needsGuest && authenticated) {
     throw new Response(null, {
@@ -119,7 +119,7 @@ export async function authGuard(options?: {
       },
     });
   }
-  
+
   // Check permission requirement
   if (permission && !hasPermission(permission)) {
     throw new Response(null, {
@@ -129,7 +129,7 @@ export async function authGuard(options?: {
       },
     });
   }
-  
+
   return { authenticated, user: getCurrentUser() };
 }
 
@@ -141,20 +141,20 @@ export function useAuthGuard(options?: {
   permission?: string;
 }) {
   const { redirectTo, permission } = options || {};
-  
+
   // Check authentication
   const authenticated = isUserAuthenticated();
   if (!authenticated) {
     requireAuth(redirectTo);
     return { loading: true, authenticated: false, user: null };
   }
-  
+
   // Check permission
   if (permission && !hasPermission(permission)) {
     goto('/unauthorized');
     return { loading: true, authenticated: false, user: null };
   }
-  
+
   return {
     loading: false,
     authenticated: true,

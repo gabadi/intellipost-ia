@@ -16,11 +16,13 @@ class TestUser:
         """Test creating a user with required fields."""
         user_id = uuid4()
         email = "test@example.com"
+        password_hash = "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu"  # bcrypt hash for 'testpass123'
         created_at = datetime.now(UTC)
 
         user = User(
             id=user_id,
             email=email,
+            password_hash=password_hash,
             created_at=created_at
         )
 
@@ -35,6 +37,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC)
         )
 
@@ -46,6 +49,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             first_name="John",
             last_name="Doe"
@@ -58,6 +62,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             first_name="John"
         )
@@ -69,6 +74,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             last_name="Doe"
         )
@@ -80,6 +86,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="john.doe@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC)
         )
 
@@ -90,6 +97,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             status=UserStatus.ACTIVE
         )
@@ -101,6 +109,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             status=UserStatus.INACTIVE
         )
@@ -112,6 +121,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
@@ -125,6 +135,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             ml_access_token="token123",
             ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
@@ -137,6 +148,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
@@ -150,6 +162,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             email_verified_at=datetime.now(UTC)
         )
@@ -161,6 +174,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC)
         )
 
@@ -171,6 +185,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             status=UserStatus.PENDING_VERIFICATION
         )
@@ -186,6 +201,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             status=UserStatus.ACTIVE
         )
@@ -201,6 +217,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             status=UserStatus.ACTIVE
         )
@@ -216,6 +233,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at
@@ -230,6 +248,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at
@@ -250,6 +269,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at

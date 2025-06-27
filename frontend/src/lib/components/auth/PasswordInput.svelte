@@ -1,6 +1,6 @@
 <!--
   Password input component with visibility toggle and strength indication.
-  
+
   Features:
   - Toggle password visibility
   - Real-time strength indication
@@ -81,7 +81,7 @@
       aria-invalid={error ? 'true' : 'false'}
       aria-describedby={error ? 'password-error' : undefined}
     />
-    
+
     <button
       type="button"
       class="toggle-button"
@@ -113,8 +113,8 @@
   {#if showStrength && hasValue}
     <div class="strength-indicator">
       <div class="strength-bar">
-        <div 
-          class="strength-fill strength-{passwordStrength}" 
+        <div
+          class="strength-fill strength-{passwordStrength}"
           style="width: {passwordStrength === 'weak' ? '33%' : passwordStrength === 'medium' ? '66%' : '100%'}"
         ></div>
       </div>

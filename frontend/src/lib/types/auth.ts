@@ -1,6 +1,6 @@
 /**
  * Authentication types for the IntelliPost AI frontend.
- * 
+ *
  * These types match the backend API schemas for authentication operations.
  */
 

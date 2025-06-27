@@ -17,6 +17,7 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
@@ -30,6 +31,7 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             ml_access_token="token123",
             ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
@@ -42,6 +44,7 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
@@ -54,6 +57,7 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
@@ -67,6 +71,7 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123"
@@ -79,6 +84,7 @@ class TestUserMLIntegration:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at

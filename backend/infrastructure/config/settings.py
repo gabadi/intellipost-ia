@@ -43,6 +43,24 @@ class Settings(BaseSettings):
         description="Secret key for JWT tokens and encryption",
     )
 
+    # JWT configuration
+    jwt_secret_key: str = Field(
+        default="dev-jwt-secret-key-change-in-production",
+        description="Secret key specifically for JWT tokens",
+    )
+    jwt_algorithm: str = Field(
+        default="HS256",
+        description="JWT signing algorithm",
+    )
+    jwt_access_token_expire_minutes: int = Field(
+        default=15,
+        description="JWT access token expiration time in minutes",
+    )
+    jwt_refresh_token_expire_days: int = Field(
+        default=7,
+        description="JWT refresh token expiration time in days",
+    )
+
     # API configuration
     # Default to localhost for security. Use INTELLIPOST_API_HOST="0.0.0.0" in production if needed
     api_host: str = Field(default="127.0.0.1", description="API host")  # nosec B104
@@ -80,14 +98,16 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_secret_key_for_production(self):
-        """Validate that secret key is properly set for production."""
-        if (
-            self.environment.lower() == "production"
-            and self.secret_key == "dev-secret-key-change-in-production"  # nosec B105
-        ):
-            raise ValueError(
-                "Secret key must be changed from default value in production"
-            )
+        """Validate that secret keys are properly set for production."""
+        if self.environment.lower() == "production":
+            if self.secret_key == "dev-secret-key-change-in-production":  # nosec B105
+                raise ValueError(
+                    "Secret key must be changed from default value in production"
+                )
+            if self.jwt_secret_key == "dev-jwt-secret-key-change-in-production":  # nosec B105
+                raise ValueError(
+                    "JWT secret key must be changed from default value in production"
+                )
         return self
 
     @field_validator("log_level")

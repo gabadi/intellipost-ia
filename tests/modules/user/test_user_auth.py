@@ -18,6 +18,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(timezone.utc),
             status=UserStatus.ACTIVE
         )
@@ -29,6 +30,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(timezone.utc),
             status=UserStatus.INACTIVE
         )
@@ -40,6 +42,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(timezone.utc),
             email_verified_at=datetime.now(timezone.utc)
         )
@@ -51,6 +54,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.utcnow()
         )
 
@@ -61,6 +65,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.utcnow()
         )
         initial_updated_at = user.updated_at
@@ -75,6 +80,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.utcnow()
         )
         initial_updated_at = user.updated_at
@@ -89,6 +95,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(timezone.utc),
             status=UserStatus.PENDING_VERIFICATION
         )
@@ -104,6 +111,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(timezone.utc),
             status=UserStatus.ACTIVE
         )
@@ -119,6 +127,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(timezone.utc),
             status=UserStatus.ACTIVE
         )

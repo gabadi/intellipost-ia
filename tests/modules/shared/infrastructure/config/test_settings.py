@@ -58,9 +58,11 @@ class TestSettings:
         """Test secret key validation passes in production with custom key."""
         settings = Settings(
             environment="production",
-            secret_key="custom-production-secret-key"
+            secret_key="custom-production-secret-key",
+            jwt_secret_key="custom-production-jwt-secret-key"
         )
         assert settings.secret_key == "custom-production-secret-key"
+        assert settings.jwt_secret_key == "custom-production-jwt-secret-key"
 
     def test_log_level_validation_valid(self):
         """Test log level validation with valid values."""

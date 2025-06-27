@@ -1,6 +1,6 @@
 /**
  * Authentication API client for the IntelliPost AI frontend.
- * 
+ *
  * Provides functions to interact with the authentication endpoints.
  */
 
@@ -37,7 +37,7 @@ class AuthAPI {
    */
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...((options.headers as Record<string, string>) || {}),
@@ -55,7 +55,7 @@ class AuthAPI {
 
       if (!response.ok) {
         let errorMessage = `Request failed (${response.status})`;
-        
+
         try {
           const errorData = await response.json();
           if (errorData.detail) {

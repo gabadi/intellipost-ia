@@ -18,6 +18,7 @@ from infrastructure.config.logging import (
     setup_logging,
 )
 from infrastructure.config.settings import Settings
+from modules.auth.api.auth_router import create_auth_router
 
 # Initialize settings
 settings = Settings()
@@ -53,6 +54,7 @@ app = FastAPI(
 
 # Include routers
 app.include_router(health.router)
+app.include_router(create_auth_router(settings))
 
 # Add request logging middleware
 app.add_middleware(StructuredRequestLoggingMiddleware)

@@ -1,6 +1,6 @@
 <!--
   Authentication modal component with login/register forms.
-  
+
   Features:
   - Single-screen auth with smooth transitions
   - Modal overlay with proper focus management
@@ -76,7 +76,7 @@
     if (isOpen) {
       // Store currently focused element
       previousActiveElement = document.activeElement as HTMLElement;
-      
+
       // Focus the modal
       setTimeout(() => {
         modalElement?.focus();
@@ -141,7 +141,7 @@
 
 <!-- Modal backdrop -->
 {#if isOpen}
-  <div 
+  <div
     class="modal-backdrop"
     on:click={handleBackdropClick}
     on:keydown={handleKeydown}
@@ -152,7 +152,7 @@
     tabindex="0"
   >
     <!-- Modal content -->
-    <div 
+    <div
       class="modal-content"
       bind:this={modalElement}
       tabindex="-1"
@@ -215,7 +215,7 @@
     position: relative;
     background: var(--color-background);
     border-radius: var(--border-radius-lg);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
                 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     width: 100%;
     max-width: 480px;

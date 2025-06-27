@@ -1,6 +1,6 @@
 <!--
   Login form component with email/password authentication.
-  
+
   Features:
   - Mobile-first design with 44px touch targets
   - Real-time validation
@@ -44,7 +44,7 @@
   // Handle form submission
   async function handleSubmit(event: Event) {
     event.preventDefault();
-    
+
     if (!canSubmit) return;
 
     isSubmitting = true;
@@ -56,7 +56,7 @@
 
       if (result.success) {
         dispatch('success', { user: result.user });
-        
+
         // Redirect if specified
         if (redirectTo && typeof window !== 'undefined') {
           window.location.href = redirectTo;

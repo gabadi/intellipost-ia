@@ -75,7 +75,7 @@ function isRecoverableError(errorCode: string): boolean {
     'PERMISSION_DENIED',
     'INTERNAL_SERVER_ERROR'
   ];
-  
+
   return !nonRecoverableErrors.includes(errorCode);
 }
 
@@ -101,7 +101,7 @@ export function createUserFriendlyError(error: ApiError | MobileError | any): {
 
   // Handle standard API errors
   const errorCode = error.error_code || error.code || 'UNKNOWN_ERROR';
-  
+
   const errorMappings: Record<string, {
     title: string;
     message: string;
@@ -300,7 +300,7 @@ export async function retryAuthenticationAction<T>(
     } catch (error) {
       if (error instanceof AuthenticationError) {
         lastError = error;
-        
+
         // Don't retry non-recoverable errors
         if (!error.recoverable) {
           throw error;
@@ -349,7 +349,7 @@ export function requiresReAuthentication(error: AuthenticationError): boolean {
     'TOKEN_EXPIRED',
     'MISSING_AUTHORIZATION'
   ];
-  
+
   return reAuthCodes.includes(error.code);
 }
 

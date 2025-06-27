@@ -1,6 +1,6 @@
 <!--
   Register page route.
-  
+
   Features:
   - Standalone registration page
   - Redirect handling
@@ -23,7 +23,7 @@
   function handleRegisterSuccess(event: CustomEvent<{ user: User }>) {
     const { user } = event.detail;
     console.log('Registration successful:', user);
-    
+
     // Redirect to intended page or dashboard
     goto(redirectTo);
   }
@@ -148,7 +148,7 @@
     background: var(--color-background);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-8);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
                 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--color-border-light);
   }
