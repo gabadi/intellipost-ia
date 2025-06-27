@@ -3,7 +3,7 @@
  * Comprehensive evaluation of user experience quality and professional polish
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 interface UXScoreCard {
   category: string;
@@ -27,7 +27,7 @@ test.describe('Overall UX Score Assessment', () => {
         category: 'Visual Polish',
         score: 0,
         maxScore: 100,
-        details: []
+        details: [],
       };
 
       // Check for consistent button styling
@@ -38,7 +38,11 @@ test.describe('Overall UX Score Assessment', () => {
         // Check first few buttons for consistency
         const maxChecks = Math.min(buttonCount, 5);
         let consistentStyling = true;
-        let firstButtonStyles: any = null;
+        let firstButtonStyles: {
+          borderRadius: string;
+          fontFamily: string;
+          transition: string;
+        } | null = null;
 
         for (let i = 0; i < maxChecks; i++) {
           const button = buttons.nth(i);
@@ -47,7 +51,7 @@ test.describe('Overall UX Score Assessment', () => {
             return {
               borderRadius: computed.borderRadius,
               fontFamily: computed.fontFamily,
-              transition: computed.transition
+              transition: computed.transition,
             };
           });
 
@@ -69,7 +73,7 @@ test.describe('Overall UX Score Assessment', () => {
 
       // Check for smooth animations
       const animatedElements = page.locator('.smooth-state, .hover-lift, .animate-in');
-      if (await animatedElements.count() > 0) {
+      if ((await animatedElements.count()) > 0) {
         const hasAnimations = await animatedElements.first().evaluate(el => {
           const computed = getComputedStyle(el);
           return computed.transition !== 'none' || computed.animation !== 'none';
@@ -83,10 +87,8 @@ test.describe('Overall UX Score Assessment', () => {
 
       // Check for proper spacing and layout
       const mainContent = page.locator('main, .main-content');
-      if (await mainContent.count() > 0) {
-        const padding = await mainContent.first().evaluate(el =>
-          getComputedStyle(el).padding
-        );
+      if ((await mainContent.count()) > 0) {
+        const padding = await mainContent.first().evaluate(el => getComputedStyle(el).padding);
 
         if (padding !== '0px') {
           visualScore.score += 15;
@@ -96,10 +98,10 @@ test.describe('Overall UX Score Assessment', () => {
 
       // Check for shadow effects and depth
       const elevatedElements = page.locator('[class*="shadow"], .hover-lift');
-      if (await elevatedElements.count() > 0) {
-        const hasBoxShadow = await elevatedElements.first().evaluate(el =>
-          getComputedStyle(el).boxShadow !== 'none'
-        );
+      if ((await elevatedElements.count()) > 0) {
+        const hasBoxShadow = await elevatedElements
+          .first()
+          .evaluate(el => getComputedStyle(el).boxShadow !== 'none');
 
         if (hasBoxShadow) {
           visualScore.score += 15;
@@ -109,7 +111,7 @@ test.describe('Overall UX Score Assessment', () => {
 
       // Check color consistency
       const primaryElements = page.locator('[class*="primary"]');
-      if (await primaryElements.count() > 0) {
+      if ((await primaryElements.count()) > 0) {
         visualScore.score += 20;
         visualScore.details.push('✓ Consistent color scheme');
       }
@@ -127,12 +129,12 @@ test.describe('Overall UX Score Assessment', () => {
         category: 'Interaction Responsiveness',
         score: 0,
         maxScore: 100,
-        details: []
+        details: [],
       };
 
       // Test hover feedback timing
       const hoverableElements = page.locator('.hover-lift, .hover-scale, .hover-glow');
-      if (await hoverableElements.count() > 0) {
+      if ((await hoverableElements.count()) > 0) {
         const element = hoverableElements.first();
         const startTime = Date.now();
 
@@ -151,7 +153,7 @@ test.describe('Overall UX Score Assessment', () => {
 
       // Test click feedback
       const clickableElements = page.locator('.btn, .active-press');
-      if (await clickableElements.count() > 0) {
+      if ((await clickableElements.count()) > 0) {
         const element = clickableElements.first();
 
         try {
@@ -167,7 +169,7 @@ test.describe('Overall UX Score Assessment', () => {
       await page.keyboard.press('Tab');
       const focusedElement = page.locator(':focus');
 
-      if (await focusedElement.count() > 0) {
+      if ((await focusedElement.count()) > 0) {
         const hasFocusStyles = await focusedElement.evaluate(el => {
           const computed = getComputedStyle(el);
           return computed.outline !== 'none' || computed.boxShadow !== 'none';
@@ -181,7 +183,7 @@ test.describe('Overall UX Score Assessment', () => {
 
       // Test loading state feedback
       const loadingElements = page.locator('.loading-state, .spinner, .skeleton');
-      if (await loadingElements.count() > 0) {
+      if ((await loadingElements.count()) > 0) {
         interactionScore.score += 25;
         interactionScore.details.push('✓ Loading state feedback available');
       }
@@ -199,14 +201,14 @@ test.describe('Overall UX Score Assessment', () => {
         category: 'Accessibility Excellence',
         score: 0,
         maxScore: 100,
-        details: []
+        details: [],
       };
 
       // Check skip navigation
       await page.keyboard.press('Tab');
       const skipLinks = page.locator('.skip-link');
 
-      if (await skipLinks.count() > 0) {
+      if ((await skipLinks.count()) > 0) {
         const isVisible = await skipLinks.first().isVisible();
         if (isVisible) {
           accessibilityScore.score += 20;
@@ -219,7 +221,7 @@ test.describe('Overall UX Score Assessment', () => {
       for (let i = 0; i < 10; i++) {
         await page.keyboard.press('Tab');
         const focused = page.locator(':focus');
-        if (await focused.count() > 0) {
+        if ((await focused.count()) > 0) {
           focusableCount++;
         }
       }
@@ -231,24 +233,22 @@ test.describe('Overall UX Score Assessment', () => {
 
       // Check ARIA labels and landmarks
       const landmarks = page.locator('main, nav, [role="main"], [role="navigation"]');
-      if (await landmarks.count() >= 2) {
+      if ((await landmarks.count()) >= 2) {
         accessibilityScore.score += 20;
         accessibilityScore.details.push('✓ Semantic landmarks present');
       }
 
       // Check screen reader support
       const srElements = page.locator('.sr-only');
-      if (await srElements.count() > 0) {
+      if ((await srElements.count()) > 0) {
         accessibilityScore.score += 15;
         accessibilityScore.details.push('✓ Screen reader support');
       }
 
       // Check color contrast (basic check)
       const textElements = page.locator('p, h1, h2, h3, span, a, button');
-      if (await textElements.count() > 0) {
-        const textColor = await textElements.first().evaluate(el =>
-          getComputedStyle(el).color
-        );
+      if ((await textElements.count()) > 0) {
+        const textColor = await textElements.first().evaluate(el => getComputedStyle(el).color);
 
         if (textColor !== 'rgba(0, 0, 0, 0)' && textColor !== 'transparent') {
           accessibilityScore.score += 15;
@@ -261,10 +261,8 @@ test.describe('Overall UX Score Assessment', () => {
       await page.reload();
 
       const animatedElement = page.locator('.smooth-state').first();
-      if (await animatedElement.count() > 0) {
-        const transition = await animatedElement.evaluate(el =>
-          getComputedStyle(el).transition
-        );
+      if ((await animatedElement.count()) > 0) {
+        const transition = await animatedElement.evaluate(el => getComputedStyle(el).transition);
 
         if (transition === 'none') {
           accessibilityScore.score += 10;
@@ -285,7 +283,7 @@ test.describe('Overall UX Score Assessment', () => {
         category: 'Mobile Experience',
         score: 0,
         maxScore: 100,
-        details: []
+        details: [],
       };
 
       // Test mobile viewport
@@ -316,10 +314,8 @@ test.describe('Overall UX Score Assessment', () => {
 
       // Check responsive layout
       const mainContent = page.locator('main, .main-content');
-      if (await mainContent.count() > 0) {
-        const width = await mainContent.first().evaluate(el =>
-          el.getBoundingClientRect().width
-        );
+      if ((await mainContent.count()) > 0) {
+        const width = await mainContent.first().evaluate(el => el.getBoundingClientRect().width);
 
         if (width <= 375) {
           mobileScore.score += 25;
@@ -329,17 +325,17 @@ test.describe('Overall UX Score Assessment', () => {
 
       // Check mobile navigation
       const mobileNav = page.locator('[class*="mobile"], .mobile-navigation');
-      if (await mobileNav.count() > 0) {
+      if ((await mobileNav.count()) > 0) {
         mobileScore.score += 20;
         mobileScore.details.push('✓ Mobile navigation present');
       }
 
       // Check text readability on mobile
       const textElements = page.locator('p, span, div');
-      if (await textElements.count() > 0) {
-        const fontSize = await textElements.first().evaluate(el =>
-          parseFloat(getComputedStyle(el).fontSize)
-        );
+      if ((await textElements.count()) > 0) {
+        const fontSize = await textElements
+          .first()
+          .evaluate(el => parseFloat(getComputedStyle(el).fontSize));
 
         if (fontSize >= 16) {
           mobileScore.score += 15;
@@ -351,7 +347,8 @@ test.describe('Overall UX Score Assessment', () => {
       const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
       const viewportWidth = await page.evaluate(() => window.innerWidth);
 
-      if (bodyWidth <= viewportWidth + 5) { // 5px tolerance
+      if (bodyWidth <= viewportWidth + 5) {
+        // 5px tolerance
         mobileScore.score += 10;
         mobileScore.details.push('✓ No horizontal scrolling');
       }
@@ -369,7 +366,7 @@ test.describe('Overall UX Score Assessment', () => {
         category: 'UX Performance',
         score: 0,
         maxScore: 100,
-        details: []
+        details: [],
       };
 
       // Measure initial page load time
@@ -386,7 +383,7 @@ test.describe('Overall UX Score Assessment', () => {
 
       // Test animation performance
       const animatedElement = page.locator('.hover-lift').first();
-      if (await animatedElement.count() > 0) {
+      if ((await animatedElement.count()) > 0) {
         const animationStartTime = Date.now();
         await animatedElement.hover();
         await page.waitForTimeout(300);
@@ -434,7 +431,9 @@ test.describe('Overall UX Score Assessment', () => {
   });
 
   test.describe('UX Score Calculation and Reporting', () => {
-    test('should calculate overall UX score and provide improvement recommendations', async ({ page }) => {
+    test('should calculate overall UX score and provide improvement recommendations', async ({
+      page,
+    }) => {
       // Wait for all previous tests to populate scorecard
       await page.waitForTimeout(1000);
 
@@ -484,7 +483,7 @@ test.describe('Overall UX Score Assessment', () => {
         uxScoreCard.find(c => c.category === 'Visual Polish')?.score || 0 >= 70,
         uxScoreCard.find(c => c.category === 'Interaction Responsiveness')?.score || 0 >= 75,
         uxScoreCard.find(c => c.category === 'Accessibility Excellence')?.score || 0 >= 80,
-        overallUXScore >= 9.0
+        overallUXScore >= 9.0,
       ];
 
       const professionalPolishScore = professionalPolishIndicators.filter(Boolean).length;
@@ -501,12 +500,12 @@ test.describe('Overall UX Score Assessment', () => {
       expect(overallUXScore).toBeGreaterThanOrEqual(9.2);
 
       // Store results for final report
-      (page as any).uxResults = {
+      (page as unknown as { uxResults: unknown }).uxResults = {
         overallScore: overallUXScore,
         targetAchieved: overallUXScore >= 9.2,
         professionalPolish: professionalPolishScore >= 3,
         categoryScores: uxScoreCard,
-        improvements: overallUXScore - 8.5
+        improvements: overallUXScore - 8.5,
       };
     });
   });

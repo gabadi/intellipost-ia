@@ -16,14 +16,14 @@
   $: if (open) {
     if (dialogElement) {
       dialogElement.showModal();
-      // eslint-disable-next-line no-undef
+
       document.body.style.overflow = 'hidden';
       onOpen?.();
     }
   } else {
     if (dialogElement) {
       dialogElement.close();
-      // eslint-disable-next-line no-undef
+
       document.body.style.overflow = '';
     }
   }
@@ -50,7 +50,7 @@
 
   function handleDialogClose() {
     open = false;
-    // eslint-disable-next-line no-undef
+
     document.body.style.overflow = '';
     onClose?.();
   }

@@ -13,17 +13,16 @@
 
     // TODO: Implement API call to create product
     // For now, simulate form submission
-    // eslint-disable-next-line no-undef
+
     setTimeout(() => {
       isLoading = false;
       // Redirect to products list after creation
-      // eslint-disable-next-line no-undef
+
       window.location.href = '/products';
     }, 2000);
   }
 
   function handleCancel() {
-    // eslint-disable-next-line no-undef
     window.history.back();
   }
 </script>

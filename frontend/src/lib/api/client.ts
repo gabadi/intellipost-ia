@@ -14,7 +14,7 @@ class APIClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<APIResponse<T>> {
     try {
       const url = `${this.baseURL}${endpoint}`;
-      // eslint-disable-next-line no-undef
+
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -87,7 +87,6 @@ class APIClient {
   // Health check endpoint
   async checkHealth(): Promise<HealthCheckResponse> {
     try {
-      // eslint-disable-next-line no-undef
       const response = await fetch(`${this.baseURL}/health`);
       if (!response.ok) {
         throw new Error(

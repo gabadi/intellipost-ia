@@ -124,6 +124,10 @@ class TestUserAuth:
         )
         initial_updated_at = user.updated_at
 
+        # Add small delay to ensure timestamp difference
+        import time
+        time.sleep(0.001)
+
         UserAuth.suspend(user)
 
         assert user.status == UserStatus.SUSPENDED

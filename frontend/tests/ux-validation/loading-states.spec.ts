@@ -3,10 +3,9 @@
  * Comprehensive testing of spinners, skeleton screens, and loading indicators
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test.describe('Loading States UX Validation', () => {
-
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
@@ -28,16 +27,12 @@ test.describe('Loading States UX Validation', () => {
       await expect(spinner).toBeVisible();
 
       // Check animation is applied
-      const animation = await spinner.evaluate(el =>
-        getComputedStyle(el).animation
-      );
+      const animation = await spinner.evaluate(el => getComputedStyle(el).animation);
 
       expect(animation).toContain('spin');
 
       // Check spinner has proper circular shape
-      const borderRadius = await spinner.evaluate(el =>
-        getComputedStyle(el).borderRadius
-      );
+      const borderRadius = await spinner.evaluate(el => getComputedStyle(el).borderRadius);
 
       expect(borderRadius).toBe('50%');
     });
@@ -47,7 +42,7 @@ test.describe('Loading States UX Validation', () => {
       const sizes = ['spinner--sm', 'spinner--lg', 'spinner--xl'];
 
       for (const sizeClass of sizes) {
-        await page.evaluate((className) => {
+        await page.evaluate(className => {
           const spinner = document.createElement('div');
           spinner.className = `spinner ${className}`;
           spinner.id = `test-${className}`;
@@ -71,7 +66,7 @@ test.describe('Loading States UX Validation', () => {
       const colorVariants = ['spinner--primary', 'spinner--secondary', 'spinner--white'];
 
       for (const variant of colorVariants) {
-        await page.evaluate((className) => {
+        await page.evaluate(className => {
           const spinner = document.createElement('div');
           spinner.className = `spinner ${className}`;
           spinner.id = `test-${className}`;
@@ -79,9 +74,7 @@ test.describe('Loading States UX Validation', () => {
         }, variant);
 
         const spinner = page.locator(`#test-${variant}`);
-        const borderTopColor = await spinner.evaluate(el =>
-          getComputedStyle(el).borderTopColor
-        );
+        const borderTopColor = await spinner.evaluate(el => getComputedStyle(el).borderTopColor);
 
         // Should have different colors
         expect(borderTopColor).not.toBe('rgba(0, 0, 0, 0)');
@@ -116,9 +109,7 @@ test.describe('Loading States UX Validation', () => {
       // Check each dot has animation
       for (let i = 0; i < dotCount; i++) {
         const dot = dots.nth(i);
-        const animation = await dot.evaluate(el =>
-          getComputedStyle(el).animation
-        );
+        const animation = await dot.evaluate(el => getComputedStyle(el).animation);
 
         expect(animation).toContain('dots');
       }
@@ -151,9 +142,7 @@ test.describe('Loading States UX Validation', () => {
 
       // Check wave animation
       const firstBar = bars.first();
-      const animation = await firstBar.evaluate(el =>
-        getComputedStyle(el).animation
-      );
+      const animation = await firstBar.evaluate(el => getComputedStyle(el).animation);
 
       expect(animation).toContain('wave');
     });
@@ -173,16 +162,12 @@ test.describe('Loading States UX Validation', () => {
       await expect(skeleton).toBeVisible();
 
       // Check skeleton loading animation
-      const animation = await skeleton.evaluate(el =>
-        getComputedStyle(el).animation
-      );
+      const animation = await skeleton.evaluate(el => getComputedStyle(el).animation);
 
       expect(animation).toContain('skeleton-loading');
 
       // Check background gradient
-      const background = await skeleton.evaluate(el =>
-        getComputedStyle(el).background
-      );
+      const background = await skeleton.evaluate(el => getComputedStyle(el).background);
 
       expect(background).toContain('linear-gradient');
     });
@@ -196,11 +181,11 @@ test.describe('Loading States UX Validation', () => {
         'skeleton--button',
         'skeleton--card',
         'skeleton--image',
-        'skeleton--input'
+        'skeleton--input',
       ];
 
       for (const skeletonType of skeletonTypes) {
-        await page.evaluate((className) => {
+        await page.evaluate(className => {
           const skeleton = document.createElement('div');
           skeleton.className = `skeleton ${className}`;
           skeleton.id = `test-${className}`;
@@ -297,21 +282,15 @@ test.describe('Loading States UX Validation', () => {
       await expect(overlay).toBeVisible();
 
       // Check overlay positioning
-      const position = await overlay.evaluate(el =>
-        getComputedStyle(el).position
-      );
+      const position = await overlay.evaluate(el => getComputedStyle(el).position);
       expect(position).toBe('absolute');
 
       // Check backdrop blur
-      const backdropFilter = await overlay.evaluate(el =>
-        getComputedStyle(el).backdropFilter
-      );
+      const backdropFilter = await overlay.evaluate(el => getComputedStyle(el).backdropFilter);
       expect(backdropFilter).toContain('blur');
 
       // Check z-index
-      const zIndex = await overlay.evaluate(el =>
-        getComputedStyle(el).zIndex
-      );
+      const zIndex = await overlay.evaluate(el => getComputedStyle(el).zIndex);
       expect(parseInt(zIndex)).toBeGreaterThan(100);
     });
 
@@ -319,7 +298,7 @@ test.describe('Loading States UX Validation', () => {
       const overlayVariants = ['loading-overlay--dark', 'loading-overlay--transparent'];
 
       for (const variant of overlayVariants) {
-        await page.evaluate((className) => {
+        await page.evaluate(className => {
           const container = document.createElement('div');
           container.style.position = 'relative';
           container.style.width = '200px';
@@ -336,9 +315,7 @@ test.describe('Loading States UX Validation', () => {
         const overlay = page.locator(`#test-${variant}`);
         await expect(overlay).toBeVisible();
 
-        const backgroundColor = await overlay.evaluate(el =>
-          getComputedStyle(el).backgroundColor
-        );
+        const backgroundColor = await overlay.evaluate(el => getComputedStyle(el).backgroundColor);
 
         // Should have some background styling
         expect(backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
@@ -361,15 +338,12 @@ test.describe('Loading States UX Validation', () => {
       await expect(button).toBeVisible();
 
       // Check button text is hidden
-      const color = await button.evaluate(el =>
-        getComputedStyle(el).color
-      );
-      expect(color).toBe('rgba(0, 0, 0, 0)' || color).toBe('transparent');
+      const color = await button.evaluate(el => getComputedStyle(el).color);
+      const isTransparent = color === 'rgba(0, 0, 0, 0)' || color === 'transparent';
+      expect(isTransparent).toBe(true);
 
       // Check cursor is wait
-      const cursor = await button.evaluate(el =>
-        getComputedStyle(el).cursor
-      );
+      const cursor = await button.evaluate(el => getComputedStyle(el).cursor);
       expect(cursor).toBe('wait');
 
       // Check for pseudo-element spinner
@@ -404,15 +378,11 @@ test.describe('Loading States UX Validation', () => {
       await expect(fill).toBeVisible();
 
       // Check width
-      const width = await fill.evaluate(el =>
-        getComputedStyle(el).width
-      );
+      const width = await fill.evaluate(el => getComputedStyle(el).width);
       expect(width).not.toBe('0px');
 
       // Check transition
-      const transition = await fill.evaluate(el =>
-        getComputedStyle(el).transition
-      );
+      const transition = await fill.evaluate(el => getComputedStyle(el).transition);
       expect(transition).toContain('width');
     });
 
@@ -452,15 +422,11 @@ test.describe('Loading States UX Validation', () => {
       await expect(content).toBeVisible();
 
       // Check opacity is reduced
-      const opacity = await content.evaluate(el =>
-        parseFloat(getComputedStyle(el).opacity)
-      );
+      const opacity = await content.evaluate(el => parseFloat(getComputedStyle(el).opacity));
       expect(opacity).toBeLessThan(1);
 
       // Check filter blur
-      const filter = await content.evaluate(el =>
-        getComputedStyle(el).filter
-      );
+      const filter = await content.evaluate(el => getComputedStyle(el).filter);
       expect(filter).toContain('blur');
 
       // Simulate content loaded
@@ -474,9 +440,7 @@ test.describe('Loading States UX Validation', () => {
       await page.waitForTimeout(100);
 
       // Check opacity is restored
-      const newOpacity = await content.evaluate(el =>
-        parseFloat(getComputedStyle(el).opacity)
-      );
+      const newOpacity = await content.evaluate(el => parseFloat(getComputedStyle(el).opacity));
       expect(newOpacity).toBe(1);
     });
 
@@ -532,9 +496,7 @@ test.describe('Loading States UX Validation', () => {
       });
 
       const spinner = page.locator('#test-reduced-motion-spinner');
-      const animation = await spinner.evaluate(el =>
-        getComputedStyle(el).animation
-      );
+      const animation = await spinner.evaluate(el => getComputedStyle(el).animation);
 
       // Animation should be disabled
       expect(animation).toBe('none');
@@ -557,9 +519,7 @@ test.describe('Loading States UX Validation', () => {
       });
 
       const skeleton = page.locator('#test-dark-skeleton');
-      const background = await skeleton.evaluate(el =>
-        getComputedStyle(el).background
-      );
+      const background = await skeleton.evaluate(el => getComputedStyle(el).background);
 
       // Should have dark mode appropriate background
       expect(background).toContain('linear-gradient');
@@ -567,7 +527,9 @@ test.describe('Loading States UX Validation', () => {
   });
 
   test.describe('Performance Validation', () => {
-    test('should not cause layout shifts during skeleton-to-content transition', async ({ page }) => {
+    test('should not cause layout shifts during skeleton-to-content transition', async ({
+      page,
+    }) => {
       // Create skeleton that will be replaced with content
       await page.evaluate(() => {
         const container = document.createElement('div');

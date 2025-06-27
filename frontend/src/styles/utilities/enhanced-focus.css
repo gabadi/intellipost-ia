@@ -118,7 +118,7 @@
 }
 
 /* Focus Order Indicators (Development) */
-.focus-order[tabindex]:not([tabindex="-1"])::before {
+.focus-order[tabindex]:not([tabindex='-1'])::before {
   content: attr(tabindex);
   position: absolute;
   top: -8px;
@@ -168,11 +168,11 @@
   overflow: hidden;
 }
 
-.focus-announce[aria-live="polite"] {
+.focus-announce[aria-live='polite'] {
   speak: normal;
 }
 
-.focus-announce[aria-live="assertive"] {
+.focus-announce[aria-live='assertive'] {
   speak: assertive;
 }
 
@@ -189,8 +189,9 @@
   white-space: nowrap;
   opacity: 0;
   transform: translateY(-4px);
-  transition: opacity var(--duration-200) var(--ease-out),
-              transform var(--duration-200) var(--ease-out);
+  transition:
+    opacity var(--duration-200) var(--ease-out),
+    transform var(--duration-200) var(--ease-out);
   z-index: var(--z-index-tooltip);
   pointer-events: none;
 }
@@ -254,15 +255,15 @@
 }
 
 /* Roving Tab Index Support */
-.roving-tabindex [role="button"],
-.roving-tabindex [role="tab"],
-.roving-tabindex [role="menuitem"] {
+.roving-tabindex [role='button'],
+.roving-tabindex [role='tab'],
+.roving-tabindex [role='menuitem'] {
   outline: none;
 }
 
-.roving-tabindex [role="button"]:focus,
-.roving-tabindex [role="tab"]:focus,
-.roving-tabindex [role="menuitem"]:focus {
+.roving-tabindex [role='button']:focus,
+.roving-tabindex [role='tab']:focus,
+.roving-tabindex [role='menuitem']:focus {
   background-color: var(--color-primary-light);
   color: var(--color-primary-dark);
   box-shadow: inset 0 0 0 2px var(--color-primary);
@@ -353,7 +354,7 @@
 @media print {
   .skip-link,
   .keyboard-hint,
-  .focus-order[tabindex]:not([tabindex="-1"])::before {
+  .focus-order[tabindex]:not([tabindex='-1'])::before {
     display: none !important;
   }
 

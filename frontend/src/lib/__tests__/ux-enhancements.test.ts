@@ -160,7 +160,8 @@ describe('UX Enhancements', () => {
     it('should not exceed reasonable CSS class count', () => {
       // Test that our utility classes don't overwhelm the DOM
       const testElement = document.createElement('div');
-      testElement.className = 'btn hover-lift active-press smooth-state focus-ring-enhanced btn--primary btn--md';
+      testElement.className =
+        'btn hover-lift active-press smooth-state focus-ring-enhanced btn--primary btn--md';
 
       const classList = Array.from(testElement.classList);
       expect(classList.length).toBeLessThan(10); // Reasonable limit

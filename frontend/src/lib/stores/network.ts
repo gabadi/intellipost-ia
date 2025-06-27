@@ -14,7 +14,7 @@ function createNetworkStore() {
 
       try {
         // Use a lightweight request to check connectivity
-        // eslint-disable-next-line no-undef
+
         const response = await fetch('/health', {
           method: 'HEAD',
           cache: 'no-cache',
@@ -39,12 +39,11 @@ export const isOffline = derived(networkStatus, $network => !$network);
 // Initialize network listeners if in browser
 if (browser) {
   // Listen for online/offline events
-  // eslint-disable-next-line no-undef
+
   window.addEventListener('online', () => {
     networkStatus.setOnline();
   });
 
-  // eslint-disable-next-line no-undef
   window.addEventListener('offline', () => {
     networkStatus.setOffline();
   });
@@ -53,7 +52,7 @@ if (browser) {
   networkStatus.checkConnection();
 
   // Periodic connectivity check (every 30 seconds when offline)
-  // eslint-disable-next-line no-undef
+
   setInterval(() => {
     networkStatus.checkConnection();
   }, 30000);

@@ -3,12 +3,18 @@
 
 /* Animation Keyframes */
 @keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 var(--color-primary-500);
     opacity: 1;
   }
@@ -53,8 +59,9 @@
 
 /* Hover Effects */
 .hover-lift {
-  transition: transform var(--duration-200) var(--ease-out),
-              box-shadow var(--duration-200) var(--ease-out);
+  transition:
+    transform var(--duration-200) var(--ease-out),
+    box-shadow var(--duration-200) var(--ease-out);
 }
 
 .hover-lift:hover {
@@ -159,7 +166,9 @@
   border-radius: 50%;
   background: var(--color-primary-200);
   transform: translate(-50%, -50%);
-  transition: width var(--duration-300) ease-out, height var(--duration-300) ease-out;
+  transition:
+    width var(--duration-300) ease-out,
+    height var(--duration-300) ease-out;
 }
 
 .ripple-effect:active::before {
@@ -173,9 +182,10 @@
 }
 
 .smooth-color {
-  transition: color var(--duration-200) var(--ease-out),
-              background-color var(--duration-200) var(--ease-out),
-              border-color var(--duration-200) var(--ease-out);
+  transition:
+    color var(--duration-200) var(--ease-out),
+    background-color var(--duration-200) var(--ease-out),
+    border-color var(--duration-200) var(--ease-out);
 }
 
 .smooth-transform {
@@ -239,7 +249,7 @@
 /* Disabled State Override */
 .disabled,
 [disabled],
-[aria-disabled="true"] {
+[aria-disabled='true'] {
   opacity: 0.6;
   cursor: not-allowed;
   pointer-events: none;
@@ -349,9 +359,10 @@
 
 /* Utility Combinations - Remove @apply directives for better compatibility */
 .btn-micro {
-  transition: transform var(--duration-200) var(--ease-out),
-              box-shadow var(--duration-200) var(--ease-out),
-              all var(--duration-200) var(--ease-out);
+  transition:
+    transform var(--duration-200) var(--ease-out),
+    box-shadow var(--duration-200) var(--ease-out),
+    all var(--duration-200) var(--ease-out);
 }
 
 .btn-micro:hover {
@@ -368,9 +379,10 @@
 }
 
 .card-micro {
-  transition: transform var(--duration-200) var(--ease-out),
-              box-shadow var(--duration-200) var(--ease-out),
-              all var(--duration-200) var(--ease-out);
+  transition:
+    transform var(--duration-200) var(--ease-out),
+    box-shadow var(--duration-200) var(--ease-out),
+    all var(--duration-200) var(--ease-out);
   animation: scale-in var(--duration-300) var(--ease-out);
 }
 
@@ -382,10 +394,11 @@
 .input-micro {
   outline: none;
   box-shadow: inset 0 0 0 2px transparent;
-  transition: box-shadow var(--duration-200) var(--ease-out),
-              color var(--duration-200) var(--ease-out),
-              background-color var(--duration-200) var(--ease-out),
-              border-color var(--duration-200) var(--ease-out);
+  transition:
+    box-shadow var(--duration-200) var(--ease-out),
+    color var(--duration-200) var(--ease-out),
+    background-color var(--duration-200) var(--ease-out),
+    border-color var(--duration-200) var(--ease-out);
 }
 
 .input-micro:focus {

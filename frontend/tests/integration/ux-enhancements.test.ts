@@ -33,7 +33,7 @@ test.describe('UX Enhancements Validation', () => {
     // Navigate to a page with buttons
     const button = page.locator('.btn').first();
 
-    if (await button.count() > 0) {
+    if ((await button.count()) > 0) {
       // Test hover effect
       await button.hover();
 
@@ -54,7 +54,7 @@ test.describe('UX Enhancements Validation', () => {
 
     // Check for enhanced focus rings
     const focusedElement = page.locator(':focus');
-    if (await focusedElement.count() > 0) {
+    if ((await focusedElement.count()) > 0) {
       await expect(focusedElement).toHaveClass(/focus-ring-enhanced/);
     }
   });
@@ -62,13 +62,13 @@ test.describe('UX Enhancements Validation', () => {
   test('Loading states display correctly', async ({ page }) => {
     // Check for loading spinners
     const spinner = page.locator('.spinner');
-    if (await spinner.count() > 0) {
+    if ((await spinner.count()) > 0) {
       await expect(spinner).toBeVisible();
     }
 
     // Check for skeleton screens
     const skeleton = page.locator('.skeleton');
-    if (await skeleton.count() > 0) {
+    if ((await skeleton.count()) > 0) {
       await expect(skeleton).toBeVisible();
     }
   });
@@ -76,13 +76,13 @@ test.describe('UX Enhancements Validation', () => {
   test('Smooth animations and transitions work', async ({ page }) => {
     // Test for smooth-state classes
     const smoothElements = page.locator('.smooth-state');
-    if (await smoothElements.count() > 0) {
+    if ((await smoothElements.count()) > 0) {
       await expect(smoothElements.first()).toHaveClass(/smooth-state/);
     }
 
     // Test animate-in elements
     const animatedElements = page.locator('.animate-in');
-    if (await animatedElements.count() > 0) {
+    if ((await animatedElements.count()) > 0) {
       await expect(animatedElements.first()).toHaveClass(/animate-in/);
     }
   });
@@ -104,11 +104,9 @@ test.describe('UX Enhancements Validation', () => {
 
     // Check that animations are disabled
     const animatedElements = page.locator('.animate-in, .hover-lift, .smooth-state');
-    for (let i = 0; i < await animatedElements.count(); i++) {
+    for (let i = 0; i < (await animatedElements.count()); i++) {
       const element = animatedElements.nth(i);
-      const transitions = await element.evaluate(el =>
-        getComputedStyle(el).transition
-      );
+      const transitions = await element.evaluate(el => getComputedStyle(el).transition);
       // Transitions should be disabled for reduced motion
       expect(transitions).toBe('none');
     }
@@ -121,10 +119,8 @@ test.describe('UX Enhancements Validation', () => {
     // Test focus indicators in high contrast
     await page.keyboard.press('Tab');
     const focusedElement = page.locator(':focus');
-    if (await focusedElement.count() > 0) {
-      const outlineWidth = await focusedElement.evaluate(el =>
-        getComputedStyle(el).outlineWidth
-      );
+    if ((await focusedElement.count()) > 0) {
+      const outlineWidth = await focusedElement.evaluate(el => getComputedStyle(el).outlineWidth);
       // Should have enhanced outline in high contrast
       expect(parseInt(outlineWidth)).toBeGreaterThan(1);
     }
@@ -136,7 +132,7 @@ test.describe('UX Enhancements Validation', () => {
 
     // Check touch target minimum sizes
     const buttons = page.locator('.btn');
-    for (let i = 0; i < await buttons.count(); i++) {
+    for (let i = 0; i < (await buttons.count()); i++) {
       const button = buttons.nth(i);
       const boundingBox = await button.boundingBox();
       if (boundingBox) {
@@ -165,7 +161,7 @@ test.describe('UX Enhancements Validation', () => {
     const stylesheets = page.locator('link[rel="stylesheet"]');
     let totalSize = 0;
 
-    for (let i = 0; i < await stylesheets.count(); i++) {
+    for (let i = 0; i < (await stylesheets.count()); i++) {
       const stylesheet = stylesheets.nth(i);
       const href = await stylesheet.getAttribute('href');
       if (href) {
@@ -185,7 +181,7 @@ test.describe('Component Integration Tests', () => {
     await page.goto(BASE_URL);
 
     const buttons = page.locator('.btn');
-    if (await buttons.count() > 0) {
+    if ((await buttons.count()) > 0) {
       const button = buttons.first();
 
       // Check for all expected classes
@@ -228,7 +224,7 @@ test.describe('Component Integration Tests', () => {
 
 test.describe('Performance and Bundle Validation', () => {
   test('CSS loads without errors', async ({ page }) => {
-    const cssErrors = [];
+    const cssErrors: string[] = [];
 
     page.on('console', msg => {
       if (msg.type() === 'error' && msg.text().includes('css')) {
@@ -247,12 +243,16 @@ test.describe('Performance and Bundle Validation', () => {
 
     // Check that our new utility files are loaded
     const stylesheets = await page.evaluate(() => {
-      const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+      const links = Array.from(
+        document.querySelectorAll('link[rel="stylesheet"]')
+      ) as HTMLLinkElement[];
       return links.map(link => link.href);
     });
 
     // Should include our main CSS which imports utilities
-    const hasMainCSS = stylesheets.some(href => href.includes('main.css') || href.includes('app.css'));
+    const hasMainCSS = stylesheets.some(
+      href => href.includes('main.css') || href.includes('app.css')
+    );
     expect(hasMainCSS).toBe(true);
   });
 
@@ -262,11 +262,10 @@ test.describe('Performance and Bundle Validation', () => {
     // Test animation performance
     const animationMetrics = await page.evaluate(() => {
       return new Promise(resolve => {
-        const observer = new PerformanceObserver((list) => {
+        const observer = new PerformanceObserver(list => {
           const entries = list.getEntries();
-          const animationEntries = entries.filter(entry =>
-            entry.entryType === 'measure' ||
-            entry.entryType === 'navigation'
+          const animationEntries = entries.filter(
+            entry => entry.entryType === 'measure' || entry.entryType === 'navigation'
           );
           resolve(animationEntries.length);
         });

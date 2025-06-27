@@ -3,7 +3,6 @@ import { APIClient, checkBackendHealth } from './client';
 
 // Mock fetch for integration tests
 const mockFetch = (response: Response) => {
-  // eslint-disable-next-line no-undef
   global.fetch = vi.fn().mockResolvedValue(response);
 };
 
@@ -39,7 +38,7 @@ describe('API Client Integration Tests', () => {
       const result = await checkBackendHealth();
 
       expect(result).toEqual(healthData);
-      // eslint-disable-next-line no-undef
+
       expect(fetch).toHaveBeenCalledWith('http://localhost:8000/health');
     });
 
@@ -50,7 +49,6 @@ describe('API Client Integration Tests', () => {
     });
 
     it('should handle network errors gracefully', async () => {
-      // eslint-disable-next-line no-undef
       global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
 
       await expect(checkBackendHealth()).rejects.toThrow('Network error');
@@ -79,7 +77,7 @@ describe('API Client Integration Tests', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(responseData);
-      // eslint-disable-next-line no-undef
+
       expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8000/test-endpoint',
         expect.objectContaining({
@@ -108,7 +106,7 @@ describe('API Client Integration Tests', () => {
       const result = await apiClient.delete('/test-endpoint/1');
 
       expect(result.success).toBe(true);
-      // eslint-disable-next-line no-undef
+
       expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8000/test-endpoint/1',
         expect.objectContaining({
@@ -129,7 +127,6 @@ describe('API Client Integration Tests', () => {
     });
 
     it('should handle JSON parsing errors', async () => {
-      // eslint-disable-next-line no-undef
       global.fetch = vi.fn().mockResolvedValue(new Response('Invalid JSON', { status: 200 }));
 
       const result = await apiClient.get('/test-endpoint');
@@ -139,7 +136,6 @@ describe('API Client Integration Tests', () => {
     });
 
     it('should handle network connectivity issues', async () => {
-      // eslint-disable-next-line no-undef
       global.fetch = vi.fn().mockRejectedValue(new Error('fetch failed'));
 
       const result = await apiClient.get('/test-endpoint');
@@ -156,7 +152,6 @@ describe('API Client Integration Tests', () => {
 
       await customClient.get('/test');
 
-      // eslint-disable-next-line no-undef
       expect(fetch).toHaveBeenCalledWith('http://custom-api.com/test', expect.any(Object));
     });
   });
@@ -167,7 +162,6 @@ describe('API Client Integration Tests', () => {
 
       await apiClient.get('/test');
 
-      // eslint-disable-next-line no-undef
       expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8000/test',
         expect.objectContaining({
@@ -185,7 +179,6 @@ describe('API Client Integration Tests', () => {
       // Access private request method through public methods
       await customClient.get('/test');
 
-      // eslint-disable-next-line no-undef
       expect(fetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
@@ -199,7 +192,6 @@ describe('API Client Integration Tests', () => {
 
   describe('Error Handling Edge Cases', () => {
     it('should handle empty response body', async () => {
-      // eslint-disable-next-line no-undef
       global.fetch = vi.fn().mockResolvedValue(new Response('', { status: 200 }));
 
       const result = await apiClient.get('/test');
@@ -209,7 +201,6 @@ describe('API Client Integration Tests', () => {
     });
 
     it('should handle non-Error thrown objects', async () => {
-      // eslint-disable-next-line no-undef
       global.fetch = vi.fn().mockRejectedValue('String error');
 
       const result = await apiClient.get('/test');

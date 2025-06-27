@@ -32,7 +32,6 @@
 
   // Combined error (external or internal)
   $: displayError = error || (touched ? internalError : '');
-  $: isValid = !displayError && success;
   $: hasSuccess = success && !displayError;
 
   // Real-time validation function
@@ -96,11 +95,9 @@
   // Debounced validation for input events
   function performValidation(inputValue: string) {
     if (validationTimer) {
-      // eslint-disable-next-line no-undef
       clearTimeout(validationTimer);
     }
 
-    // eslint-disable-next-line no-undef
     validationTimer = window.setTimeout(() => {
       internalError = validateInput(inputValue);
     }, 300); // 300ms debounce
@@ -127,7 +124,6 @@
   function handleFocus(_event: FocusEvent) {
     // Clear timer on focus to prevent validation during typing
     if (validationTimer) {
-      // eslint-disable-next-line no-undef
       clearTimeout(validationTimer);
     }
   }

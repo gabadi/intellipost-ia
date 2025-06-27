@@ -3,6 +3,7 @@ import ts from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import svelte from 'eslint-plugin-svelte';
 import svelteParser from 'svelte-eslint-parser';
+import globals from 'globals';
 // @ts-ignore - eslint-config-prettier doesn't have TypeScript types
 import prettier from 'eslint-config-prettier';
 
@@ -12,6 +13,11 @@ export default [
     files: ['**/*.{js,ts,mjs}'],
     languageOptions: {
       parser: tsParser,
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2022,
+      },
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: 'module',
@@ -35,6 +41,11 @@ export default [
     files: ['**/*.svelte'],
     languageOptions: {
       parser: svelteParser,
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2022,
+      },
       parserOptions: {
         parser: tsParser,
         project: './tsconfig.json',
@@ -70,6 +81,27 @@ export default [
       'max-len': ['warn', { code: 100, ignoreUrls: true }],
     },
   },
+  {
+    files: ['**/*.test.{js,ts}', '**/*.spec.{js,ts}', 'tests/**/*.{js,ts}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2022,
+        console: 'readonly',
+        document: 'readonly',
+        window: 'readonly',
+        getComputedStyle: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+      },
+    },
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
   prettier,
   {
     ignores: [
@@ -78,6 +110,8 @@ export default [
       'dist/**',
       'node_modules/**',
       'coverage/**',
+      'playwright-report/**',
+      'test-results/**',
       '*.config.js',
       '*.config.ts',
       'vite.config.*',

@@ -10,7 +10,7 @@
     isLoading = true;
     // TODO: Implement API call to load products
     // For now, simulate loading
-    // eslint-disable-next-line no-undef
+
     setTimeout(() => {
       products = [];
       isLoading = false;

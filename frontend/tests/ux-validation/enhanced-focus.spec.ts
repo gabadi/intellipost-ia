@@ -3,10 +3,9 @@
  * Comprehensive testing of accessibility features, keyboard navigation, and focus management
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test.describe('Enhanced Focus System UX Validation', () => {
-
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
@@ -24,18 +23,14 @@ test.describe('Enhanced Focus System UX Validation', () => {
       // Check specific skip link
       const skipToMain = page.locator('.skip-link[href="#main-content"]').first();
 
-      if (await skipToMain.count() > 0) {
+      if ((await skipToMain.count()) > 0) {
         await expect(skipToMain).toBeVisible();
         await expect(skipToMain).toHaveText(/Skip to main content/i);
 
         // Check focus styles
         await skipToMain.focus();
-        const outline = await skipToMain.evaluate(el =>
-          getComputedStyle(el).outline
-        );
-        const boxShadow = await skipToMain.evaluate(el =>
-          getComputedStyle(el).boxShadow
-        );
+        const outline = await skipToMain.evaluate(el => getComputedStyle(el).outline);
+        const boxShadow = await skipToMain.evaluate(el => getComputedStyle(el).boxShadow);
 
         const hasFocusIndicator = outline !== 'none' || boxShadow !== 'none';
         expect(hasFocusIndicator).toBe(true);
@@ -48,13 +43,13 @@ test.describe('Enhanced Focus System UX Validation', () => {
 
       const skipToMain = page.locator('.skip-link[href="#main-content"]').first();
 
-      if (await skipToMain.count() > 0) {
+      if ((await skipToMain.count()) > 0) {
         // Click skip link
         await skipToMain.click();
 
         // Check that main content is focused
         const mainContent = page.locator('#main-content');
-        if (await mainContent.count() > 0) {
+        if ((await mainContent.count()) > 0) {
           await expect(mainContent).toBeFocused();
         }
       }
@@ -63,7 +58,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
     test('should have proper ARIA labels for skip links', async ({ page }) => {
       const skipLinksContainer = page.locator('.skip-links');
 
-      if (await skipLinksContainer.count() > 0) {
+      if ((await skipLinksContainer.count()) > 0) {
         const ariaLabel = await skipLinksContainer.getAttribute('aria-label');
         expect(ariaLabel).toContain('Skip navigation');
       }
@@ -77,22 +72,20 @@ test.describe('Enhanced Focus System UX Validation', () => {
 
       const focusedElement = page.locator(':focus');
 
-      if (await focusedElement.count() > 0) {
+      if ((await focusedElement.count()) > 0) {
         // Check for enhanced focus classes
         const hasFocusClass = await focusedElement.evaluate(el => {
-          return el.classList.contains('focus-ring-enhanced') ||
-                 el.classList.contains('focus-ring-thick') ||
-                 el.classList.contains('focus-ring-inset-thick');
+          return (
+            el.classList.contains('focus-ring-enhanced') ||
+            el.classList.contains('focus-ring-thick') ||
+            el.classList.contains('focus-ring-inset-thick')
+          );
         });
 
         if (hasFocusClass) {
           // Check focus indicator
-          const outline = await focusedElement.evaluate(el =>
-            getComputedStyle(el).outline
-          );
-          const boxShadow = await focusedElement.evaluate(el =>
-            getComputedStyle(el).boxShadow
-          );
+          const outline = await focusedElement.evaluate(el => getComputedStyle(el).outline);
+          const boxShadow = await focusedElement.evaluate(el => getComputedStyle(el).boxShadow);
 
           const hasFocusIndicator = outline !== 'none' || boxShadow !== 'none';
           expect(hasFocusIndicator).toBe(true);
@@ -113,9 +106,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
       const button = page.locator('#test-enhanced-focus');
       await button.focus();
 
-      const boxShadow = await button.evaluate(el =>
-        getComputedStyle(el).boxShadow
-      );
+      const boxShadow = await button.evaluate(el => getComputedStyle(el).boxShadow);
 
       // Enhanced focus should have multiple shadow layers
       const shadowLayers = boxShadow.split(',').length;
@@ -135,13 +126,11 @@ test.describe('Enhanced Focus System UX Validation', () => {
       const button = page.locator('#test-thick-focus');
       await button.focus();
 
-      const outline = await button.evaluate(el =>
-        getComputedStyle(el).outline
-      );
+      const outline = await button.evaluate(el => getComputedStyle(el).outline);
 
       // Should have thick outline
-      expect(outline).toContain('3px') ||
-      expect(outline).toContain('4px');
+      const hasThickOutline = outline.includes('3px') || outline.includes('4px');
+      expect(hasThickOutline).toBe(true);
     });
 
     test('should show inset focus rings for form elements', async ({ page }) => {
@@ -157,9 +146,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
       const input = page.locator('#test-inset-focus');
       await input.focus();
 
-      const boxShadow = await input.evaluate(el =>
-        getComputedStyle(el).boxShadow
-      );
+      const boxShadow = await input.evaluate(el => getComputedStyle(el).boxShadow);
 
       // Should have inset box shadow
       expect(boxShadow).toContain('inset');
@@ -178,10 +165,10 @@ test.describe('Enhanced Focus System UX Validation', () => {
         tabCount++;
 
         const focusedElement = page.locator(':focus');
-        if (await focusedElement.count() > 0) {
+        if ((await focusedElement.count()) > 0) {
           const tagName = await focusedElement.evaluate(el => el.tagName);
-          const id = await focusedElement.getAttribute('id') || '';
-          const className = await focusedElement.getAttribute('class') || '';
+          const id = (await focusedElement.getAttribute('id')) || '';
+          const className = (await focusedElement.getAttribute('class')) || '';
 
           focusableElements.push({ tagName, id, className, tabIndex: tabCount });
 
@@ -206,13 +193,13 @@ test.describe('Enhanced Focus System UX Validation', () => {
       const shortcuts = [
         { key: 'Escape', description: 'Close modal/overlay' },
         { key: 'Enter', description: 'Activate button/link' },
-        { key: 'Space', description: 'Activate button' }
+        { key: 'Space', description: 'Activate button' },
       ];
 
       for (const shortcut of shortcuts) {
         // Focus on a button
         const button = page.locator('.btn').first();
-        if (await button.count() > 0) {
+        if ((await button.count()) > 0) {
           await button.focus();
 
           // Test the shortcut doesn't cause errors
@@ -229,7 +216,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
       // Test arrow key navigation on navigation elements
       const navElement = page.locator('[role="navigation"], nav').first();
 
-      if (await navElement.count() > 0) {
+      if ((await navElement.count()) > 0) {
         const links = navElement.locator('a, button');
         const linkCount = await links.count();
 
@@ -242,7 +229,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
 
           // Should maintain focus within navigation
           const focusedElement = page.locator(':focus');
-          const isWithinNav = await focusedElement.evaluate(el => {
+          await focusedElement.evaluate(el => {
             let parent = el.parentElement;
             while (parent) {
               if (parent.tagName === 'NAV' || parent.getAttribute('role') === 'navigation') {
@@ -372,7 +359,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
       // Check for screen reader only elements
       const srOnlyElements = page.locator('.sr-only');
 
-      if (await srOnlyElements.count() > 0) {
+      if ((await srOnlyElements.count()) > 0) {
         const srElement = srOnlyElements.first();
 
         // Check it's visually hidden but accessible
@@ -383,7 +370,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
             width: computed.width,
             height: computed.height,
             overflow: computed.overflow,
-            clip: computed.clip
+            clip: computed.clip,
           };
         });
 
@@ -412,7 +399,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
         const computed = getComputedStyle(el);
         return {
           position: computed.position,
-          width: computed.width
+          width: computed.width,
         };
       });
 
@@ -427,20 +414,22 @@ test.describe('Enhanced Focus System UX Validation', () => {
         const computed = getComputedStyle(el);
         return {
           position: computed.position,
-          width: computed.width
+          width: computed.width,
         };
       });
 
       // Should have different styles when focused (implementation dependent)
-      expect(focusedStyles.position).toBe('static' || focusedStyles.position === 'relative');
+      const hasValidPosition =
+        focusedStyles.position === 'static' || focusedStyles.position === 'relative';
+      expect(hasValidPosition).toBe(true);
     });
 
     test('should have proper ARIA live regions', async ({ page }) => {
       // Look for live regions
       const liveRegions = page.locator('[aria-live]');
 
-      if (await liveRegions.count() > 0) {
-        for (let i = 0; i < await liveRegions.count(); i++) {
+      if ((await liveRegions.count()) > 0) {
+        for (let i = 0; i < (await liveRegions.count()); i++) {
           const region = liveRegions.nth(i);
           const ariaLive = await region.getAttribute('aria-live');
 
@@ -458,7 +447,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
 
       // Check for navigation landmark
       const navLandmark = page.locator('nav, [role="navigation"]');
-      if (await navLandmark.count() > 0) {
+      if ((await navLandmark.count()) > 0) {
         await expect(navLandmark.first()).toBeVisible();
       }
     });
@@ -466,13 +455,11 @@ test.describe('Enhanced Focus System UX Validation', () => {
     test('should support landmark navigation with skip links', async ({ page }) => {
       // Test that landmarks have proper IDs for skip navigation
       const mainContent = page.locator('#main-content');
-      if (await mainContent.count() > 0) {
+      if ((await mainContent.count()) > 0) {
         await expect(mainContent).toBeVisible();
 
         // Should have scroll margin for skip link navigation
-        const scrollMargin = await mainContent.evaluate(el =>
-          getComputedStyle(el).scrollMarginTop
-        );
+        const scrollMargin = await mainContent.evaluate(el => getComputedStyle(el).scrollMarginTop);
 
         // Should have some scroll margin (implementation specific)
         expect(scrollMargin).not.toBe('0px');
@@ -483,18 +470,16 @@ test.describe('Enhanced Focus System UX Validation', () => {
       // Navigate to a landmark via skip link
       const skipLink = page.locator('.skip-link[href="#main-content"]').first();
 
-      if (await skipLink.count() > 0) {
+      if ((await skipLink.count()) > 0) {
         await skipLink.click();
 
         // Check if main content is focused
         const mainContent = page.locator('#main-content');
-        if (await mainContent.count() > 0) {
+        if ((await mainContent.count()) > 0) {
           await expect(mainContent).toBeFocused();
 
           // Check for :target styles if any
-          const outline = await mainContent.evaluate(el =>
-            getComputedStyle(el).outline
-          );
+          const outline = await mainContent.evaluate(el => getComputedStyle(el).outline);
 
           // Target styles are optional but good UX
           expect(outline).toBeDefined();
@@ -514,7 +499,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
               outline-offset: 2px !important;
             }
           }
-        `
+        `,
       });
 
       // Create test element
@@ -529,9 +514,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
       const button = page.locator('#test-high-contrast');
       await button.focus();
 
-      const outline = await button.evaluate(el =>
-        getComputedStyle(el).outline
-      );
+      const outline = await button.evaluate(el => getComputedStyle(el).outline);
 
       // Should have enhanced outline
       expect(outline).not.toBe('none');
@@ -555,9 +538,7 @@ test.describe('Enhanced Focus System UX Validation', () => {
       });
 
       const button = page.locator('#test-reduced-motion');
-      const transition = await button.evaluate(el =>
-        getComputedStyle(el).transition
-      );
+      const transition = await button.evaluate(el => getComputedStyle(el).transition);
 
       // Transitions should be disabled or minimal
       expect(transition === 'none' || transition.includes('0s')).toBe(true);
@@ -590,12 +571,8 @@ test.describe('Enhanced Focus System UX Validation', () => {
 
       // Focus styles should still work on touch
       await button.focus();
-      const outline = await button.evaluate(el =>
-        getComputedStyle(el).outline
-      );
-      const boxShadow = await button.evaluate(el =>
-        getComputedStyle(el).boxShadow
-      );
+      const outline = await button.evaluate(el => getComputedStyle(el).outline);
+      const boxShadow = await button.evaluate(el => getComputedStyle(el).boxShadow);
 
       const hasFocusIndicator = outline !== 'none' || boxShadow !== 'none';
       expect(hasFocusIndicator).toBe(true);
@@ -656,13 +633,11 @@ test.describe('Enhanced Focus System UX Validation', () => {
       await button.focus();
 
       // Check for debug styles
-      const outline = await button.evaluate(el =>
-        getComputedStyle(el).outline
-      );
+      const outline = await button.evaluate(el => getComputedStyle(el).outline);
 
       // Should have debug outline
-      expect(outline).toContain('red') ||
-      expect(outline).toContain('3px');
+      const hasDebugOutline = outline.includes('red') || outline.includes('3px');
+      expect(hasDebugOutline).toBe(true);
     });
   });
 });

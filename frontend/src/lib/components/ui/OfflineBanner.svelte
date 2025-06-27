@@ -15,7 +15,7 @@
       const isConnected = await networkStatus.checkConnection();
       if (!isConnected) {
         // Show feedback that retry failed
-        // eslint-disable-next-line no-undef
+
         setTimeout(() => {
           isRetrying = false;
         }, 2000);

@@ -75,7 +75,9 @@
             </div>
             <div class="flex justify-between items-center">
               <span class="text-sm text-gray-500">Last Check:</span>
-              <span class="text-sm text-gray-900 font-medium">{new Date(healthStatus.timestamp).toLocaleString()}</span>
+              <span class="text-sm text-gray-900 font-medium"
+                >{new Date(healthStatus.timestamp).toLocaleString()}</span
+              >
             </div>
           </div>
         {:else if healthError}
