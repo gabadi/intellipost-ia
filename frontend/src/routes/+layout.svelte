@@ -1,8 +1,15 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import MobileNavigation from '$components/core/MobileNavigation.svelte';
   import DesktopNavigation from '$components/core/DesktopNavigation.svelte';
   import OfflineBanner from '$components/ui/OfflineBanner.svelte';
+  import { authStore } from '$stores/auth';
   import '../app.css';
+
+  // Initialize authentication on app startup
+  onMount(() => {
+    authStore.initialize();
+  });
 </script>
 
 <svelte:head>
