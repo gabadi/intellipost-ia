@@ -53,6 +53,9 @@ RUN echo '#!/bin/bash\nsource /app/.venv_docker/bin/activate\nexec "$@"' > /app/
 RUN chown -R appuser:appuser /app
 USER appuser
 
+# Health check using Python instead of curl
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # Set entrypoint to activate virtual environment
 ENTRYPOINT ["/app/entrypoint.sh"]
