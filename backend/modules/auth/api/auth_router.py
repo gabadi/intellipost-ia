@@ -21,6 +21,7 @@ from modules.auth.api.schemas import (
     LogoutRequest,
     MessageResponse,
     TokenRefreshRequest,
+    TokenResponse,
     UserLoginRequest,
     UserRegistrationRequest,
     UserResponse,
@@ -63,13 +64,43 @@ def create_auth_router(settings: Settings) -> APIRouter:
         user_repository = UserRepository(db_session)
         return AuthenticationServiceImpl(user_repository, password_service, jwt_service)
 
-    # Create auth dependencies
+    # Create a dummy auth service for dependency setup (will be overridden by get_auth_service)
+    from uuid import UUID
+
+    from modules.user.domain.user import User
+
+    # We need to create dependencies without a real repository
+    # The actual repository will be injected at request time via get_auth_service
+    class DummyUserRepository:
+        """Dummy repository for type checking only."""
+
+        async def create(self, user: User) -> User:
+            raise NotImplementedError("This is a dummy repository")
+
+        async def get_by_id(self, user_id: UUID) -> User | None:
+            raise NotImplementedError("This is a dummy repository")
+
+        async def get_by_email(self, email: str) -> User | None:
+            raise NotImplementedError("This is a dummy repository")
+
+        async def update(self, user: User) -> User:
+            raise NotImplementedError("This is a dummy repository")
+
+        async def delete(self, user_id: UUID) -> bool:
+            raise NotImplementedError("This is a dummy repository")
+
+        async def email_exists(self, email: str) -> bool:
+            raise NotImplementedError("This is a dummy repository")
+
+        async def update_last_login(self, user_id: UUID) -> None:
+            raise NotImplementedError("This is a dummy repository")
+
+    dummy_auth_service = AuthenticationServiceImpl(
+        DummyUserRepository(), password_service, jwt_service
+    )
+
     get_current_user, get_current_active_user, get_optional_current_user = (
-        create_auth_dependencies(
-            AuthenticationServiceImpl(
-                None, password_service, jwt_service
-            )  # Placeholder for type hints
-        )
+        create_auth_dependencies(dummy_auth_service)
     )
 
     @router.post(
@@ -102,25 +133,38 @@ def create_auth_router(settings: Settings) -> APIRouter:
         )
 
         if not result.success:
-            if "already exists" in result.error_message.lower():
+            error_message = result.error_message or "Unknown error"
+            if "already exists" in error_message.lower():
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
-                    detail=result.error_message,
+                    detail=error_message,
                 )
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=result.error_message,
+                    detail=error_message,
                 )
+
+        # Ensure we have all required data for successful response
+        if (
+            not result.user
+            or not result.access_token
+            or not result.refresh_token
+            or result.expires_in is None
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Registration succeeded but missing required response data",
+            )
 
         return AuthenticationResponse(
             user=user_to_response(result.user),
-            tokens={
-                "access_token": result.access_token,
-                "refresh_token": result.refresh_token,
-                "token_type": result.token_type,
-                "expires_in": result.expires_in,
-            },
+            tokens=TokenResponse(
+                access_token=result.access_token,
+                refresh_token=result.refresh_token,
+                token_type=result.token_type,
+                expires_in=result.expires_in,
+            ),
             message="Registration successful",
         )
 
@@ -150,25 +194,38 @@ def create_auth_router(settings: Settings) -> APIRouter:
         )
 
         if not result.success:
-            if "not active" in result.error_message.lower():
+            error_message = result.error_message or "Unknown error"
+            if "not active" in error_message.lower():
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail=result.error_message,
+                    detail=error_message,
                 )
             else:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail=result.error_message,
+                    detail=error_message,
                 )
+
+        # Ensure we have all required data for successful response
+        if (
+            not result.user
+            or not result.access_token
+            or not result.refresh_token
+            or result.expires_in is None
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Login succeeded but missing required response data",
+            )
 
         return AuthenticationResponse(
             user=user_to_response(result.user),
-            tokens={
-                "access_token": result.access_token,
-                "refresh_token": result.refresh_token,
-                "token_type": result.token_type,
-                "expires_in": result.expires_in,
-            },
+            tokens=TokenResponse(
+                access_token=result.access_token,
+                refresh_token=result.refresh_token,
+                token_type=result.token_type,
+                expires_in=result.expires_in,
+            ),
             message="Login successful",
         )
 
@@ -203,7 +260,7 @@ def create_auth_router(settings: Settings) -> APIRouter:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Invalid refresh token: {str(e)}",
-            )
+            ) from e
 
     @router.post(
         "/logout",
@@ -283,7 +340,7 @@ def create_auth_router(settings: Settings) -> APIRouter:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Invalid authentication token: {str(e)}",
                 headers={"WWW-Authenticate": "Bearer"},
-            )
+            ) from e
 
     return router
 

@@ -14,7 +14,10 @@ class TestSettings:
 
         assert settings.environment == "development"
         assert settings.debug is True
-        assert settings.database_url == "postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5443/intellipost_dev"
+        assert (
+            settings.database_url
+            == "postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5443/intellipost_dev"
+        )
         assert settings.api_host == "127.0.0.1"
         assert settings.api_port == 8000
         assert settings.log_level == "INFO"
@@ -41,8 +44,7 @@ class TestSettings:
         """Test secret key validation in development."""
         # Should not raise error in development
         settings = Settings(
-            environment="development",
-            secret_key="dev-secret-key-change-in-production"
+            environment="development", secret_key="dev-secret-key-change-in-production"
         )
         assert settings.secret_key == "dev-secret-key-change-in-production"
 
@@ -51,7 +53,7 @@ class TestSettings:
         with pytest.raises(ValueError, match="Secret key must be changed"):
             Settings(
                 environment="production",
-                secret_key="dev-secret-key-change-in-production"
+                secret_key="dev-secret-key-change-in-production",
             )
 
     def test_secret_key_validation_production_passes(self):
@@ -59,7 +61,7 @@ class TestSettings:
         settings = Settings(
             environment="production",
             secret_key="custom-production-secret-key",
-            jwt_secret_key="custom-production-jwt-secret-key"
+            jwt_secret_key="custom-production-jwt-secret-key",
         )
         assert settings.secret_key == "custom-production-secret-key"
         assert settings.jwt_secret_key == "custom-production-jwt-secret-key"

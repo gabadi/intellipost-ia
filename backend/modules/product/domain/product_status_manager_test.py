@@ -2,12 +2,10 @@
 
 from uuid import uuid4
 
-import pytest
-
-from backend.modules.product.domain.product_core import ProductCore
-from backend.modules.product.domain.product_status_manager import ProductStatusManager
-from backend.modules.product.domain.product_status import ProductStatus
 from backend.modules.product.domain.confidence_score import ConfidenceScore
+from backend.modules.product.domain.product_core import ProductCore
+from backend.modules.product.domain.product_status import ProductStatus
+from backend.modules.product.domain.product_status_manager import ProductStatusManager
 
 
 class TestProductStatusManager:
@@ -16,9 +14,7 @@ class TestProductStatusManager:
     def test_mark_as_processed(self):
         """Test marking product as processed."""
         product = ProductCore(
-            id=uuid4(),
-            user_id=uuid4(),
-            status=ProductStatus.UPLOADING
+            id=uuid4(), user_id=uuid4(), status=ProductStatus.UPLOADING
         )
         initial_updated_at = product.updated_at
 
@@ -26,14 +22,14 @@ class TestProductStatusManager:
 
         assert product.status == ProductStatus.PROCESSED
         assert product.confidence == ConfidenceScore.high()
+        assert product.updated_at is not None
+        assert initial_updated_at is not None
         assert product.updated_at > initial_updated_at
 
     def test_mark_as_published(self):
         """Test marking product as published."""
         product = ProductCore(
-            id=uuid4(),
-            user_id=uuid4(),
-            status=ProductStatus.PROCESSED
+            id=uuid4(), user_id=uuid4(), status=ProductStatus.PROCESSED
         )
         initial_updated_at = product.updated_at
         listing_id = "ML123456"
@@ -43,18 +39,20 @@ class TestProductStatusManager:
         assert product.status == ProductStatus.PUBLISHED
         assert product.ml_listing_id == listing_id
         assert product.published_at is not None
+        assert product.updated_at is not None
+        assert initial_updated_at is not None
         assert product.updated_at > initial_updated_at
 
     def test_mark_as_failed(self):
         """Test marking product processing as failed."""
         product = ProductCore(
-            id=uuid4(),
-            user_id=uuid4(),
-            status=ProductStatus.PROCESSING
+            id=uuid4(), user_id=uuid4(), status=ProductStatus.PROCESSING
         )
         initial_updated_at = product.updated_at
 
         ProductStatusManager.mark_as_failed(product)
 
         assert product.status == ProductStatus.FAILED
+        assert product.updated_at is not None
+        assert initial_updated_at is not None
         assert product.updated_at > initial_updated_at

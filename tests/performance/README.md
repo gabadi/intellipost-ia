@@ -96,11 +96,15 @@ python test_auth_timing.py --verbose
 
 ### Directory Organization
 ```
-tests/
-├── unit/           # Isolated component testing by module
-├── integration/    # Module interaction and API endpoint testing
-├── performance/    # Non-functional requirements testing
-└── e2e/           # User journey testing
+backend/modules/                   # Unit tests co-located with source code
+├── auth/domain/authentication_service_test.py
+├── auth/infrastructure/jwt_service_test.py
+└── user/domain/user_test.py
+
+tests/                            # Integration, performance, e2e only
+├── integration/                  # Module interactions and API workflows
+├── performance/                  # Non-functional requirements testing
+└── e2e/                         # User journey testing
 ```
 
 ### Performance Test Categories

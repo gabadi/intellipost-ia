@@ -3,8 +3,6 @@
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-import pytest
-
 from backend.modules.user.domain.user import User
 from backend.modules.user.domain.user_status import UserStatus
 
@@ -20,10 +18,7 @@ class TestUser:
         created_at = datetime.now(UTC)
 
         user = User(
-            id=user_id,
-            email=email,
-            password_hash=password_hash,
-            created_at=created_at
+            id=user_id, email=email, password_hash=password_hash, created_at=created_at
         )
 
         assert user.id == user_id
@@ -38,7 +33,7 @@ class TestUser:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
 
         # Should set updated_at
@@ -52,7 +47,7 @@ class TestUser:
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             first_name="John",
-            last_name="Doe"
+            last_name="Doe",
         )
 
         assert user.full_name == "John Doe"
@@ -64,7 +59,7 @@ class TestUser:
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
-            first_name="John"
+            first_name="John",
         )
 
         assert user.full_name == "John"
@@ -76,7 +71,7 @@ class TestUser:
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
-            last_name="Doe"
+            last_name="Doe",
         )
 
         assert user.full_name == "Doe"
@@ -87,7 +82,7 @@ class TestUser:
             id=uuid4(),
             email="john.doe@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
 
         assert user.full_name == "john.doe"
@@ -99,7 +94,7 @@ class TestUser:
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
-            status=UserStatus.ACTIVE
+            status=UserStatus.ACTIVE,
         )
 
         assert user.is_active is True
@@ -111,7 +106,7 @@ class TestUser:
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
-            status=UserStatus.INACTIVE
+            status=UserStatus.INACTIVE,
         )
 
         assert user.is_active is False
@@ -125,7 +120,7 @@ class TestUser:
             created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
-            ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
+            ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
 
         assert user.is_ml_connected is True
@@ -138,7 +133,7 @@ class TestUser:
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
             ml_access_token="token123",
-            ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
+            ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
 
         assert user.is_ml_connected is False
@@ -152,7 +147,7 @@ class TestUser:
             created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
-            ml_token_expires_at=datetime.now(UTC) - timedelta(hours=1)
+            ml_token_expires_at=datetime.now(UTC) - timedelta(hours=1),
         )
 
         assert user.is_ml_connected is False
@@ -164,7 +159,7 @@ class TestUser:
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
-            email_verified_at=datetime.now(UTC)
+            email_verified_at=datetime.now(UTC),
         )
 
         assert user.is_email_verified is True
@@ -175,7 +170,7 @@ class TestUser:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
 
         assert user.is_email_verified is False
@@ -187,13 +182,15 @@ class TestUser:
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
-            status=UserStatus.PENDING_VERIFICATION
+            status=UserStatus.PENDING_VERIFICATION,
         )
         initial_updated_at = user.updated_at
 
         user.activate()
 
         assert user.status == UserStatus.ACTIVE
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at
 
     def test_deactivate(self):
@@ -203,13 +200,15 @@ class TestUser:
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
-            status=UserStatus.ACTIVE
+            status=UserStatus.ACTIVE,
         )
         initial_updated_at = user.updated_at
 
         user.deactivate()
 
         assert user.status == UserStatus.INACTIVE
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at
 
     def test_suspend(self):
@@ -219,13 +218,15 @@ class TestUser:
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
             created_at=datetime.now(UTC),
-            status=UserStatus.ACTIVE
+            status=UserStatus.ACTIVE,
         )
         initial_updated_at = user.updated_at
 
         user.suspend()
 
         assert user.status == UserStatus.SUSPENDED
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at
 
     def test_verify_email(self):
@@ -234,13 +235,15 @@ class TestUser:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         initial_updated_at = user.updated_at
 
         user.verify_email()
 
         assert user.email_verified_at is not None
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at
 
     def test_update_ml_tokens(self):
@@ -249,7 +252,7 @@ class TestUser:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         initial_updated_at = user.updated_at
 
@@ -262,6 +265,8 @@ class TestUser:
         assert user.ml_access_token == access_token
         assert user.ml_refresh_token == refresh_token
         assert user.ml_token_expires_at == expires_at
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at
 
     def test_record_login(self):
@@ -270,11 +275,13 @@ class TestUser:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(UTC)
+            created_at=datetime.now(UTC),
         )
         initial_updated_at = user.updated_at
 
         user.record_login()
 
         assert user.last_login_at is not None
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at

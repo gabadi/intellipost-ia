@@ -16,7 +16,7 @@ intellipost-ia/                    # Root monorepo
 ├── .ai/                           # AI development artifacts
 ├── backend/                       # Python/FastAPI backend
 ├── frontend/                      # TypeScript/SvelteKit frontend
-├── tests/                         # Cross-project tests (unit, integration, performance, e2e)
+├── tests/                         # Integration, performance, e2e tests only (unit tests co-located with source)
 ├── docs/                          # Project documentation
 ├── docker-compose.yml             # Local development environment
 ├── pyproject.toml                 # Python project configuration
@@ -262,34 +262,15 @@ docs/
 
 ### Backend Tests
 ```
-tests/
+tests/                             # Root tests: ONLY integration, performance, e2e
 ├── __init__.py
 ├── conftest.py                    # pytest configuration & fixtures
-├── modules/                       # Unit tests organized by backend module
-│   ├── auth/
-│   │   ├── test_jwt_service.py    # JWT token generation and validation (future)
-│   │   ├── test_password_service.py  # Password hashing and verification (future)
-│   │   └── test_authentication_service.py  # Authentication business logic (future)
-│   ├── user/
-│   │   ├── test_user.py           # User domain entity tests
-│   │   ├── test_user_auth.py      # User authentication integration
-│   │   ├── test_user_profile.py   # User profile management
-│   │   └── test_user_status.py    # User status management
-│   ├── product/
-│   │   ├── test_product.py        # Product domain entity tests
-│   │   ├── test_confidence_score.py  # Confidence scoring logic
-│   │   └── test_product_business_rules.py  # Product validation rules
-│   └── shared/
-│       ├── test_health.py         # Health check functionality
-│       └── infrastructure/
-│           └── config/
-│               ├── test_settings.py      # Application configuration
-│               ├── test_dependencies.py  # Dependency injection
-│               └── test_logging.py       # Logging configuration
-├── integration/                   # Module interaction and API endpoint tests
-│   └── api/
-│       ├── test_auth_flow.py      # Authentication API integration workflows
-│       └── test_health.py         # Health check and status endpoints
+├── integration/                   # Module interaction and cross-cutting tests
+│   ├── api/
+│   │   ├── test_auth_flow.py      # Authentication API integration workflows
+│   │   └── test_health.py         # Health check and status endpoints
+│   └── database/
+│       └── test_database_integration.py  # Cross-module database operations
 ├── performance/                   # Non-functional requirements testing (manual execution)
 │   ├── README.md                  # Performance testing guide and documentation
 │   ├── test_auth_timing.py        # Authentication endpoint performance tests
@@ -299,17 +280,50 @@ tests/
     └── test_authentication_flow.py     # Complete authentication user journey
 ```
 
+### Unit Tests (Co-located with source code)
+```
+backend/modules/
+├── auth/
+│   ├── domain/
+│   │   ├── authentication_service.py
+│   │   └── authentication_service_test.py         # Unit test co-located
+│   ├── infrastructure/
+│   │   ├── jwt_service.py
+│   │   ├── jwt_service_test.py                    # Unit test co-located
+│   │   ├── password_service.py
+│   │   ├── password_service_test.py               # Unit test co-located
+│   │   ├── secure_storage.py
+│   │   └── secure_storage_test.py                 # Unit test co-located
+│   └── application/
+│       ├── authentication_service_impl.py
+│       └── authentication_service_impl_test.py    # Unit test co-located
+├── user/
+│   ├── domain/
+│   │   ├── user.py
+│   │   └── user_test.py                           # Unit test co-located
+│   └── infrastructure/
+│       ├── user_repository.py
+│       └── user_repository_test.py                # Unit test co-located
+└── shared/
+    └── infrastructure/
+        ├── database.py
+        ├── database_test.py                       # Unit test co-located
+        ├── settings.py
+        └── settings_test.py                       # Unit test co-located
+```
+
 ### Testing Category Guidelines
 
-**Unit Tests**: Isolated component logic testing by module
-- Focus: Individual module functionality and business logic
-- Structure: Organized by backend module hierarchy (auth, user, shared)
+**Unit Tests**: Isolated component logic testing (co-located with source code)
+- Location: Same directory as the class being tested, with `_test.py` suffix
+- Focus: Individual class/function behavior in isolation
 - Mocking: Minimal, only for external dependencies
 - Speed: Fast execution for CI/CD
+- Naming: `class_name_test.py` co-located with `class_name.py`
 
-**Integration Tests**: Module interaction and API endpoint testing
-- Focus: Module integration and complete API workflows
-- Structure: Organized by module interactions and API endpoints
+**Integration Tests**: Module interaction and cross-cutting functionality
+- Location: `tests/integration/` directory (root level)
+- Focus: Module interactions, API workflows, database operations
 - Mocking: External services only (AI APIs, external APIs)
 - Speed: Moderate execution for CI/CD
 

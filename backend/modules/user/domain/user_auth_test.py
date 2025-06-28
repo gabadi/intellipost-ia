@@ -1,12 +1,10 @@
 """Unit tests for User authentication."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
-import pytest
-
-from backend.modules.user.domain.user_core import UserCore
 from backend.modules.user.domain.user_auth import UserAuth
+from backend.modules.user.domain.user_core import UserCore
 from backend.modules.user.domain.user_status import UserStatus
 
 
@@ -19,8 +17,8 @@ class TestUserAuth:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(timezone.utc),
-            status=UserStatus.ACTIVE
+            created_at=datetime.now(UTC),
+            status=UserStatus.ACTIVE,
         )
 
         assert UserAuth.is_active(user) is True
@@ -31,8 +29,8 @@ class TestUserAuth:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(timezone.utc),
-            status=UserStatus.INACTIVE
+            created_at=datetime.now(UTC),
+            status=UserStatus.INACTIVE,
         )
 
         assert UserAuth.is_active(user) is False
@@ -43,8 +41,8 @@ class TestUserAuth:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(timezone.utc),
-            email_verified_at=datetime.now(timezone.utc)
+            created_at=datetime.now(UTC),
+            email_verified_at=datetime.now(UTC),
         )
 
         assert UserAuth.is_email_verified(user) is True
@@ -55,7 +53,7 @@ class TestUserAuth:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC),
         )
 
         assert UserAuth.is_email_verified(user) is False
@@ -66,13 +64,15 @@ class TestUserAuth:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC),
         )
         initial_updated_at = user.updated_at
 
         UserAuth.verify_email(user)
 
         assert user.email_verified_at is not None
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at
 
     def test_record_login(self):
@@ -81,13 +81,15 @@ class TestUserAuth:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC),
         )
         initial_updated_at = user.updated_at
 
         UserAuth.record_login(user)
 
         assert user.last_login_at is not None
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at
 
     def test_activate(self):
@@ -96,14 +98,16 @@ class TestUserAuth:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(timezone.utc),
-            status=UserStatus.PENDING_VERIFICATION
+            created_at=datetime.now(UTC),
+            status=UserStatus.PENDING_VERIFICATION,
         )
         initial_updated_at = user.updated_at
 
         UserAuth.activate(user)
 
         assert user.status == UserStatus.ACTIVE
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at
 
     def test_deactivate(self):
@@ -112,14 +116,16 @@ class TestUserAuth:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(timezone.utc),
-            status=UserStatus.ACTIVE
+            created_at=datetime.now(UTC),
+            status=UserStatus.ACTIVE,
         )
         initial_updated_at = user.updated_at
 
         UserAuth.deactivate(user)
 
         assert user.status == UserStatus.INACTIVE
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at
 
     def test_suspend(self):
@@ -128,16 +134,19 @@ class TestUserAuth:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(timezone.utc),
-            status=UserStatus.ACTIVE
+            created_at=datetime.now(UTC),
+            status=UserStatus.ACTIVE,
         )
         initial_updated_at = user.updated_at
 
         # Add small delay to ensure timestamp difference
         import time
+
         time.sleep(0.001)
 
         UserAuth.suspend(user)
 
         assert user.status == UserStatus.SUSPENDED
+        assert user.updated_at is not None
+        assert initial_updated_at is not None
         assert user.updated_at > initial_updated_at

@@ -18,8 +18,12 @@ class TestProductStatus:
     def test_status_enum_members(self):
         """Test that all expected enum members exist."""
         expected_statuses = {
-            "UPLOADING", "PROCESSING", "PROCESSED",
-            "PUBLISHED", "FAILED", "DRAFT"
+            "UPLOADING",
+            "PROCESSING",
+            "PROCESSED",
+            "PUBLISHED",
+            "FAILED",
+            "DRAFT",
         }
         actual_statuses = {status.name for status in ProductStatus}
         assert actual_statuses == expected_statuses

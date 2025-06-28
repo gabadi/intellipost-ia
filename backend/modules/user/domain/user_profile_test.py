@@ -1,9 +1,7 @@
 """Unit tests for User profile management."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
-
-import pytest
 
 from backend.modules.user.domain.user_core import UserCore
 from backend.modules.user.domain.user_profile import UserProfile
@@ -18,9 +16,9 @@ class TestUserProfile:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
             first_name="John",
-            last_name="Doe"
+            last_name="Doe",
         )
 
         assert UserProfile.get_full_name(user) == "John Doe"
@@ -31,8 +29,8 @@ class TestUserProfile:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(timezone.utc),
-            first_name="John"
+            created_at=datetime.now(UTC),
+            first_name="John",
         )
 
         assert UserProfile.get_full_name(user) == "John"
@@ -43,8 +41,8 @@ class TestUserProfile:
             id=uuid4(),
             email="test@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.now(timezone.utc),
-            last_name="Doe"
+            created_at=datetime.now(UTC),
+            last_name="Doe",
         )
 
         assert UserProfile.get_full_name(user) == "Doe"
@@ -55,7 +53,7 @@ class TestUserProfile:
             id=uuid4(),
             email="john.doe@example.com",
             password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/kNdRHxLIcgdRLMzGu",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC),
         )
 
         assert UserProfile.get_full_name(user) == "john.doe"

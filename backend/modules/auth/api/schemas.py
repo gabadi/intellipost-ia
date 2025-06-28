@@ -13,30 +13,28 @@ class UserRegistrationRequest(BaseModel):
     """Request schema for user registration."""
 
     email: EmailStr = Field(
-        ...,
         description="User's email address",
-        example="user@example.com",
+        examples=["user@example.com"],
     )
     password: str = Field(
-        ...,
         min_length=8,
         max_length=128,
         description="User's password (8-128 characters, mixed case, numbers)",
-        example="SecurePass123",
+        examples=["SecurePass123"],
     )
     first_name: str | None = Field(
-        None,
+        default=None,
         min_length=1,
         max_length=100,
         description="User's first name",
-        example="John",
+        examples=["John"],
     )
     last_name: str | None = Field(
-        None,
+        default=None,
         min_length=1,
         max_length=100,
         description="User's last name",
-        example="Doe",
+        examples=["Doe"],
     )
 
     @field_validator("password")
@@ -73,15 +71,13 @@ class UserLoginRequest(BaseModel):
     """Request schema for user login."""
 
     email: EmailStr = Field(
-        ...,
         description="User's email address",
-        example="user@example.com",
+        examples=["user@example.com"],
     )
     password: str = Field(
-        ...,
         min_length=1,
         description="User's password",
-        example="SecurePass123",
+        examples=["SecurePass123"],
     )
 
 
@@ -89,9 +85,8 @@ class TokenRefreshRequest(BaseModel):
     """Request schema for token refresh."""
 
     refresh_token: str = Field(
-        ...,
         description="Valid refresh token",
-        example="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+        examples=["eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."],
     )
 
 
@@ -99,9 +94,8 @@ class LogoutRequest(BaseModel):
     """Request schema for user logout."""
 
     refresh_token: str = Field(
-        ...,
         description="Refresh token to invalidate",
-        example="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+        examples=["eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."],
     )
 
 
@@ -136,24 +130,21 @@ class TokenResponse(BaseModel):
     """Response schema for authentication tokens."""
 
     access_token: str = Field(
-        ...,
         description="JWT access token",
-        example="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+        examples=["eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."],
     )
     refresh_token: str = Field(
-        ...,
         description="JWT refresh token",
-        example="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+        examples=["eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."],
     )
     token_type: str = Field(
         default="bearer",
         description="Token type",
-        example="bearer",
+        examples=["bearer"],
     )
     expires_in: int = Field(
-        ...,
         description="Access token expiration time in seconds",
-        example=900,
+        examples=[900],
     )
 
 
@@ -169,19 +160,17 @@ class AccessTokenResponse(BaseModel):
     """Response schema for access token refresh."""
 
     access_token: str = Field(
-        ...,
         description="New JWT access token",
-        example="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+        examples=["eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."],
     )
     token_type: str = Field(
         default="bearer",
         description="Token type",
-        example="bearer",
+        examples=["bearer"],
     )
     expires_in: int = Field(
-        ...,
         description="Access token expiration time in seconds",
-        example=900,
+        examples=[900],
     )
 
 

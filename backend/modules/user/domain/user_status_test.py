@@ -15,9 +15,7 @@ class TestUserStatus:
 
     def test_status_enum_members(self):
         """Test that all expected enum members exist."""
-        expected_statuses = {
-            "ACTIVE", "INACTIVE", "SUSPENDED", "PENDING_VERIFICATION"
-        }
+        expected_statuses = {"ACTIVE", "INACTIVE", "SUSPENDED", "PENDING_VERIFICATION"}
         actual_statuses = {status.name for status in UserStatus}
         assert actual_statuses == expected_statuses
 
