@@ -97,11 +97,10 @@ python test_auth_timing.py --verbose
 ### Directory Organization
 ```
 tests/
-├── unit/           # Isolated component testing
-├── integration/    # Feature functionality testing
+├── unit/           # Isolated component testing by module
+├── integration/    # Module interaction and API endpoint testing
 ├── performance/    # Non-functional requirements testing
-├── e2e/           # User journey testing
-└── security/      # Security validation testing
+└── e2e/           # User journey testing
 ```
 
 ### Performance Test Categories

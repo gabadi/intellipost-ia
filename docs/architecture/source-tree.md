@@ -16,7 +16,7 @@ intellipost-ia/                    # Root monorepo
 ├── .ai/                           # AI development artifacts
 ├── backend/                       # Python/FastAPI backend
 ├── frontend/                      # TypeScript/SvelteKit frontend
-├── tests/                         # Cross-project tests (unit, integration, performance, e2e, security)
+├── tests/                         # Cross-project tests (unit, integration, performance, e2e)
 ├── docs/                          # Project documentation
 ├── docker-compose.yml             # Local development environment
 ├── pyproject.toml                 # Python project configuration
@@ -265,40 +265,51 @@ docs/
 tests/
 ├── __init__.py
 ├── conftest.py                    # pytest configuration & fixtures
-├── unit/                          # Fast, isolated tests (SOLID: single responsibility)
-│   ├── domain/
-│   │   ├── test_product.py        # Product entity tests (pure functions, no mocks)
-│   │   └── test_confidence.py     # Confidence scoring tests (pure logic)
-│   ├── application/
-│   │   └── test_use_cases.py      # Use case tests (mock external services only)
-│   └── infrastructure/
-│       └── test_services.py       # Service implementation tests (behavior, not implementation)
+├── modules/                       # Unit tests organized by backend module
+│   ├── auth/
+│   │   ├── test_jwt_service.py    # JWT token generation and validation (future)
+│   │   ├── test_password_service.py  # Password hashing and verification (future)
+│   │   └── test_authentication_service.py  # Authentication business logic (future)
+│   ├── user/
+│   │   ├── test_user.py           # User domain entity tests
+│   │   ├── test_user_auth.py      # User authentication integration
+│   │   ├── test_user_profile.py   # User profile management
+│   │   └── test_user_status.py    # User status management
+│   ├── product/
+│   │   ├── test_product.py        # Product domain entity tests
+│   │   ├── test_confidence_score.py  # Confidence scoring logic
+│   │   └── test_product_business_rules.py  # Product validation rules
+│   └── shared/
+│       ├── test_health.py         # Health check functionality
+│       └── infrastructure/
+│           └── config/
+│               ├── test_settings.py      # Application configuration
+│               ├── test_dependencies.py  # Dependency injection
+│               └── test_logging.py       # Logging configuration
+├── integration/                   # Module interaction and API endpoint tests
+│   └── api/
+│       ├── test_auth_flow.py      # Authentication API integration workflows
+│       └── test_health.py         # Health check and status endpoints
 ├── performance/                   # Non-functional requirements testing (manual execution)
 │   ├── README.md                  # Performance testing guide and documentation
 │   ├── test_auth_timing.py        # Authentication endpoint performance tests
 │   └── test_api_performance.py   # General API performance tests (future)
-├── integration/                   # Test containers & real internal services
-│   ├── test_database.py           # Real database (test containers), no mocking
-│   ├── test_ai_services.py        # httpx-mock for external AI APIs (Gemini, PhotoRoom)
-│   └── test_ml_api.py             # httpx-mock for MercadoLibre API
-├── api/                          # API endpoint tests (real application layer)
-│   ├── test_auth.py               # Authentication endpoints (real JWT, real database)
-│   ├── test_products.py           # Product endpoints (real use cases, httpx-mock for external APIs)
-│   └── test_websocket.py          # WebSocket connections (real infrastructure)
 └── e2e/                          # End-to-end user journeys (KISS: critical paths only)
-    ├── test_product_creation.py   # Complete workflow (real internal services, httpx-mock for external APIs)
-    └── test_publishing_flow.py    # Full publishing (real application, httpx-mock for ML API)
+    ├── test_user_registration_flow.py  # Complete user registration workflow
+    └── test_authentication_flow.py     # Complete authentication user journey
 ```
 
 ### Testing Category Guidelines
 
-**Unit Tests**: Isolated component logic testing
-- Focus: Feature correctness at component level
+**Unit Tests**: Isolated component logic testing by module
+- Focus: Individual module functionality and business logic
+- Structure: Organized by backend module hierarchy (auth, user, shared)
 - Mocking: Minimal, only for external dependencies
 - Speed: Fast execution for CI/CD
 
-**Integration Tests**: Component interaction and functionality testing
-- Focus: End-to-end feature functionality
+**Integration Tests**: Module interaction and API endpoint testing
+- Focus: Module integration and complete API workflows
+- Structure: Organized by module interactions and API endpoints
 - Mocking: External services only (AI APIs, external APIs)
 - Speed: Moderate execution for CI/CD
 
