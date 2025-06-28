@@ -248,23 +248,5 @@ class TestAuthenticationFlow:
         assert "error" in data
         assert "email" in data["error"].lower()
 
-    async def test_authentication_response_time(self, client: AsyncClient, test_user_data):
-        """Test that authentication endpoints respond within 200ms requirement."""
-        import time
-
-        # Test registration response time
-        start_time = time.time()
-        await client.post("/auth/register", json=test_user_data)
-        registration_time = (time.time() - start_time) * 1000  # Convert to ms
-
-        # Test login response time
-        start_time = time.time()
-        await client.post("/auth/login", json={
-            "email": test_user_data["email"],
-            "password": test_user_data["password"]
-        })
-        login_time = (time.time() - start_time) * 1000  # Convert to ms
-
-        # Assert both are under 200ms requirement
-        assert registration_time < 200, f"Registration took {registration_time}ms, should be <200ms"
-        assert login_time < 200, f"Login took {login_time}ms, should be <200ms"
+    # NOTE: Performance testing moved to tests/performance/test_auth_timing.py
+    # Integration tests focus on functionality, not response times

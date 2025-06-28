@@ -16,7 +16,7 @@ intellipost-ia/                    # Root monorepo
 ├── .ai/                           # AI development artifacts
 ├── backend/                       # Python/FastAPI backend
 ├── frontend/                      # TypeScript/SvelteKit frontend
-├── tests/                         # Cross-project integration tests (SOLID + KISS + DRY + YAGNI)
+├── tests/                         # Cross-project tests (unit, integration, performance, e2e, security)
 ├── docs/                          # Project documentation
 ├── docker-compose.yml             # Local development environment
 ├── pyproject.toml                 # Python project configuration
@@ -273,6 +273,10 @@ tests/
 │   │   └── test_use_cases.py      # Use case tests (mock external services only)
 │   └── infrastructure/
 │       └── test_services.py       # Service implementation tests (behavior, not implementation)
+├── performance/                   # Non-functional requirements testing (manual execution)
+│   ├── README.md                  # Performance testing guide and documentation
+│   ├── test_auth_timing.py        # Authentication endpoint performance tests
+│   └── test_api_performance.py   # General API performance tests (future)
 ├── integration/                   # Test containers & real internal services
 │   ├── test_database.py           # Real database (test containers), no mocking
 │   ├── test_ai_services.py        # httpx-mock for external AI APIs (Gemini, PhotoRoom)
@@ -285,6 +289,28 @@ tests/
     ├── test_product_creation.py   # Complete workflow (real internal services, httpx-mock for external APIs)
     └── test_publishing_flow.py    # Full publishing (real application, httpx-mock for ML API)
 ```
+
+### Testing Category Guidelines
+
+**Unit Tests**: Isolated component logic testing
+- Focus: Feature correctness at component level
+- Mocking: Minimal, only for external dependencies
+- Speed: Fast execution for CI/CD
+
+**Integration Tests**: Component interaction and functionality testing
+- Focus: End-to-end feature functionality
+- Mocking: External services only (AI APIs, external APIs)
+- Speed: Moderate execution for CI/CD
+
+**Performance Tests**: Non-functional requirements testing
+- Focus: Response times, throughput, scalability metrics
+- Environment: Production-like conditions with real dependencies
+- Execution: Manual only (not included in CI/CD pipelines)
+
+**E2E Tests**: Complete user journey validation
+- Focus: Critical user workflows from start to finish
+- Environment: Full application stack with mocked external services
+- Speed: Slower execution, run before releases
 
 ### Frontend Tests
 ```

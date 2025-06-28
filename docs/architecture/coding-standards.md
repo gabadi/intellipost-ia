@@ -250,6 +250,14 @@ Consistent Terms:
 - **Internal Services:** Real database, real application logic, real infrastructure
 - **Focus:** Critical user journeys only
 
+**Performance Tests:**
+- **Purpose:** Validate non-functional requirements (response times, throughput, scalability)
+- **Environment:** Production-like conditions with real dependencies
+- **Tools:** Custom performance framework with statistical analysis
+- **Execution:** Manual execution only (not included in CI/CD)
+- **Criteria:** P95 < requirement threshold with statistical significance
+- **Location:** `tests/performance/` directory
+
 ### Coverage Requirements
 - **Minimum Coverage:** 80% for domain logic
 - **DRY:** Shared test utilities and factories
