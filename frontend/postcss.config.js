@@ -32,6 +32,8 @@ export default {
             convertValues: true,
             // Merge media queries
             mergeMediaQueries: true,
+            // Disable SVGO to prevent errors with URL-encoded SVG data URLs
+            svgo: false,
           },
         ],
       },
