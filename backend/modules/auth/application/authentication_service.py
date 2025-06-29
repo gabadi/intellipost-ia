@@ -6,8 +6,6 @@ protocol, coordinating between user repository, password service, and JWT servic
 """
 
 import re
-from datetime import UTC, datetime
-from uuid import uuid4
 
 from jose import JWTError
 
@@ -15,16 +13,18 @@ from modules.auth.domain.models import (
     AuthenticatedUser,
     AuthResult,
 )
-from modules.auth.infrastructure.jwt_service import JWTService
-from modules.auth.infrastructure.password_service import PasswordService
+from modules.auth.domain.protocols import (
+    JWTServiceProtocol,
+    PasswordServiceProtocol,
+)
+from modules.auth.domain.value_objects import CreatedAuthUser
+from modules.user.application.user_service import UserService
 from modules.user.domain.exceptions import (
     InvalidCredentialsError,
     UserAlreadyExistsError,
     UserNotActiveError,
     UserNotFoundError,
 )
-from modules.user.domain.ports.user_repository_protocol import UserRepositoryProtocol
-from modules.user.domain.user import User
 from modules.user.domain.user_status import UserStatus
 
 
@@ -38,19 +38,19 @@ class AuthenticationService:
 
     def __init__(
         self,
-        user_repository: UserRepositoryProtocol,
-        password_service: PasswordService,
-        jwt_service: JWTService,
+        user_service: UserService,
+        password_service: PasswordServiceProtocol,
+        jwt_service: JWTServiceProtocol,
     ) -> None:
         """
         Initialize authentication service with dependencies.
 
         Args:
-            user_repository: Repository for user data operations
+            user_service: Service for user operations
             password_service: Service for password hashing and verification
             jwt_service: Service for JWT token operations
         """
-        self.user_repository = user_repository
+        self.user_service = user_service
         self.password_service = password_service
         self.jwt_service = jwt_service
 
@@ -78,27 +78,29 @@ class AuthenticationService:
             self._validate_email(email)
             self._validate_password(password)
 
-            # Check if user already exists
-            if await self.user_repository.email_exists(email):
-                return AuthResult.failure_result("User with this email already exists")
-
             # Hash password
             password_hash = self.password_service.hash_password(password)
 
-            # Create user entity
-            user = User(
-                id=uuid4(),
+            # Create user request object that implements CreateUserProtocol
+            from dataclasses import dataclass
+
+            @dataclass
+            class UserCreationRequest:
+                email: str
+                password_hash: str
+                first_name: str | None
+                last_name: str | None
+                status: UserStatus
+
+            user_request = UserCreationRequest(
                 email=email.lower().strip(),
                 password_hash=password_hash,
                 first_name=first_name.strip() if first_name else None,
                 last_name=last_name.strip() if last_name else None,
                 status=UserStatus.ACTIVE,  # Auto-activate for MVP
-                created_at=datetime.now(UTC),
-                updated_at=datetime.now(UTC),
             )
 
-            # Save user to repository
-            created_user = await self.user_repository.create(user)
+            created_user = await self.user_service.create_user(user_request)
 
             # Generate JWT tokens
             token_pair = self.jwt_service.create_token_pair(
@@ -107,8 +109,18 @@ class AuthenticationService:
                 is_active=created_user.is_active,
             )
 
+            # Create auth-specific value object
+            auth_user = CreatedAuthUser(
+                user_id=created_user.id,
+                email=created_user.email,
+                first_name=created_user.first_name,
+                last_name=created_user.last_name,
+                is_active=created_user.is_active,
+                created_at=created_user.created_at,
+            )
+
             return AuthResult.success_result(
-                user=created_user,
+                user=auth_user,
                 access_token=token_pair.access_token,
                 refresh_token=token_pair.refresh_token,
                 expires_in=token_pair.expires_in,
@@ -138,7 +150,7 @@ class AuthenticationService:
                 return AuthResult.failure_result("Email and password are required")
 
             # Get user by email
-            user = await self.user_repository.get_by_email(email.lower().strip())
+            user = await self.user_service.get_user_by_email(email.lower().strip())
             if not user:
                 return AuthResult.failure_result("Invalid email or password")
 
@@ -150,8 +162,8 @@ class AuthenticationService:
             if not user.is_active:
                 return AuthResult.failure_result("Account is not active")
 
-            # Update last login
-            await self.user_repository.update_last_login(user.id)
+            # Note: Last login update would be handled by user service if needed
+            # For MVP, we skip this to maintain clean boundaries
 
             # Generate JWT tokens
             token_pair = self.jwt_service.create_token_pair(
@@ -160,8 +172,18 @@ class AuthenticationService:
                 is_active=user.is_active,
             )
 
+            # Create auth-specific value object
+            auth_user = CreatedAuthUser(
+                user_id=user.id,
+                email=user.email,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                is_active=user.is_active,
+                created_at=user.created_at,
+            )
+
             return AuthResult.success_result(
-                user=user,
+                user=auth_user,
                 access_token=token_pair.access_token,
                 refresh_token=token_pair.refresh_token,
                 expires_in=token_pair.expires_in,
@@ -194,7 +216,7 @@ class AuthenticationService:
             auth_user = self.jwt_service.validate_access_token(access_token)
 
             # Verify user still exists and is active
-            user = await self.user_repository.get_by_id(auth_user.user_id)
+            user = await self.user_service.get_user_by_id(auth_user.user_id)
             if not user or not user.is_active:
                 raise JWTError("User is no longer active")
 
@@ -228,7 +250,7 @@ class AuthenticationService:
             auth_user = self.jwt_service.validate_refresh_token(refresh_token)
 
             # Verify user still exists and is active
-            user = await self.user_repository.get_by_id(auth_user.user_id)
+            user = await self.user_service.get_user_by_id(auth_user.user_id)
             if not user or not user.is_active:
                 raise JWTError("User is no longer active")
 
@@ -259,6 +281,44 @@ class AuthenticationService:
             return True
         except JWTError:
             return False
+
+    async def get_user_profile(self, access_token: str) -> CreatedAuthUser:
+        """
+        Get user profile using access token.
+
+        Args:
+            access_token: JWT access token
+
+        Returns:
+            CreatedAuthUser: User profile information
+
+        Raises:
+            JWTError: If token is invalid or expired
+        """
+        try:
+            # Validate token and get user info
+            auth_user = self.jwt_service.validate_access_token(access_token)
+
+            # Get full user details from user service
+            user = await self.user_service.get_user_by_id(auth_user.user_id)
+
+            if not user:
+                raise JWTError("User not found")
+
+            # Return auth-specific value object
+            return CreatedAuthUser(
+                user_id=user.id,
+                email=user.email,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                is_active=user.is_active,
+                created_at=user.created_at,
+            )
+
+        except JWTError:
+            raise
+        except Exception as e:
+            raise JWTError(f"Profile retrieval failed: {str(e)}") from e
 
     def _validate_email(self, email: str) -> None:
         """

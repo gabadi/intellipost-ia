@@ -7,7 +7,7 @@ This module contains the data models used by the authentication system.
 from dataclasses import dataclass
 from uuid import UUID
 
-from modules.user.domain.user import User
+from .value_objects import CreatedAuthUser
 
 
 @dataclass
@@ -15,7 +15,7 @@ class AuthResult:
     """Result of authentication operations."""
 
     success: bool
-    user: User | None = None
+    user: CreatedAuthUser | None = None
     access_token: str | None = None
     refresh_token: str | None = None
     token_type: str = "bearer"
@@ -25,7 +25,7 @@ class AuthResult:
     @classmethod
     def success_result(
         cls,
-        user: User,
+        user: CreatedAuthUser,
         access_token: str,
         refresh_token: str,
         expires_in: int,

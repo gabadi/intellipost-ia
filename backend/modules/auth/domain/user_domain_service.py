@@ -5,23 +5,23 @@ This module defines abstract base class for user authentication domain services.
 """
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 from uuid import UUID
 
-if TYPE_CHECKING:
-    from modules.user.domain.user import User
+from .protocols import AuthUserProtocol
 
 
 class UserDomainService(ABC):
     """Abstract base class for user domain services."""
 
     @abstractmethod
-    async def register_user(self, email: str, password: str) -> "User":
+    async def register_user(self, email: str, password: str) -> AuthUserProtocol:
         """Register a new user."""
         ...
 
     @abstractmethod
-    async def authenticate_user(self, email: str, password: str) -> "User | None":
+    async def authenticate_user(
+        self, email: str, password: str
+    ) -> AuthUserProtocol | None:
         """Authenticate user credentials."""
         ...
 

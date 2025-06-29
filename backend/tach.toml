@@ -47,33 +47,31 @@ depends_on = [
 path = "modules.auth.api"
 depends_on = [
     "infrastructure",
-    "modules.auth.application",
     "modules.auth.domain",
     "modules.auth.infrastructure",
-    "modules.user.domain",
-    "modules.user.infrastructure",
 ]
 
 [[modules]]
 path = "modules.auth.application"
 depends_on = [
     "modules.auth.domain",
-    "modules.auth.infrastructure",
+    "modules.user.application",
     "modules.user.domain",
 ]
 
 [[modules]]
 path = "modules.auth.domain"
-depends_on = [
-    "modules.user.domain",
-]
+depends_on = []
 
 [[modules]]
 path = "modules.auth.infrastructure"
 depends_on = [
     "infrastructure",
-    "modules.auth.api",
+    "modules.auth.application",
     "modules.auth.domain",
+    "modules.user.application",
+    "modules.user.domain",
+    "modules.user.infrastructure",
 ]
 
 [[modules]]
@@ -134,7 +132,9 @@ depends_on = []
 
 [[modules]]
 path = "modules.user.application"
-depends_on = []
+depends_on = [
+    "modules.user.domain",
+]
 
 [[modules]]
 path = "modules.user.domain"

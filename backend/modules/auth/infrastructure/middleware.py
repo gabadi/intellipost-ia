@@ -11,8 +11,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 
-from modules.auth.api.auth_service_protocol import AuthenticationServiceProtocol
 from modules.auth.domain.models import AuthenticatedUser
+from modules.auth.domain.protocols import AuthenticationServiceProtocol
 
 # HTTP Bearer security scheme for extracting tokens
 security = HTTPBearer(auto_error=False)

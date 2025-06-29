@@ -10,11 +10,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.config.settings import Settings
-from infrastructure.database import get_database_session
-from modules.auth.api.auth_service_protocol import AuthenticationServiceProtocol
 from modules.auth.api.schemas import (
     AccessTokenResponse,
     AuthenticationResponse,
@@ -28,13 +25,8 @@ from modules.auth.api.schemas import (
     UserResponse,
     user_to_response,
 )
-from modules.auth.application.authentication_service import (
-    AuthenticationService,
-)
-from modules.auth.infrastructure.jwt_service import JWTService
-from modules.auth.infrastructure.middleware import create_auth_dependencies
-from modules.auth.infrastructure.password_service import PasswordService
-from modules.user.infrastructure.user_repository import UserRepository
+from modules.auth.domain.protocols import AuthenticationServiceProtocol
+from modules.auth.infrastructure.di_containers import get_auth_service
 
 # Create router
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -53,56 +45,6 @@ def create_auth_router(settings: Settings) -> APIRouter:
     Returns:
         APIRouter: Configured authentication router
     """
-
-    # Create services
-    password_service = PasswordService()
-    jwt_service = JWTService(settings)
-
-    def get_auth_service(
-        db_session: Annotated[AsyncSession, Depends(get_database_session)],
-    ) -> AuthenticationService:
-        """Create authentication service with database session."""
-        user_repository = UserRepository(db_session)
-        return AuthenticationService(user_repository, password_service, jwt_service)
-
-    # Create a dummy auth service for dependency setup (will be overridden by get_auth_service)
-    from uuid import UUID
-
-    from modules.user.domain.user import User
-
-    # We need to create dependencies without a real repository
-    # The actual repository will be injected at request time via get_auth_service
-    class DummyUserRepository:
-        """Dummy repository for type checking only."""
-
-        async def create(self, user: User) -> User:
-            raise NotImplementedError("This is a dummy repository")
-
-        async def get_by_id(self, user_id: UUID) -> User | None:
-            raise NotImplementedError("This is a dummy repository")
-
-        async def get_by_email(self, email: str) -> User | None:
-            raise NotImplementedError("This is a dummy repository")
-
-        async def update(self, user: User) -> User:
-            raise NotImplementedError("This is a dummy repository")
-
-        async def delete(self, user_id: UUID) -> bool:
-            raise NotImplementedError("This is a dummy repository")
-
-        async def email_exists(self, email: str) -> bool:
-            raise NotImplementedError("This is a dummy repository")
-
-        async def update_last_login(self, user_id: UUID) -> None:
-            raise NotImplementedError("This is a dummy repository")
-
-    dummy_auth_service = AuthenticationService(
-        DummyUserRepository(), password_service, jwt_service
-    )
-
-    get_current_user, get_current_active_user, get_optional_current_user = (  # pyright: ignore[reportUnusedVariable]
-        create_auth_dependencies(dummy_auth_service)
-    )
 
     @router.post(
         "/register",
@@ -316,7 +258,6 @@ def create_auth_router(settings: Settings) -> APIRouter:
         auth_service: Annotated[
             AuthenticationServiceProtocol, Depends(get_auth_service)
         ],
-        db_session: Annotated[AsyncSession, Depends(get_database_session)],
     ) -> UserResponse:
         """
         Get current authenticated user's profile.
@@ -331,19 +272,8 @@ def create_auth_router(settings: Settings) -> APIRouter:
             )
 
         try:
-            # Validate token and get user info
-            auth_user = await auth_service.validate_token(credentials.credentials)
-
-            # Get full user details from repository
-            user_repository = UserRepository(db_session)
-            user = await user_repository.get_by_id(auth_user.user_id)
-
-            if not user:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found",
-                )
-
+            # Get user profile using auth service
+            user = await auth_service.get_user_profile(credentials.credentials)
             return user_to_response(user)
 
         except JWTError as e:

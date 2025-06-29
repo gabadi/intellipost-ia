@@ -13,6 +13,7 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from infrastructure.config.settings import Settings
+from modules.auth.domain.models import AuthenticatedUser
 
 
 class TokenPair(BaseModel):
@@ -22,15 +23,6 @@ class TokenPair(BaseModel):
     refresh_token: str
     token_type: str = "bearer"
     expires_in: int  # seconds
-
-
-class AuthenticatedUser(BaseModel):
-    """Authenticated user information from JWT token."""
-
-    user_id: UUID
-    email: str
-    is_active: bool
-    exp: int  # Token expiration timestamp
 
 
 class JWTService:

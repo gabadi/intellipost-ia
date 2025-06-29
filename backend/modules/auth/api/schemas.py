@@ -8,7 +8,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
-from modules.user.domain.user import User
+from modules.auth.domain.protocols import AuthUserProtocol
+from modules.auth.domain.value_objects import CreatedAuthUser
 
 
 class UserRegistrationRequest(BaseModel):
@@ -108,7 +109,7 @@ class UserResponse(BaseModel):
     email: str = Field(..., description="User's email address")
     first_name: str | None = Field(None, description="User's first name")
     last_name: str | None = Field(None, description="User's last name")
-    status: str = Field(..., description="User's account status")
+    status: str | None = Field(None, description="User's account status")
     is_active: bool = Field(..., description="Whether user account is active")
     created_at: str = Field(..., description="Account creation timestamp")
     last_login_at: str | None = Field(None, description="Last login timestamp")
@@ -190,18 +191,30 @@ class ErrorResponse(BaseModel):
 
 
 # Helper function to convert User domain entity to UserResponse
-def user_to_response(user: User) -> UserResponse:
+def user_to_response(user: AuthUserProtocol | CreatedAuthUser) -> UserResponse:
     """Convert User domain entity to UserResponse schema."""
+    # Handle both AuthUserProtocol (with id) and CreatedAuthUser (with user_id)
+    if isinstance(user, CreatedAuthUser):
+        user_id = user.user_id
+        status = None  # CreatedAuthUser doesn't have status
+        last_login_at = None
+        email_verified_at = None
+    else:
+        user_id = user.id
+        status = user.status.value if hasattr(user, "status") and user.status else None
+        last_login_at = user.last_login_at.isoformat() if user.last_login_at else None
+        email_verified_at = (
+            user.email_verified_at.isoformat() if user.email_verified_at else None
+        )
+
     return UserResponse(
-        id=user.id,
+        id=user_id,
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
-        status=user.status.value,
+        status=status,
         is_active=user.is_active,
         created_at=user.created_at.isoformat(),
-        last_login_at=user.last_login_at.isoformat() if user.last_login_at else None,
-        email_verified_at=user.email_verified_at.isoformat()
-        if user.email_verified_at
-        else None,
+        last_login_at=last_login_at,
+        email_verified_at=email_verified_at,
     )
