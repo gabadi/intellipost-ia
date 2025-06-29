@@ -7,7 +7,7 @@
 
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
-import type { AuthState, User, LoginFormData, RegisterFormData } from '../types/auth';
+import type { AuthState, User, LoginFormData, RegisterFormData, PasswordChangeRequest } from '../types/auth';
 import { authAPI } from '../api/auth';
 
 // Storage keys
@@ -303,6 +303,25 @@ function createAuthStore() {
 
         authAPI.setAuthToken(null);
         throw error;
+      }
+    },
+
+    /**
+     * Change user password
+     */
+    changePassword: async (data: PasswordChangeRequest) => {
+      update(state => ({ ...state, isLoading: true, error: null }));
+
+      try {
+        const response = await authAPI.changePassword(data);
+
+        update(state => ({ ...state, isLoading: false }));
+
+        return { success: true, message: response.message };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Password change failed';
+        update(state => ({ ...state, isLoading: false, error: errorMessage }));
+        return { success: false, error: errorMessage };
       }
     },
 

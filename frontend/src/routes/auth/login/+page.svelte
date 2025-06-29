@@ -30,14 +30,7 @@
     // Error is already displayed in the form
   }
 
-  // Switch to register page
-  function switchToRegister() {
-    const registerUrl = new URL('/auth/register', window.location.origin);
-    if (redirectTo && redirectTo !== '/') {
-      registerUrl.searchParams.set('redirect', redirectTo);
-    }
-    goto(registerUrl.toString());
-  }
+  // Note: Registration is disabled, switchToRegister function removed
 
   // Redirect if already authenticated
   onMount(() => {
@@ -72,7 +65,6 @@
           {redirectTo}
           on:success={handleLoginSuccess}
           on:error={handleLoginError}
-          on:switchToRegister={switchToRegister}
         />
       </div>
     </main>

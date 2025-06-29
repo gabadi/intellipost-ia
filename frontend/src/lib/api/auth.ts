@@ -13,9 +13,10 @@ import type {
   AccessTokenResponse,
   MessageResponse,
   User,
+  PasswordChangeRequest,
 } from '../types/auth';
 
-const API_BASE_URL = 'http://localhost:8080'; // Updated to match backend port
+const API_BASE_URL = 'http://localhost:8001'; // Updated to match backend port
 
 class AuthAPI {
   private baseURL: string;
@@ -125,6 +126,19 @@ class AuthAPI {
   async getCurrentUser(): Promise<User> {
     return this.request<User>('/auth/me', {
       method: 'GET',
+    });
+  }
+
+  /**
+   * Change user password
+   */
+  async changePassword(data: PasswordChangeRequest): Promise<MessageResponse> {
+    return this.request<MessageResponse>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        current_password: data.currentPassword,
+        new_password: data.newPassword,
+      }),
     });
   }
 }

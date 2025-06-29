@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
   import MobileNavigation from '$components/core/MobileNavigation.svelte';
   import DesktopNavigation from '$components/core/DesktopNavigation.svelte';
   import OfflineBanner from '$components/ui/OfflineBanner.svelte';
@@ -10,6 +11,9 @@
   onMount(() => {
     authStore.initialize();
   });
+
+  // Check if we're on an auth page
+  $: isAuthPage = $page.url.pathname.startsWith('/auth');
 </script>
 
 <svelte:head>
@@ -30,15 +34,19 @@
   <!-- Hidden heading for screen readers -->
   <h1 class="sr-only">IntelliPost AI - Intelligent Social Media Posting Platform</h1>
 
-  <!-- Desktop Navigation -->
-  <DesktopNavigation />
+  <!-- Desktop Navigation - Only show when not on auth pages -->
+  {#if !isAuthPage}
+    <DesktopNavigation />
+  {/if}
 
-  <main class="main-content" id="main-content" tabindex="-1">
+  <main class="main-content" class:auth-layout={isAuthPage} id="main-content" tabindex="-1">
     <slot />
   </main>
 
-  <!-- Mobile Navigation -->
-  <MobileNavigation />
+  <!-- Mobile Navigation - Only show when not on auth pages -->
+  {#if !isAuthPage}
+    <MobileNavigation />
+  {/if}
 </div>
 
 <style>
@@ -117,6 +125,16 @@
       margin-left: 280px; /* Space for desktop navigation */
       padding-bottom: 0; /* No space needed for mobile nav on desktop */
       padding: var(--space-6);
+    }
+
+    /* Auth pages: full width, centered layout */
+    .main-content.auth-layout {
+      margin-left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--space-4);
     }
   }
 

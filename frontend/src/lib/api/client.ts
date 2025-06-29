@@ -1,7 +1,7 @@
 // Base API client for backend communication
 import type { APIResponse, HealthCheckResponse } from '$types';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://localhost:8001';
 
 // Generic API client with error handling
 class APIClient {

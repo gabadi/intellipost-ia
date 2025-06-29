@@ -1,63 +1,67 @@
 <!--
-  Registration is disabled - redirect to login page.
-
-  This page now redirects users to the login page since registration
-  has been disabled in favor of a default user system.
+  Logout page that handles user logout and redirects to login
 -->
 
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
-  import { isAuthenticated } from '$stores/auth';
+  import { authStore } from '$stores/auth';
 
-  // Reactive redirect logic
-  $: redirectTo = $page.url.searchParams.get('redirect') || '/';
+  let isLoggingOut = true;
+  let logoutError = '';
 
-  // Redirect to login immediately
-  onMount(() => {
-    if ($isAuthenticated) {
-      goto(redirectTo);
-    } else {
-      // Redirect to login with the same redirect parameter
-      const loginUrl = new URL('/auth/login', window.location.origin);
-      if (redirectTo && redirectTo !== '/') {
-        loginUrl.searchParams.set('redirect', redirectTo);
-      }
-      goto(loginUrl.toString());
+  onMount(async () => {
+    try {
+      // Perform logout
+      await authStore.logout();
+
+      // Small delay to show the logout message
+      setTimeout(() => {
+        goto('/auth/login');
+      }, 1500);
+    } catch (error) {
+      console.error('Logout error:', error);
+      logoutError = 'Logout failed. Redirecting to login...';
+
+      // Still redirect to login even if logout fails
+      setTimeout(() => {
+        goto('/auth/login');
+      }, 2000);
     }
   });
 </script>
 
 <svelte:head>
-  <title>Redirecting to Login - IntelliPost AI</title>
-  <meta
-    name="description"
-    content="Redirecting to login page. Registration is disabled - please use the default login credentials."
-  />
+  <title>Signing Out - IntelliPost AI</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
-<div class="redirect-page">
-  <div class="redirect-container">
+<div class="logout-page">
+  <div class="logout-container">
     <header class="page-header">
-      <a href="/" class="logo-link" aria-label="Go to homepage">
-        <h1 class="logo">IntelliPost AI</h1>
-      </a>
+      <h1 class="logo">IntelliPost AI</h1>
     </header>
 
     <main class="main-content">
-      <div class="redirect-message">
-        <h2>Redirecting to Login</h2>
-        <p>Registration has been disabled. Please use the login page to access the system.</p>
-        <p><strong>Loading...</strong></p>
+      <div class="logout-message">
+        {#if logoutError}
+          <div class="error-icon" aria-hidden="true">⚠️</div>
+          <h2>Logout Issue</h2>
+          <p class="error-text">{logoutError}</p>
+        {:else}
+          <div class="loading-icon" aria-hidden="true">👋</div>
+          <h2>Signing Out</h2>
+          <p>Thank you for using IntelliPost AI. You are being signed out...</p>
+        {/if}
+
+        <div class="loading-spinner" aria-hidden="true"></div>
       </div>
     </main>
   </div>
 </div>
 
 <style>
-  .redirect-page {
+  .logout-page {
     min-height: 100vh;
     background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-background) 100%);
     display: flex;
@@ -66,7 +70,7 @@
     padding: var(--spacing-4);
   }
 
-  .redirect-container {
+  .logout-container {
     width: 100%;
     max-width: 480px;
     display: flex;
@@ -76,23 +80,6 @@
 
   .page-header {
     text-align: center;
-  }
-
-  .logo-link {
-    text-decoration: none;
-    color: inherit;
-    display: inline-block;
-    transition: transform 0.2s ease;
-  }
-
-  .logo-link:hover {
-    transform: scale(1.02);
-  }
-
-  .logo-link:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--color-primary-alpha);
-    border-radius: var(--border-radius-md);
   }
 
   .logo {
@@ -108,7 +95,7 @@
     justify-content: center;
   }
 
-  .redirect-message {
+  .logout-message {
     width: 100%;
     background: var(--color-background);
     border-radius: var(--border-radius-lg);
@@ -120,34 +107,60 @@
     text-align: center;
   }
 
-  .redirect-message h2 {
+  .loading-icon,
+  .error-icon {
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--spacing-4);
+  }
+
+  .logout-message h2 {
     font-size: var(--font-size-2xl);
     font-weight: 700;
     color: var(--color-text);
-    margin: 0 0 var(--spacing-4) 0;
+    margin: 0 0 var(--spacing-3) 0;
     line-height: 1.2;
   }
 
-  .redirect-message p {
+  .logout-message p {
     font-size: var(--font-size-base);
     color: var(--color-text-secondary);
-    margin: 0 0 var(--spacing-3) 0;
+    margin: 0 0 var(--spacing-4) 0;
     line-height: 1.4;
+  }
+
+  .error-text {
+    color: var(--color-error) !important;
+  }
+
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--color-border);
+    border-top: 3px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   /* Mobile-specific styles */
   @media (max-width: 767px) {
-    .redirect-page {
+    .logout-page {
       padding: var(--spacing-2);
       align-items: flex-start;
       padding-top: var(--spacing-8);
     }
 
-    .redirect-container {
+    .logout-container {
       gap: var(--spacing-6);
     }
 
-    .redirect-message {
+    .logout-message {
       padding: var(--spacing-6);
       border-radius: var(--border-radius-md);
     }
@@ -159,7 +172,7 @@
 
   /* Dark mode support */
   @media (prefers-color-scheme: dark) {
-    .redirect-page {
+    .logout-page {
       background: linear-gradient(
         135deg,
         var(--color-primary-900) 0%,
@@ -170,8 +183,8 @@
 
   /* Reduce motion for users who prefer it */
   @media (prefers-reduced-motion: reduce) {
-    .logo-link {
-      transition: none;
+    .loading-spinner {
+      animation: none;
     }
   }
 </style>

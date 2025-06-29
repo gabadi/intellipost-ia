@@ -10,10 +10,11 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import type { RegisterFormData, User } from '$types/auth';
-  import { validateRegisterForm } from '$utils/auth-validation';
+  import { validateRegisterForm, getEmailSuggestion } from '$utils/auth-validation';
   import { authStore } from '$stores/auth';
+  import { createAutoSave, formatTimeAgo, type FormAutoSave } from '$utils/form-autosave';
   import PasswordInput from './PasswordInput.svelte';
 
   // Props
@@ -45,6 +46,24 @@
   let isSubmitting = false;
   let submitError = '';
   let showOptionalFields = false;
+  let submissionStage = '';
+
+  // Enhanced UX state
+  let emailSuggestion = '';
+  let showEmailSuggestion = false;
+  let autoSave: FormAutoSave | null = null;
+  let showRecoveryNotice = false;
+  let recoveryTime: Date | null = null;
+  let autoSaveIndicator = false;
+
+  // Field validity tracking for animations
+  let fieldValidity = {
+    email: false,
+    password: false,
+    first_name: true, // Optional fields are valid by default
+    last_name: true,
+  };
+  let previousValidity = { ...fieldValidity };
 
   // Reactive validation
   $: validation = validateRegisterForm(
@@ -55,6 +74,51 @@
   );
   $: canSubmit = validation.isValid && !isSubmitting;
 
+  // Enhanced UX reactive updates
+  $: {
+    // Auto-save form data when it changes
+    if (autoSave && (formData.email || formData.first_name || formData.last_name)) {
+      autoSave.save(formData);
+      showAutoSaveIndicator();
+    }
+  }
+
+  $: {
+    // Check for email suggestions
+    if (formData.email && !validation.errors.email) {
+      const suggestion = getEmailSuggestion(formData.email);
+      if (suggestion && suggestion !== formData.email) {
+        emailSuggestion = suggestion;
+        showEmailSuggestion = true;
+      } else {
+        showEmailSuggestion = false;
+      }
+    } else {
+      showEmailSuggestion = false;
+    }
+  }
+
+  $: {
+    // Track field validity for success animations
+    const newValidity = {
+      email: formData.email.length > 0 && !validation.errors.email,
+      password: formData.password.length > 0 && !validation.errors.password,
+      first_name: !formData.first_name || !validation.errors.firstName,
+      last_name: !formData.last_name || !validation.errors.lastName,
+    };
+
+    // Trigger success animations for newly valid fields
+    const validityKeys = ['email', 'password', 'first_name', 'last_name'] as const;
+    validityKeys.forEach(field => {
+      if (!previousValidity[field] && newValidity[field]) {
+        triggerFieldSuccessAnimation(field);
+      }
+    });
+
+    fieldValidity = newValidity;
+    previousValidity = { ...newValidity };
+  }
+
   // Handle form submission
   async function handleSubmit(event: Event) {
     event.preventDefault();
@@ -64,6 +128,11 @@
     isSubmitting = true;
     submitError = '';
     formErrors = {};
+    submissionStage = 'Validating...';
+
+    // Simulate processing stages for better UX
+    setTimeout(() => (submissionStage = 'Creating account...'), 500);
+    setTimeout(() => (submissionStage = 'Finalizing...'), 1200);
 
     try {
       // Clean up optional fields (remove empty strings)
@@ -77,6 +146,11 @@
       const result = await authStore.register(cleanData);
 
       if (result.success && result.user) {
+        // Clear auto-save on successful registration
+        if (autoSave) {
+          autoSave.clear();
+        }
+
         dispatch('success', { user: result.user });
 
         // Redirect if specified
@@ -93,6 +167,7 @@
       dispatch('error', { error: errorMessage });
     } finally {
       isSubmitting = false;
+      submissionStage = '';
     }
   }
 
@@ -127,9 +202,92 @@
   function toggleOptionalFields() {
     showOptionalFields = !showOptionalFields;
   }
+
+  // Enhanced UX functions
+  function acceptEmailSuggestion() {
+    formData.email = emailSuggestion;
+    showEmailSuggestion = false;
+    // Trigger validation update and auto-save
+    validateField('email');
+  }
+
+  function showAutoSaveIndicator() {
+    autoSaveIndicator = true;
+    setTimeout(() => {
+      autoSaveIndicator = false;
+    }, 3000);
+  }
+
+  function restoreFormData() {
+    if (autoSave) {
+      const restored = autoSave.restore();
+      if (restored) {
+        Object.assign(formData, restored);
+        showRecoveryNotice = false;
+      }
+    }
+  }
+
+  function dismissRecovery() {
+    showRecoveryNotice = false;
+    if (autoSave) {
+      autoSave.clear();
+    }
+  }
+
+  function triggerFieldSuccessAnimation(fieldName: string) {
+    // Add green flash animation to the field
+    const fieldElement = document.querySelector(`[data-field="${fieldName}"]`);
+    if (fieldElement) {
+      fieldElement.classList.add('field-valid-flash');
+      setTimeout(() => {
+        fieldElement.classList.remove('field-valid-flash');
+        fieldElement.classList.add('form-field-success');
+      }, 800);
+    }
+  }
+
+  // Lifecycle
+  onMount(() => {
+    // Initialize auto-save
+    autoSave = createAutoSave({
+      key: 'intellipost-register-form',
+      debounceMs: 2000,
+      onSave: () => {
+        // Form auto-saved successfully
+      },
+    });
+
+    // Check for existing saved data
+    if (autoSave.hasSavedData()) {
+      recoveryTime = autoSave.getLastSaveTime();
+      showRecoveryNotice = true;
+    }
+  });
+
+  onDestroy(() => {
+    if (autoSave) {
+      autoSave.destroy();
+    }
+  });
 </script>
 
 <form class="register-form" on:submit={handleSubmit} novalidate>
+  <!-- Form Recovery Notice -->
+  {#if showRecoveryNotice && recoveryTime}
+    <div class="form-recovery-notice">
+      <span class="form-recovery-text">
+        We found unsaved progress from {formatTimeAgo(recoveryTime)}.
+      </span>
+      <button type="button" class="form-recovery-action" on:click={restoreFormData}>
+        Restore
+      </button>
+      <button type="button" class="form-recovery-action" on:click={dismissRecovery}>
+        Dismiss
+      </button>
+    </div>
+  {/if}
+
   <div class="form-header">
     <h2 class="form-title">Create account</h2>
     <p class="form-subtitle">Sign up to start using IntelliPost AI</p>
@@ -148,6 +306,8 @@
         bind:value={formData.email}
         class="field-input"
         class:error={formErrors.email}
+        class:valid={fieldValidity.email}
+        data-field="email"
         placeholder="Enter your email"
         required
         disabled={disabled || isSubmitting}
@@ -162,10 +322,32 @@
           {formErrors.email}
         </div>
       {/if}
+
+      <!-- Email Suggestion -->
+      {#if showEmailSuggestion}
+        <div
+          class="email-suggestion"
+          role="button"
+          tabindex="0"
+          on:click={acceptEmailSuggestion}
+          on:keydown={e => e.key === 'Enter' && acceptEmailSuggestion()}
+          aria-label="Accept email suggestion: {emailSuggestion}"
+        >
+          Did you mean <span class="email-suggestion-text">{emailSuggestion}</span>?
+        </div>
+      {/if}
+
+      <!-- Auto-save Indicator -->
+      {#if autoSaveIndicator}
+        <div class="autosave-indicator">
+          <div class="autosave-dot"></div>
+          <span>Saved</span>
+        </div>
+      {/if}
     </div>
 
     <!-- Password Field -->
-    <div class="field">
+    <div class="field" data-field="password">
       <label for="password" class="field-label">
         Password
         <span class="required" aria-label="required">*</span>
@@ -203,7 +385,7 @@
     {#if showOptionalFields}
       <div class="optional-fields" id="optional-fields">
         <div class="field-row">
-          <div class="field">
+          <div class="field" data-field="first_name">
             <label for="first_name" class="field-label">First name</label>
             <input
               id="first_name"
@@ -211,6 +393,7 @@
               bind:value={formData.first_name}
               class="field-input"
               class:error={formErrors.first_name}
+              class:valid={fieldValidity.first_name}
               placeholder="First name"
               disabled={disabled || isSubmitting}
               autocomplete="given-name"
@@ -226,7 +409,7 @@
             {/if}
           </div>
 
-          <div class="field">
+          <div class="field" data-field="last_name">
             <label for="last_name" class="field-label">Last name</label>
             <input
               id="last_name"
@@ -234,6 +417,7 @@
               bind:value={formData.last_name}
               class="field-input"
               class:error={formErrors.last_name}
+              class:valid={fieldValidity.last_name}
               placeholder="Last name"
               disabled={disabled || isSubmitting}
               autocomplete="family-name"
@@ -266,13 +450,20 @@
       type="submit"
       class="submit-button"
       class:loading={isSubmitting}
+      class:disabled={!canSubmit}
       disabled={!canSubmit || disabled}
       aria-describedby={isSubmitting ? 'loading-text' : undefined}
     >
       {#if isSubmitting}
         <span class="loading-spinner" aria-hidden="true"></span>
-        <span id="loading-text">Creating account...</span>
+        <span id="loading-text" class="loading-text"
+          >{submissionStage || 'Creating your account...'}</span
+        >
+        <div class="loading-progress">
+          <div class="loading-bar"></div>
+        </div>
       {:else}
+        <span class="button-icon" aria-hidden="true">✨</span>
         Create account
       {/if}
     </button>
@@ -301,6 +492,11 @@
     width: 100%;
     max-width: 400px;
     margin: 0 auto;
+    padding: var(--spacing-8);
+    background: var(--color-background);
+    border: 1px solid var(--color-border-muted);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-lg);
   }
 
   .form-header {
@@ -372,7 +568,7 @@
   }
 
   .field-input:disabled {
-    background: var(--color-background-disabled);
+    background: var(--color-background-muted);
     color: var(--color-text-disabled);
     cursor: not-allowed;
   }
@@ -384,6 +580,15 @@
   .field-input.error:focus {
     border-color: var(--color-error);
     box-shadow: 0 0 0 3px var(--color-error-alpha);
+  }
+
+  .field-input.valid {
+    border-color: var(--color-success);
+  }
+
+  .field-input.valid:focus {
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 3px var(--color-success-alpha);
   }
 
   .field-error {
@@ -412,8 +617,8 @@
   }
 
   .toggle-button:hover:not(:disabled) {
-    background: var(--color-background-hover);
-    border-color: var(--color-border-hover);
+    background: var(--color-background-secondary);
+    border-color: var(--color-border-secondary);
     color: var(--color-text);
   }
 
@@ -450,7 +655,7 @@
 
   .submit-error {
     padding: var(--spacing-3);
-    background: var(--color-error-background);
+    background: var(--color-error-alpha);
     border: 1px solid var(--color-error);
     border-radius: var(--border-radius-md);
     color: var(--color-error);
@@ -467,10 +672,10 @@
 
   .submit-button {
     width: 100%;
-    height: 44px; /* Mobile-optimized touch target */
+    height: 48px; /* Slightly larger for better visual hierarchy */
     padding: var(--spacing-3) var(--spacing-4);
     background: var(--color-primary);
-    color: var(--color-primary-contrast);
+    color: #ffffff;
     border: none;
     border-radius: var(--border-radius-md);
     font-size: var(--font-size-base);
@@ -481,11 +686,15 @@
     align-items: center;
     justify-content: center;
     gap: var(--spacing-2);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
   }
 
   .submit-button:hover:not(:disabled) {
     background: var(--color-primary-hover);
     transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
   }
 
   .submit-button:active:not(:disabled) {
@@ -498,15 +707,61 @@
   }
 
   .submit-button:disabled {
-    background: var(--color-background-disabled);
+    background: var(--color-background-muted);
     color: var(--color-text-disabled);
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
   }
 
   .submit-button.loading {
     background: var(--color-primary-hover);
     cursor: wait;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .loading-text {
+    opacity: 0.9;
+    font-weight: 500;
+  }
+
+  .loading-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+  }
+
+  .loading-bar {
+    height: 100%;
+    background: rgba(255, 255, 255, 0.6);
+    width: 0%;
+    animation: loading-progress 2s ease-in-out infinite;
+  }
+
+  @keyframes loading-progress {
+    0% {
+      width: 0%;
+      transform: translateX(-100%);
+    }
+    50% {
+      width: 100%;
+      transform: translateX(0%);
+    }
+    100% {
+      width: 100%;
+      transform: translateX(100%);
+    }
+  }
+
+  .button-icon {
+    font-size: var(--font-size-sm);
+    margin-right: var(--spacing-1);
+    opacity: 0.8;
   }
 
   .loading-spinner {

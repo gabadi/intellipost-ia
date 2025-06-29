@@ -1,6 +1,7 @@
 <script lang="ts">
   import { isOffline, networkStatus } from '$stores/network';
   import { fly } from 'svelte/transition';
+  import { page } from '$app/stores';
 
   let retryCount = 0;
   let isRetrying = false;
@@ -33,11 +34,15 @@
     if (retryCount > 0) return `Retry attempt ${retryCount}`;
     return 'Tap to retry';
   }
+
+  // Check if we're on an auth page
+  $: isAuthPage = $page.url.pathname.startsWith('/auth');
 </script>
 
 {#if $isOffline}
   <div
     class="offline-banner"
+    class:auth-layout={isAuthPage}
     role="alert"
     aria-live="polite"
     transition:fly={{ y: -100, duration: 300 }}
@@ -79,7 +84,7 @@
   }
 
   @media (min-width: 768px) {
-    .offline-banner {
+    .offline-banner:not(.auth-layout) {
       margin-left: 280px; /* Account for desktop navigation */
     }
   }

@@ -6,6 +6,7 @@
     { path: '/', label: 'Dashboard', icon: '🏠' },
     { path: '/products/new', label: 'New Product', icon: '➕' },
     { path: '/products', label: 'Products', icon: '📦' },
+    { path: '/settings', label: 'Settings', icon: '⚙️' },
   ];
 
   $: currentPath = $page.url.pathname;

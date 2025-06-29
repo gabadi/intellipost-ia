@@ -15,6 +15,7 @@
     getPasswordStrength,
     getPasswordRequirements,
   } from '$utils/auth-validation';
+  import type { PasswordRequirements } from '$types/auth';
 
   // Props
   export let value: string = '';
@@ -28,6 +29,7 @@
   // State
   let showPassword = false;
   let isFocused = false;
+  let previousRequirements: PasswordRequirements | null = null;
 
   // Event dispatcher
   const dispatch = createEventDispatcher<{
@@ -41,6 +43,31 @@
   $: passwordStrength = getPasswordStrength(value);
   $: requirements = getPasswordRequirements(value);
   $: hasValue = value.length > 0;
+
+  // Track requirement changes for animations
+  $: {
+    if (previousRequirements && requirements) {
+      // Check if any requirement just became met
+      const requirementKeys = ['minLength', 'hasUpperCase', 'hasLowerCase', 'hasNumber'] as const;
+      const justMet = requirementKeys.filter(key => {
+        const prev = previousRequirements?.[key];
+        const curr = requirements[key];
+        return prev && curr && !prev.met && curr.met;
+      });
+
+      if (justMet.length > 0) {
+        // Trigger success animations
+        justMet.forEach(req => {
+          const element = document.querySelector(`[data-requirement="${req}"]`);
+          if (element) {
+            element.classList.add('just-met');
+            setTimeout(() => element.classList.remove('just-met'), 700);
+          }
+        });
+      }
+    }
+    previousRequirements = requirements ? { ...requirements } : null;
+  }
 
   // Event handlers
   function handleInput(event: Event) {
@@ -148,35 +175,73 @@
     </div>
   {/if}
 
-  {#if showRequirements && hasValue && !passwordValidation.isValid}
+  {#if showRequirements && (isFocused || (hasValue && !passwordValidation.isValid))}
     <div class="requirements">
       <p class="requirements-title">Password must contain:</p>
       <ul class="requirements-list">
-        <li class="requirement" class:met={requirements.minLength.met}>
-          <span class="requirement-icon" aria-hidden="true">
-            {requirements.minLength.met ? '✓' : '○'}
+        <li
+          class="requirement requirement-item"
+          class:met={requirements.minLength.met}
+          data-requirement="minLength"
+        >
+          <span
+            class="requirement-icon"
+            class:success={requirements.minLength.met}
+            aria-hidden="true"
+          >
+            {requirements.minLength.icon}
           </span>
           {requirements.minLength.text}
         </li>
-        <li class="requirement" class:met={requirements.hasUpperCase.met}>
-          <span class="requirement-icon" aria-hidden="true">
-            {requirements.hasUpperCase.met ? '✓' : '○'}
+        <li
+          class="requirement requirement-item"
+          class:met={requirements.hasUpperCase.met}
+          data-requirement="hasUpperCase"
+        >
+          <span
+            class="requirement-icon"
+            class:success={requirements.hasUpperCase.met}
+            aria-hidden="true"
+          >
+            {requirements.hasUpperCase.icon}
           </span>
           {requirements.hasUpperCase.text}
         </li>
-        <li class="requirement" class:met={requirements.hasLowerCase.met}>
-          <span class="requirement-icon" aria-hidden="true">
-            {requirements.hasLowerCase.met ? '✓' : '○'}
+        <li
+          class="requirement requirement-item"
+          class:met={requirements.hasLowerCase.met}
+          data-requirement="hasLowerCase"
+        >
+          <span
+            class="requirement-icon"
+            class:success={requirements.hasLowerCase.met}
+            aria-hidden="true"
+          >
+            {requirements.hasLowerCase.icon}
           </span>
           {requirements.hasLowerCase.text}
         </li>
-        <li class="requirement" class:met={requirements.hasNumber.met}>
-          <span class="requirement-icon" aria-hidden="true">
-            {requirements.hasNumber.met ? '✓' : '○'}
+        <li
+          class="requirement requirement-item"
+          class:met={requirements.hasNumber.met}
+          data-requirement="hasNumber"
+        >
+          <span
+            class="requirement-icon"
+            class:success={requirements.hasNumber.met}
+            aria-hidden="true"
+          >
+            {requirements.hasNumber.icon}
           </span>
           {requirements.hasNumber.text}
         </li>
       </ul>
+      {#if requirements.allMet}
+        <div class="password-complete-notice">
+          <span class="success-checkmark">✓</span>
+          Strong password created!
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
@@ -215,7 +280,7 @@
   }
 
   .password-field:disabled {
-    background: var(--color-background-disabled);
+    background: var(--color-background-muted);
     color: var(--color-text-disabled);
     cursor: not-allowed;
   }
@@ -240,7 +305,7 @@
 
   .toggle-button:hover:not(:disabled) {
     color: var(--color-text);
-    background: var(--color-background-hover);
+    background: var(--color-background-secondary);
   }
 
   .toggle-button:focus {
@@ -313,7 +378,8 @@
     padding: var(--spacing-3);
     background: var(--color-background-secondary);
     border-radius: var(--border-radius-md);
-    border: 1px solid var(--color-border-light);
+    border: 1px solid var(--color-border-muted);
+    animation: slideIn 0.2s ease-out;
   }
 
   .requirements-title {
@@ -364,10 +430,46 @@
     opacity: 0.6;
   }
 
+  .password-complete-notice {
+    margin-top: var(--spacing-2);
+    padding: var(--spacing-2);
+    background: var(--color-success-50);
+    border: 1px solid var(--color-success-200);
+    border-radius: var(--border-radius-md);
+    color: var(--color-success-800);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    animation: slide-up 0.4s var(--ease-out);
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   /* Mobile-specific styles */
   @media (max-width: 767px) {
     .password-field {
       font-size: 16px; /* Prevents zoom on iOS */
+    }
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    .requirements {
+      animation: none;
+    }
+    .strength-fill {
+      transition: none;
     }
   }
 </style>

@@ -6,6 +6,7 @@
     { path: '/', label: 'Dashboard', icon: '🏠' },
     { path: '/products/new', label: 'Create Product', icon: '➕' },
     { path: '/products', label: 'Products', icon: '📦' },
+    { path: '/settings', label: 'Settings', icon: '⚙️' },
   ];
 
   $: currentPath = $page.url.pathname;
@@ -49,9 +50,17 @@
     <div class="user-section">
       <div class="user-avatar" aria-hidden="true">👤</div>
       <div class="user-info">
-        <div class="user-name">User</div>
+        <div class="user-name">Admin User</div>
         <div class="user-status">Online</div>
       </div>
+      <button
+        class="logout-button"
+        on:click={() => window.location.href = '/auth/logout'}
+        aria-label="Logout"
+        title="Logout"
+      >
+        🚪
+      </button>
     </div>
   </div>
 </nav>
@@ -207,6 +216,27 @@
     font-size: var(--text-xs);
     color: var(--color-gray-500);
     line-height: var(--leading-tight);
+  }
+
+  .logout-button {
+    background: none;
+    border: none;
+    font-size: var(--text-lg);
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    transition: background-color 0.2s ease;
+    color: var(--color-gray-600);
+  }
+
+  .logout-button:hover {
+    background: var(--color-gray-100);
+    color: var(--color-gray-900);
+  }
+
+  .logout-button:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   /* Dark mode preparation */

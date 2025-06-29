@@ -14,9 +14,8 @@ function createNetworkStore() {
 
       try {
         // Use a lightweight request to check connectivity
-
-        const response = await fetch('/health', {
-          method: 'HEAD',
+        const response = await fetch('http://localhost:8001/health', {
+          method: 'GET',
           cache: 'no-cache',
         });
         const isOnline = response.ok;

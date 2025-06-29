@@ -24,12 +24,12 @@
   const dispatch = createEventDispatcher<{
     success: { user: User };
     error: { error: string };
-    switchToRegister: void;
   }>();
 
-  // Form state
+  // Form state with default email
+  const DEFAULT_EMAIL = 'admin@intellipost.ai';
   const formData: LoginFormData = {
-    email: '',
+    email: DEFAULT_EMAIL,
     password: '',
   };
 
@@ -93,37 +93,38 @@
 
 <form class="login-form" on:submit={handleSubmit} novalidate>
   <div class="form-header">
-    <h2 class="form-title">Welcome back</h2>
-    <p class="form-subtitle">Sign in to your account to continue</p>
+    <h2 class="form-title">Welcome to IntelliPost AI</h2>
+    <p class="form-subtitle">Sign in to access the dashboard</p>
+    <div class="default-credentials-info">
+      <p class="default-info-text">
+        <span class="info-icon" aria-hidden="true">💡</span>
+        Development mode: Default credentials in use
+        <br />
+        <small>Check README.md for current password</small>
+      </p>
+    </div>
   </div>
 
   <div class="form-fields">
-    <!-- Email Field -->
+    <!-- Email Field (read-only with default user) -->
     <div class="field">
       <label for="email" class="field-label">
-        Email address
-        <span class="required" aria-label="required">*</span>
+        Email address (default user)
       </label>
       <input
         id="email"
         type="email"
         bind:value={formData.email}
-        class="field-input"
-        class:error={formErrors.email}
-        placeholder="Enter your email"
-        required
-        disabled={disabled || isSubmitting}
+        class="field-input field-input-readonly"
+        placeholder="Default user email"
+        readonly
+        disabled={true}
         autocomplete="email"
-        aria-invalid={formErrors.email ? 'true' : 'false'}
-        aria-describedby={formErrors.email ? 'email-error' : undefined}
-        on:input={() => clearFieldError('email')}
-        on:blur={() => validateField('email')}
+        aria-describedby="email-help"
       />
-      {#if formErrors.email}
-        <div class="field-error" id="email-error" role="alert">
-          {formErrors.email}
-        </div>
-      {/if}
+      <div class="field-help" id="email-help">
+        Using default user account. Registration is disabled.
+      </div>
     </div>
 
     <!-- Password Field -->
@@ -169,15 +170,7 @@
 
     <div class="form-footer">
       <p class="switch-form">
-        Don't have an account?
-        <button
-          type="button"
-          class="link-button"
-          on:click={() => dispatch('switchToRegister')}
-          disabled={disabled || isSubmitting}
-        >
-          Create account
-        </button>
+        Having trouble? Contact your system administrator for assistance.
       </p>
     </div>
   </div>
@@ -211,6 +204,26 @@
     color: var(--color-text-secondary);
     margin: 0;
     line-height: 1.4;
+  }
+
+  .default-credentials-info {
+    margin-top: var(--spacing-4);
+    padding: var(--spacing-3);
+    background: var(--color-primary-50);
+    border: 1px solid var(--color-primary-200);
+    border-radius: var(--border-radius-md);
+  }
+
+  .default-info-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-primary-800);
+    margin: 0;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .info-icon {
+    margin-right: var(--spacing-1);
   }
 
   .form-fields {
@@ -274,6 +287,20 @@
     color: var(--color-error);
     font-size: var(--font-size-sm);
     line-height: 1.4;
+  }
+
+  .field-help {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  .field-input-readonly {
+    background: var(--color-background-secondary) !important;
+    color: var(--color-text-secondary) !important;
+    cursor: not-allowed !important;
+    opacity: 0.8;
   }
 
   .submit-error {

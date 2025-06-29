@@ -43,7 +43,7 @@ export interface LoginFormData {
   password: string;
 }
 
-export interface RegisterFormData {
+export interface RegisterFormData extends Record<string, unknown> {
   email: string;
   password: string;
   first_name?: string;
@@ -99,6 +99,20 @@ export interface PasswordValidation {
   isValid: boolean;
 }
 
+export interface PasswordRequirement {
+  met: boolean;
+  text: string;
+  icon: string;
+}
+
+export interface PasswordRequirements {
+  minLength: PasswordRequirement;
+  hasUpperCase: PasswordRequirement;
+  hasLowerCase: PasswordRequirement;
+  hasNumber: PasswordRequirement;
+  allMet: boolean;
+}
+
 export type AuthMode = 'login' | 'register';
 
 export interface AuthenticatedUser {
@@ -106,4 +120,15 @@ export interface AuthenticatedUser {
   email: string;
   is_active: boolean;
   exp: number;
+}
+
+export interface PasswordChangeRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface PasswordChangeFormData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
