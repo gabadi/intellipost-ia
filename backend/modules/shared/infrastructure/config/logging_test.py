@@ -6,7 +6,6 @@ import pytest
 
 from infrastructure.config.logging import (
     SensitiveDataFilter,
-    StructuredRequestLoggingMiddleware,
     get_logger,
     setup_logging,
 )

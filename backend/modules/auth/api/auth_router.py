@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.config.settings import Settings
 from infrastructure.database import get_database_session
+from modules.auth.api.auth_service_protocol import AuthenticationServiceProtocol
 from modules.auth.api.schemas import (
     AccessTokenResponse,
     AuthenticationResponse,
@@ -27,8 +28,8 @@ from modules.auth.api.schemas import (
     UserResponse,
     user_to_response,
 )
-from modules.auth.application.authentication_service_impl import (
-    AuthenticationServiceImpl,
+from modules.auth.application.authentication_service import (
+    AuthenticationService,
 )
 from modules.auth.infrastructure.jwt_service import JWTService
 from modules.auth.infrastructure.middleware import create_auth_dependencies
@@ -59,10 +60,10 @@ def create_auth_router(settings: Settings) -> APIRouter:
 
     def get_auth_service(
         db_session: Annotated[AsyncSession, Depends(get_database_session)],
-    ) -> AuthenticationServiceImpl:
+    ) -> AuthenticationService:
         """Create authentication service with database session."""
         user_repository = UserRepository(db_session)
-        return AuthenticationServiceImpl(user_repository, password_service, jwt_service)
+        return AuthenticationService(user_repository, password_service, jwt_service)
 
     # Create a dummy auth service for dependency setup (will be overridden by get_auth_service)
     from uuid import UUID
@@ -95,7 +96,7 @@ def create_auth_router(settings: Settings) -> APIRouter:
         async def update_last_login(self, user_id: UUID) -> None:
             raise NotImplementedError("This is a dummy repository")
 
-    dummy_auth_service = AuthenticationServiceImpl(
+    dummy_auth_service = AuthenticationService(
         DummyUserRepository(), password_service, jwt_service
     )
 
@@ -117,7 +118,9 @@ def create_auth_router(settings: Settings) -> APIRouter:
     )
     async def register_user(
         user_data: UserRegistrationRequest,
-        auth_service: Annotated[AuthenticationServiceImpl, Depends(get_auth_service)],
+        auth_service: Annotated[
+            AuthenticationServiceProtocol, Depends(get_auth_service)
+        ],
     ) -> AuthenticationResponse:
         """
         Register a new user account.
@@ -181,7 +184,9 @@ def create_auth_router(settings: Settings) -> APIRouter:
     )
     async def login_user(
         credentials: UserLoginRequest,
-        auth_service: Annotated[AuthenticationServiceImpl, Depends(get_auth_service)],
+        auth_service: Annotated[
+            AuthenticationServiceProtocol, Depends(get_auth_service)
+        ],
     ) -> AuthenticationResponse:
         """
         Authenticate user with email and password.
@@ -241,7 +246,9 @@ def create_auth_router(settings: Settings) -> APIRouter:
     )
     async def refresh_access_token(
         request: TokenRefreshRequest,
-        auth_service: Annotated[AuthenticationServiceImpl, Depends(get_auth_service)],
+        auth_service: Annotated[
+            AuthenticationServiceProtocol, Depends(get_auth_service)
+        ],
     ) -> AccessTokenResponse:
         """
         Refresh access token using refresh token.
@@ -274,7 +281,9 @@ def create_auth_router(settings: Settings) -> APIRouter:
     )
     async def logout_user(
         request: LogoutRequest,
-        auth_service: Annotated[AuthenticationServiceImpl, Depends(get_auth_service)],
+        auth_service: Annotated[
+            AuthenticationServiceProtocol, Depends(get_auth_service)
+        ],
     ) -> MessageResponse:
         """
         Logout user by validating refresh token.
@@ -304,7 +313,9 @@ def create_auth_router(settings: Settings) -> APIRouter:
     )
     async def get_current_user_profile(
         credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-        auth_service: Annotated[AuthenticationServiceImpl, Depends(get_auth_service)],
+        auth_service: Annotated[
+            AuthenticationServiceProtocol, Depends(get_auth_service)
+        ],
         db_session: Annotated[AsyncSession, Depends(get_database_session)],
     ) -> UserResponse:
         """

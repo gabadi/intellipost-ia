@@ -11,10 +11,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 
-from modules.auth.application.authentication_service_impl import (
-    AuthenticationServiceImpl,
-)
-from modules.auth.domain.authentication_service import AuthenticatedUser
+from modules.auth.api.auth_service_protocol import AuthenticationServiceProtocol
+from modules.auth.domain.models import AuthenticatedUser
 
 # HTTP Bearer security scheme for extracting tokens
 security = HTTPBearer(auto_error=False)
@@ -23,7 +21,7 @@ security = HTTPBearer(auto_error=False)
 class AuthenticationMiddleware:
     """Authentication middleware for FastAPI dependency injection."""
 
-    def __init__(self, auth_service: AuthenticationServiceImpl) -> None:
+    def __init__(self, auth_service: AuthenticationServiceProtocol) -> None:
         """
         Initialize middleware with authentication service.
 
@@ -120,7 +118,7 @@ class AuthenticationMiddleware:
             return None
 
 
-def create_auth_dependencies(auth_service: AuthenticationServiceImpl):
+def create_auth_dependencies(auth_service: AuthenticationServiceProtocol):
     """
     Create authentication dependency functions for FastAPI.
 

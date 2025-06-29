@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from jose import JWTError
 
-from modules.auth.domain.authentication_service import (
+from modules.auth.domain.models import (
     AuthenticatedUser,
     AuthResult,
 )
@@ -28,9 +28,9 @@ from modules.user.domain.user import User
 from modules.user.domain.user_status import UserStatus
 
 
-class AuthenticationServiceImpl:
+class AuthenticationService:
     """
-    Concrete implementation of AuthenticationService.
+    Authentication service implementation.
 
     Coordinates user registration, authentication, and token management
     using the injected dependencies.

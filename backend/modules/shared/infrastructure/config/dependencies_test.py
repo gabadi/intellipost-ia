@@ -1,6 +1,6 @@
 """Unit tests for dependency injection."""
 
-from uuid import UUID
+from unittest.mock import Mock
 
 import pytest
 
@@ -9,7 +9,7 @@ from infrastructure.config.dependencies import (
     get_settings,
 )
 from infrastructure.config.settings import Settings
-from modules.user.domain.user import User
+from modules.user.domain.ports.user_repository_protocol import UserRepositoryProtocol
 
 
 class TestDependencyContainer:
@@ -28,30 +28,7 @@ class TestDependencyContainer:
     def test_register_and_get_user_repository(self):
         """Test registering and getting user repository."""
         container = DependencyContainer()
-
-        class MockUserRepository:
-            async def create(self, user: User) -> User:
-                return user
-
-            async def get_by_id(self, user_id: UUID) -> User | None:
-                return None
-
-            async def get_by_email(self, email: str) -> User | None:
-                return None
-
-            async def update(self, user: User) -> User:
-                return user
-
-            async def delete(self, user_id: UUID) -> bool:
-                return True
-
-            async def email_exists(self, email: str) -> bool:
-                return False
-
-            async def update_last_login(self, user_id: UUID) -> None:
-                pass
-
-        mock_repo = MockUserRepository()
+        mock_repo = Mock(spec=UserRepositoryProtocol)
 
         container.register_user_repository(mock_repo)
         assert container.get_user_repository() is mock_repo
