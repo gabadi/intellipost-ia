@@ -1,15 +1,16 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import type { Plugin } from 'vite';
 
 /**
  * Vite plugin to inline critical CSS for improved First Contentful Paint
  */
-export function criticalCssPlugin() {
+export function criticalCssPlugin(): Plugin {
   return {
     name: 'critical-css',
     transformIndexHtml: {
       order: 'post',
-      handler(html, _context) {
+      handler(html: string, _context: any): string {
         // Only apply in production builds
         if (process.env.NODE_ENV !== 'production') {
           return html;
@@ -38,7 +39,10 @@ export function criticalCssPlugin() {
             minifiedCss
           );
         } catch (error) {
-          console.warn('Critical CSS file not found or could not be read:', error.message);
+          console.warn(
+            'Critical CSS file not found or could not be read:',
+            (error as Error).message
+          );
           return html;
         }
       },

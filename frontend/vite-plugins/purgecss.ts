@@ -1,14 +1,15 @@
 import { PurgeCSS } from 'purgecss';
+import type { Plugin } from 'vite';
 
 /**
  * Vite plugin to purge unused CSS for maximum bundle size reduction
  */
-export function purgeCssPlugin() {
+export function purgeCssPlugin(): Plugin {
   return {
     name: 'purge-css',
     generateBundle: {
       order: 'post',
-      async handler(options, bundle) {
+      async handler(options: any, bundle: any): Promise<void> {
         // Only apply in production builds
         if (process.env.NODE_ENV !== 'production') {
           return;
@@ -34,7 +35,7 @@ export function purgeCssPlugin() {
             );
 
             // Collect content for PurgeCSS analysis
-            const content = [];
+            const content: Array<{ raw: string; extension: string }> = [];
 
             // Add HTML content
             htmlFiles.forEach(fileName => {
@@ -127,7 +128,7 @@ export function purgeCssPlugin() {
             }
           }
         } catch (error) {
-          console.warn('PurgeCSS processing failed:', error.message);
+          console.warn('PurgeCSS processing failed:', (error as Error).message);
         }
       },
     },
