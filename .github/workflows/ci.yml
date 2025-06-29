@@ -54,7 +54,7 @@ jobs:
       - name: Run backend unit tests
         working-directory: ./backend
         run: |
-          uv run pytest -v ../tests/modules/
+          uv run pytest -v modules/
 
       - name: Run backend integration tests
         working-directory: ./backend
