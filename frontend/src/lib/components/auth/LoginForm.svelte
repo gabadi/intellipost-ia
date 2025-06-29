@@ -11,7 +11,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import type { LoginFormData } from '$types/auth';
+  import type { LoginFormData, User } from '$types/auth';
   import { validateLoginForm } from '$utils/auth-validation';
   import { authStore } from '$stores/auth';
   import PasswordInput from './PasswordInput.svelte';
@@ -22,7 +22,7 @@
 
   // Event dispatcher
   const dispatch = createEventDispatcher<{
-    success: { user: unknown };
+    success: { user: User };
     error: { error: string };
     switchToRegister: void;
   }>();
@@ -54,7 +54,7 @@
     try {
       const result = await authStore.login(formData);
 
-      if (result.success) {
+      if (result.success && result.user) {
         dispatch('success', { user: result.user });
 
         // Redirect if specified

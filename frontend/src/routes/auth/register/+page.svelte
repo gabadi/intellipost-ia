@@ -20,18 +20,13 @@
   $: redirectTo = $page.url.searchParams.get('redirect') || '/';
 
   // Handle successful registration
-  function handleRegisterSuccess(event: CustomEvent<{ user: User }>) {
-    const { user } = event.detail;
-    console.log('Registration successful:', user);
-
+  function handleRegisterSuccess(_event: CustomEvent<{ user: User }>) {
     // Redirect to intended page or dashboard
     goto(redirectTo);
   }
 
   // Handle registration error
-  function handleRegisterError(event: CustomEvent<{ error: string }>) {
-    const { error } = event.detail;
-    console.error('Registration error:', error);
+  function handleRegisterError(_event: CustomEvent<{ error: string }>) {
     // Error is already displayed in the form
   }
 

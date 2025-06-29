@@ -6,13 +6,15 @@ This module contains request and response schemas for authentication endpoints.
 
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
+
+from modules.user.domain.user import User
 
 
 class UserRegistrationRequest(BaseModel):
     """Request schema for user registration."""
 
-    email: EmailStr = Field(
+    email: str = Field(
         description="User's email address",
         examples=["user@example.com"],
     )
@@ -70,7 +72,7 @@ class UserRegistrationRequest(BaseModel):
 class UserLoginRequest(BaseModel):
     """Request schema for user login."""
 
-    email: EmailStr = Field(
+    email: str = Field(
         description="User's email address",
         examples=["user@example.com"],
     )
@@ -188,7 +190,7 @@ class ErrorResponse(BaseModel):
 
 
 # Helper function to convert User domain entity to UserResponse
-def user_to_response(user) -> UserResponse:
+def user_to_response(user: User) -> UserResponse:
     """Convert User domain entity to UserResponse schema."""
     return UserResponse(
         id=user.id,

@@ -20,18 +20,13 @@
   $: redirectTo = $page.url.searchParams.get('redirect') || '/';
 
   // Handle successful login
-  function handleLoginSuccess(event: CustomEvent<{ user: User }>) {
-    const { user } = event.detail;
-    console.log('Login successful:', user);
-
+  function handleLoginSuccess(_event: CustomEvent<{ user: User }>) {
     // Redirect to intended page or dashboard
     goto(redirectTo);
   }
 
   // Handle login error
-  function handleLoginError(event: CustomEvent<{ error: string }>) {
-    const { error } = event.detail;
-    console.error('Login error:', error);
+  function handleLoginError(_event: CustomEvent<{ error: string }>) {
     // Error is already displayed in the form
   }
 

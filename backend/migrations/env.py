@@ -17,7 +17,6 @@ from infrastructure.config.settings import Settings
 from infrastructure.database import Base
 
 # Import all models to ensure they're registered with Base.metadata
-from modules.user.infrastructure.models import UserModel  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

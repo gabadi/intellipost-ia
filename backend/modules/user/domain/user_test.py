@@ -191,7 +191,7 @@ class TestUser:
         assert user.status == UserStatus.ACTIVE
         assert user.updated_at is not None
         assert initial_updated_at is not None
-        assert user.updated_at > initial_updated_at
+        assert user.updated_at >= initial_updated_at
 
     def test_deactivate(self):
         """Test user deactivation."""

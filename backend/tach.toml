@@ -3,6 +3,7 @@ exclude = []
 source_roots = [
     ".",
 ]
+root_module = "allow"
 
 [[modules]]
 path = "<root>"

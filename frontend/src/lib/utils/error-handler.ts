@@ -82,14 +82,19 @@ function isRecoverableError(errorCode: string): boolean {
 /**
  * Convert API error response to user-friendly error messages
  */
-export function createUserFriendlyError(error: ApiError | MobileError | any): {
+export function createUserFriendlyError(error: unknown): {
   title: string;
   message: string;
   action: string;
   recoverable: boolean;
 } {
   // Handle mobile-optimized errors from backend
-  if (error.error && typeof error.error === 'object') {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'error' in error &&
+    typeof error.error === 'object'
+  ) {
     const mobileError = error.error as MobileError;
     return {
       title: mobileError.title,
@@ -100,7 +105,8 @@ export function createUserFriendlyError(error: ApiError | MobileError | any): {
   }
 
   // Handle standard API errors
-  const errorCode = error.error_code || error.code || 'UNKNOWN_ERROR';
+  const errorObj = error as Record<string, unknown>;
+  const errorCode = (errorObj.error_code as string) || (errorObj.code as string) || 'UNKNOWN_ERROR';
 
   const errorMappings: Record<
     string,
@@ -182,7 +188,10 @@ export function createUserFriendlyError(error: ApiError | MobileError | any): {
   return (
     errorMappings[errorCode] || {
       title: 'Something Went Wrong',
-      message: error.error || error.message || 'An unexpected error occurred.',
+      message:
+        (errorObj.error as string) ||
+        (errorObj.message as string) ||
+        'An unexpected error occurred.',
       action: 'Try Again',
       recoverable: true,
     }
@@ -192,13 +201,17 @@ export function createUserFriendlyError(error: ApiError | MobileError | any): {
 /**
  * Extract validation errors from API response
  */
-export function extractValidationErrors(error: any): ValidationError[] {
+export function extractValidationErrors(error: {
+  detail?: Array<{ loc?: unknown[]; msg?: string; type?: string }>;
+  error_code?: string;
+  error?: string;
+}): ValidationError[] {
   const validationErrors: ValidationError[] = [];
 
   if (error.detail && Array.isArray(error.detail)) {
     // FastAPI validation error format
     for (const validationError of error.detail) {
-      const field = validationError.loc?.[validationError.loc.length - 1] || 'unknown';
+      const field = String(validationError.loc?.[validationError.loc.length - 1]) || 'unknown';
       validationErrors.push({
         field,
         message: validationError.msg || 'Invalid value',
@@ -220,7 +233,10 @@ export function extractValidationErrors(error: any): ValidationError[] {
 /**
  * Handle network errors and convert them to AuthenticationError
  */
-export function handleNetworkError(error: any): AuthenticationError {
+export function handleNetworkError(error: {
+  name?: string;
+  message?: string;
+}): AuthenticationError {
   if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
     return new AuthenticationError(
       'Unable to connect to server. Please check your internet connection.',
@@ -322,7 +338,7 @@ export async function retryAuthenticationAction<T>(
         }
       } else {
         // Convert unknown errors to AuthenticationError
-        lastError = handleNetworkError(error);
+        lastError = handleNetworkError(error as { name?: string; message?: string });
         if (!lastError.recoverable) {
           throw lastError;
         }

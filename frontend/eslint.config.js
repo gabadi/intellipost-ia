@@ -102,6 +102,16 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
+  {
+    files: [
+      'src/lib/stores/auth.ts',
+      'src/lib/utils/auth-guards.ts',
+      'src/lib/utils/error-handler.ts',
+    ],
+    rules: {
+      'no-console': 'off', // Allow console in development/debug files
+    },
+  },
   prettier,
   {
     ignores: [
@@ -115,6 +125,7 @@ export default [
       '*.config.js',
       '*.config.ts',
       'vite.config.*',
+      'vite-plugins/**',
     ],
   },
 ];

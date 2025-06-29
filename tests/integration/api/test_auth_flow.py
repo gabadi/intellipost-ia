@@ -6,8 +6,13 @@ import asyncio
 from httpx import AsyncClient
 from datetime import datetime, timezone
 import json
+from fastapi import FastAPI
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.main import app
+from main import app
+from infrastructure.database import get_database_session, Base
+# Import models to ensure tables are created
+from modules.user.infrastructure.models import UserModel
 
 # Mark all tests in this module as async
 pytestmark = pytest.mark.asyncio
@@ -17,10 +22,33 @@ class TestAuthenticationFlow:
     """Integration tests for complete authentication flow."""
 
     @pytest_asyncio.fixture
-    async def client(self):
+    async def test_app(self, async_session: AsyncSession, test_settings):
+        """Create test app with database session override."""
+        # Create a test app
+        test_app = FastAPI()
+
+        # Override the database session dependency
+        async def override_get_database_session():
+            yield async_session
+
+        test_app.dependency_overrides[get_database_session] = override_get_database_session
+
+        # Include all routers from main app
+        for route in app.routes:
+            test_app.routes.append(route)
+
+        # Create database tables
+        async with async_session.bind.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        yield test_app
+
+    @pytest_asyncio.fixture
+    async def client(self, test_app):
         """Async HTTP client for testing."""
-        from httpx import AsyncClient
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        from httpx import AsyncClient, ASGITransport
+        transport = ASGITransport(app=test_app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             yield client
 
     @pytest.fixture
@@ -46,6 +74,9 @@ class TestAuthenticationFlow:
         # Test successful registration
         response = await client.post("/auth/register", json=test_user_data)
 
+        if response.status_code != 201:
+            print(f"Registration failed with status {response.status_code}")
+            print(f"Response body: {response.text}")
         assert response.status_code == 201
         data = response.json()
 
@@ -79,8 +110,8 @@ class TestAuthenticationFlow:
         assert response.status_code == 400
 
         data = response.json()
-        assert "error" in data
-        assert "email" in data["error"].lower()
+        assert "detail" in data
+        assert "email" in data["detail"].lower()
 
     async def test_user_login_flow(self, client: AsyncClient, test_user_data, login_data):
         """Test complete user login flow."""
@@ -228,8 +259,8 @@ class TestAuthenticationFlow:
         assert response.status_code == 400
 
         data = response.json()
-        assert "error" in data
-        assert "password" in data["error"].lower()
+        assert "detail" in data
+        assert "password" in data["detail"].lower()
 
     async def test_email_validation_requirements(self, client: AsyncClient):
         """Test email validation requirements."""
@@ -245,8 +276,8 @@ class TestAuthenticationFlow:
         assert response.status_code == 400
 
         data = response.json()
-        assert "error" in data
-        assert "email" in data["error"].lower()
+        assert "detail" in data
+        assert "email" in data["detail"].lower()
 
     # NOTE: Performance testing moved to tests/performance/test_auth_timing.py
     # Integration tests focus on functionality, not response times

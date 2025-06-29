@@ -39,10 +39,11 @@ export function validatePassword(password: string): PasswordValidation {
     isValid: false,
   };
 
-  validation.isValid = validation.minLength &&
-                      validation.hasUpperCase &&
-                      validation.hasLowerCase &&
-                      validation.hasNumber;
+  validation.isValid =
+    validation.minLength &&
+    validation.hasUpperCase &&
+    validation.hasLowerCase &&
+    validation.hasNumber;
 
   return validation;
 }
@@ -81,7 +82,10 @@ export function validateName(name: string): { isValid: boolean; error?: string }
 /**
  * Validate login form data
  */
-export function validateLoginForm(email: string, password: string): {
+export function validateLoginForm(
+  email: string,
+  password: string
+): {
   isValid: boolean;
   errors: { email?: string; password?: string };
 } {
@@ -116,14 +120,14 @@ export function validateRegisterForm(
     email?: string;
     password?: string;
     firstName?: string;
-    lastName?: string
+    lastName?: string;
   };
 } {
   const errors: {
     email?: string;
     password?: string;
     firstName?: string;
-    lastName?: string
+    lastName?: string;
   } = {};
 
   const emailValidation = validateEmail(email);
@@ -133,7 +137,8 @@ export function validateRegisterForm(
 
   const passwordValidation = validatePassword(password);
   if (!passwordValidation.isValid) {
-    errors.password = 'Password must be at least 8 characters with uppercase, lowercase, and number';
+    errors.password =
+      'Password must be at least 8 characters with uppercase, lowercase, and number';
   }
 
   if (firstName) {

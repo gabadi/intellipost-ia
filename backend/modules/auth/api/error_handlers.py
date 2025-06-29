@@ -5,6 +5,7 @@ This module provides consistent error responses across all authentication endpoi
 """
 
 import logging
+from typing import Any
 
 from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
@@ -160,7 +161,7 @@ def create_error_response(
     return JSONResponse(status_code=error.status_code, content=error_data)
 
 
-def handle_validation_errors(errors: list) -> AuthenticationError:
+def handle_validation_errors(errors: list[dict[str, Any]]) -> AuthenticationError:
     """
     Convert Pydantic validation errors to authentication errors.
 
@@ -238,7 +239,7 @@ def map_domain_exceptions(exception: Exception) -> AuthenticationError:
     )
 
 
-def create_mobile_friendly_error(error: AuthenticationError) -> dict:
+def create_mobile_friendly_error(error: AuthenticationError) -> dict[str, Any]:
     """
     Create mobile-friendly error response with action-oriented messages.
 

@@ -100,7 +100,7 @@ def create_auth_router(settings: Settings) -> APIRouter:
         DummyUserRepository(), password_service, jwt_service
     )
 
-    get_current_user, get_current_active_user, get_optional_current_user = (
+    get_current_user, get_current_active_user, get_optional_current_user = (  # pyright: ignore[reportUnusedVariable]
         create_auth_dependencies(dummy_auth_service)
     )
 
@@ -116,7 +116,7 @@ def create_auth_router(settings: Settings) -> APIRouter:
             409: {"model": ErrorResponse, "description": "User already exists"},
         },
     )
-    async def register_user(
+    async def register_user(  # pyright: ignore[reportUnusedFunction]
         user_data: UserRegistrationRequest,
         auth_service: Annotated[
             AuthenticationServiceProtocol, Depends(get_auth_service)
@@ -182,7 +182,7 @@ def create_auth_router(settings: Settings) -> APIRouter:
             403: {"model": ErrorResponse, "description": "Account not active"},
         },
     )
-    async def login_user(
+    async def login_user(  # pyright: ignore[reportUnusedFunction]
         credentials: UserLoginRequest,
         auth_service: Annotated[
             AuthenticationServiceProtocol, Depends(get_auth_service)
@@ -244,7 +244,7 @@ def create_auth_router(settings: Settings) -> APIRouter:
             401: {"model": ErrorResponse, "description": "Invalid refresh token"},
         },
     )
-    async def refresh_access_token(
+    async def refresh_access_token(  # pyright: ignore[reportUnusedFunction]
         request: TokenRefreshRequest,
         auth_service: Annotated[
             AuthenticationServiceProtocol, Depends(get_auth_service)
@@ -279,7 +279,7 @@ def create_auth_router(settings: Settings) -> APIRouter:
             401: {"model": ErrorResponse, "description": "Invalid refresh token"},
         },
     )
-    async def logout_user(
+    async def logout_user(  # pyright: ignore[reportUnusedFunction]
         request: LogoutRequest,
         auth_service: Annotated[
             AuthenticationServiceProtocol, Depends(get_auth_service)
@@ -311,7 +311,7 @@ def create_auth_router(settings: Settings) -> APIRouter:
             401: {"model": ErrorResponse, "description": "Authentication required"},
         },
     )
-    async def get_current_user_profile(
+    async def get_current_user_profile(  # pyright: ignore[reportUnusedFunction]
         credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
         auth_service: Annotated[
             AuthenticationServiceProtocol, Depends(get_auth_service)

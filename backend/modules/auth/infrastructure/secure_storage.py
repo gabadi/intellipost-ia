@@ -13,7 +13,7 @@ from datetime import UTC, datetime, timedelta
 from fastapi import HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from backend.infrastructure.config.settings import settings
+from infrastructure.config.settings import settings
 
 
 class SecureTokenStorage:

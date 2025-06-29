@@ -5,7 +5,7 @@ This module provides the concrete implementation of the UserRepositoryProtocol
 using SQLAlchemy for database operations.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select, update
@@ -255,7 +255,7 @@ class UserRepository:
             stmt = (
                 update(UserModel)
                 .where(UserModel.id == user_id)
-                .values(last_login_at=datetime.utcnow())
+                .values(last_login_at=datetime.now(UTC))
             )
 
             result = await self.session.execute(stmt)

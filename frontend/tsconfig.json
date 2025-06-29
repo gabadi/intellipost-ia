@@ -15,5 +15,6 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "noEmit": true,
     "allowImportingTsExtensions": true
-  }
+  },
+  "exclude": ["vite-plugins/**/*"]
 }

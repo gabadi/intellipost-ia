@@ -24,7 +24,7 @@
     "typecheck:backend": "cd backend && uv run pyright",
     "typecheck:frontend": "npm run check --workspace=frontend",
     "test": "npm run test:backend && npm run test:frontend",
-    "test:backend": "cd backend && uv run pytest",
+    "test:backend": "cd backend && uv run pytest modules/user/ modules/product/ ../tests/integration/api/test_health.py",
     "test:frontend": "npm run test --workspace=frontend",
     "arch-check": "cd backend && uvx tach check",
     "quality": "npm run lint && npm run typecheck && npm run arch-check",

@@ -76,14 +76,14 @@ function createAuthStore() {
      * Set loading state
      */
     setLoading: (loading: boolean) => {
-      update((state) => ({ ...state, isLoading: loading, error: null }));
+      update(state => ({ ...state, isLoading: loading, error: null }));
     },
 
     /**
      * Set error state
      */
     setError: (error: string | null) => {
-      update((state) => ({ ...state, error, isLoading: false }));
+      update(state => ({ ...state, error, isLoading: false }));
     },
 
     /**
@@ -140,7 +140,7 @@ function createAuthStore() {
      * Update access token (for refresh)
      */
     updateAccessToken: (accessToken: string) => {
-      update((state) => ({ ...state, accessToken }));
+      update(state => ({ ...state, accessToken }));
 
       if (browser) {
         localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
@@ -153,7 +153,7 @@ function createAuthStore() {
      * Register new user
      */
     register: async (data: RegisterFormData) => {
-      update((state) => ({ ...state, isLoading: true, error: null }));
+      update(state => ({ ...state, isLoading: true, error: null }));
 
       try {
         const response = await authAPI.register(data);
@@ -181,7 +181,7 @@ function createAuthStore() {
         return { success: true, user: response.user };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Registration failed';
-        update((state) => ({ ...state, isLoading: false, error: errorMessage }));
+        update(state => ({ ...state, isLoading: false, error: errorMessage }));
         return { success: false, error: errorMessage };
       }
     },
@@ -190,7 +190,7 @@ function createAuthStore() {
      * Login user
      */
     login: async (data: LoginFormData) => {
-      update((state) => ({ ...state, isLoading: true, error: null }));
+      update(state => ({ ...state, isLoading: true, error: null }));
 
       try {
         const response = await authAPI.login(data);
@@ -218,7 +218,7 @@ function createAuthStore() {
         return { success: true, user: response.user };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Login failed';
-        update((state) => ({ ...state, isLoading: false, error: errorMessage }));
+        update(state => ({ ...state, isLoading: false, error: errorMessage }));
         return { success: false, error: errorMessage };
       }
     },
@@ -227,7 +227,7 @@ function createAuthStore() {
      * Logout user
      */
     logout: async () => {
-      update((state) => ({ ...state, isLoading: true }));
+      update(state => ({ ...state, isLoading: true }));
 
       try {
         // Get current refresh token
@@ -275,7 +275,7 @@ function createAuthStore() {
           refresh_token: currentState.refreshToken,
         });
 
-        update((state) => ({ ...state, accessToken: response.access_token }));
+        update(state => ({ ...state, accessToken: response.access_token }));
 
         if (browser) {
           localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.access_token);
@@ -346,7 +346,7 @@ function createAuthStore() {
 // Helper function to get current state
 function get<T>(store: { subscribe: (fn: (value: T) => void) => () => void }): T {
   let value: T;
-  const unsubscribe = store.subscribe((v) => (value = v));
+  const unsubscribe = store.subscribe(v => (value = v));
   unsubscribe();
   return value!;
 }
@@ -355,7 +355,7 @@ function get<T>(store: { subscribe: (fn: (value: T) => void) => () => void }): T
 export const authStore = createAuthStore();
 
 // Derived stores for convenience
-export const isAuthenticated = derived(authStore, ($auth) => $auth.isAuthenticated);
-export const currentUser = derived(authStore, ($auth) => $auth.user);
-export const authError = derived(authStore, ($auth) => $auth.error);
-export const authLoading = derived(authStore, ($auth) => $auth.isLoading);
+export const isAuthenticated = derived(authStore, $auth => $auth.isAuthenticated);
+export const currentUser = derived(authStore, $auth => $auth.user);
+export const authError = derived(authStore, $auth => $auth.error);
+export const authLoading = derived(authStore, $auth => $auth.isLoading);

@@ -209,11 +209,13 @@ addopts = [
     "--strict-markers",
     "--strict-config",
 ]
-testpaths = ["../tests"]
+testpaths = ["../tests", "."]
+asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
     "error",
     "ignore::UserWarning",
     "ignore::DeprecationWarning",
+    "ignore::pytest.PytestDeprecationWarning",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
