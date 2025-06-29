@@ -4,6 +4,8 @@ import pytest
 
 from infrastructure.config.settings import Settings
 
+pytestmark = pytest.mark.unit
+
 
 class TestSettings:
     """Test cases for Settings configuration."""

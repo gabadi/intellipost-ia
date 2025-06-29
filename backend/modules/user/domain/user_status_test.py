@@ -1,6 +1,10 @@
 """Tests for user status enumeration."""
 
+import pytest
+
 from backend.modules.user.domain.user_status import UserStatus
+
+pytestmark = pytest.mark.unit
 
 
 class TestUserStatus:

@@ -1,6 +1,10 @@
 """Tests for product status enumeration."""
 
+import pytest
+
 from backend.modules.product.domain.product_status import ProductStatus
+
+pytestmark = pytest.mark.unit
 
 
 class TestProductStatus:

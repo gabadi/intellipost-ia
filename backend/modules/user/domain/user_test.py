@@ -3,8 +3,12 @@
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
+import pytest
+
 from backend.modules.user.domain.user import User
 from backend.modules.user.domain.user_status import UserStatus
+
+pytestmark = pytest.mark.unit
 
 
 class TestUser:

@@ -11,6 +11,8 @@ from infrastructure.config.logging import (
 )
 from infrastructure.config.settings import Settings
 
+pytestmark = pytest.mark.unit
+
 
 class TestSensitiveDataFilter:
     """Test cases for sensitive data filter."""

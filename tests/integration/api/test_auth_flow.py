@@ -14,8 +14,8 @@ from infrastructure.database import get_database_session, Base
 # Import models to ensure tables are created
 from modules.user.infrastructure.models import UserModel
 
-# Mark all tests in this module as async
-pytestmark = pytest.mark.asyncio
+# Mark all tests in this module as async integration tests
+pytestmark = [pytest.mark.asyncio, pytest.mark.integration]
 
 
 class TestAuthenticationFlow:

@@ -5,6 +5,8 @@ import pytest
 from backend.modules.product.domain.confidence_score import ConfidenceScore
 from backend.modules.product.domain.exceptions import InvalidConfidenceScoreError
 
+pytestmark = pytest.mark.unit
+
 
 class TestConfidenceScore:
     """Test the ConfidenceScore value object."""

@@ -11,6 +11,8 @@ from infrastructure.config.dependencies import (
 from infrastructure.config.settings import Settings
 from modules.user.domain.ports.user_repository_protocol import UserRepositoryProtocol
 
+pytestmark = pytest.mark.unit
+
 
 class TestDependencyContainer:
     """Test cases for dependency container."""

@@ -3,9 +3,13 @@
 from datetime import datetime
 from uuid import uuid4
 
+import pytest
+
 from backend.modules.product.domain.confidence_score import ConfidenceScore
 from backend.modules.product.domain.product import Product
 from backend.modules.product.domain.product_status import ProductStatus
+
+pytestmark = pytest.mark.unit
 
 
 class TestProduct:

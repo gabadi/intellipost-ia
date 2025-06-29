@@ -2,10 +2,14 @@
 
 from uuid import uuid4
 
+import pytest
+
 from backend.modules.product.domain.confidence_score import ConfidenceScore
 from backend.modules.product.domain.product_business_rules import ProductBusinessRules
 from backend.modules.product.domain.product_core import ProductCore
 from backend.modules.product.domain.product_status import ProductStatus
+
+pytestmark = pytest.mark.unit
 
 
 class TestProductBusinessRules:

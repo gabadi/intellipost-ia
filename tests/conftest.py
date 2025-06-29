@@ -107,13 +107,6 @@ def test_settings(database_url: str) -> Settings:
     return Settings()
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """
-    Create an event loop for the entire test session.
-
-    This is needed for session-scoped async fixtures to work properly.
-    """
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+# Custom event loop fixture removed - using pytest-asyncio defaults
+# The event_loop fixture is deprecated in pytest-asyncio
+# Using asyncio_default_fixture_loop_scope = function in pytest.ini instead
