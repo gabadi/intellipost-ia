@@ -15,9 +15,10 @@ services:
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U intellipost_user -d intellipost_dev"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 10s
     networks:
       - intellipost-network
 
@@ -35,9 +36,10 @@ services:
       - minio_dev_data:/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+      interval: 10s
+      timeout: 5s
+      retries: 2
+      start_period: 15s
     networks:
       - intellipost-network
 
@@ -78,9 +80,9 @@ services:
     stop_signal: SIGKILL
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       # Note: Backend doesn't depend on migrations service directly
       # Migrations should be run separately: docker compose --profile migration up migrations
     networks:
@@ -107,9 +109,9 @@ services:
     stop_signal: SIGKILL
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
     volumes:
       - ./backend:/app
       - /app/.venv  # Don't mount the virtual environment
@@ -129,7 +131,7 @@ services:
       dockerfile: Dockerfile
     environment:
       NODE_ENV: development
-      VITE_API_URL: http://localhost:8080
+      VITE_API_BASE_URL: http://localhost:8080
     ports:
       - "4000:3000"
     stop_grace_period: 1s
