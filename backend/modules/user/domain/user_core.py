@@ -21,6 +21,7 @@ class UserCore:
 
     id: UUID
     email: str
+    password_hash: str
     created_at: datetime
 
     # User profile

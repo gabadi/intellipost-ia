@@ -10,6 +10,13 @@
     <meta name="apple-mobile-web-app-title" content="IntelliPost AI" />
     <link rel="apple-touch-icon" href="%sveltekit.assets%/favicon.png" />
     <link rel="manifest" href="%sveltekit.assets%/manifest.json" />
+
+    <!-- Critical CSS Inline for Fast FCP -->
+    <style>
+      /* Critical CSS will be inlined here during build */
+      /* This is handled by the build process to reduce First Contentful Paint */
+    </style>
+
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">

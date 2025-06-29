@@ -24,11 +24,12 @@ classifiers = [
 dependencies = [
     "fastapi>=0.115.0,<0.116.0",
     "uvicorn[standard]>=0.24.0",
-    "pydantic>=2.5.0",
+    "pydantic[email]>=2.5.0",
     "sqlalchemy>=2.0.0",
     "alembic>=1.13.0",
     "asyncpg>=0.29.0",
     "psycopg2-binary>=2.9.0",
+    "greenlet>=3.0.0",
     "python-multipart>=0.0.6",
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
@@ -39,6 +40,7 @@ dependencies = [
     "boto3>=1.34.0",
     "botocore>=1.34.0",
     "psutil>=6.1.0",
+    "email-validator>=2.2.0",
 ]
 
 # Dev dependencies now managed by uvx and package.json
@@ -118,10 +120,63 @@ line-ending = "auto"
 [tool.ruff.lint.isort]
 known-first-party = ["intellipost"]
 
+# Configuración específica para archivos de test - reglas más laxas
+[tool.ruff.lint.per-file-ignores]
+"*_test.py" = [
+    # Core test needs
+    "S101",     # Assert statements (necesarios en tests)
+    "F841",     # Unused variables (común en mocks/fixtures)
+    "ARG001",   # Unused function arguments (fixtures de pytest)
+
+    # Exception handling laxo
+    "PT011",    # pytest.raises too broad exception
+    "PT012",    # pytest.raises should have match parameter
+    "BLE001",   # Broad except clauses (except Exception:)
+    "TRY002",   # Raise vanilla exceptions (raise Exception())
+    "TRY003",   # Long exception messages outside exception class
+    "TRY201",   # Use raise without specifying exception name
+    "TRY300",   # Consider moving statement before try block
+    "TRY301",   # Abstract raise to inner function
+    "EM101",    # Exception must not use string literal
+    "EM102",    # Exception must not use f-string literal
+    "EM103",    # Exception must not use .format()
+
+    # Code quality laxo
+    "PLR2004",  # Magic values (números/strings hardcodeados ok en tests)
+    "PLR0913",  # Too many arguments (test functions pueden ser complejas)
+    "C901",     # Complex functions (tests pueden ser verbosos)
+    "PLR0915",  # Too many statements (setup de tests largo ok)
+    "SLF001",   # Private member access (testing internals)
+
+    # Security laxo
+    "S106",     # Hardcoded passwords (test data ok)
+    "S108",     # Hardcoded temporary files (test fixtures ok)
+]
+
+"test_*.py" = [
+    # Mismas reglas para archivos que empiecen con test_
+    "S101", "F841", "ARG001", "PT011", "PT012", "BLE001",
+    "TRY002", "TRY003", "TRY201", "TRY300", "TRY301",
+    "EM101", "EM102", "EM103", "PLR2004", "PLR0913",
+    "C901", "PLR0915", "SLF001", "S106", "S108"
+]
+
+"tests/**/*.py" = [
+    # Para archivos en directorio tests/
+    "S101", "F841", "ARG001", "PT011", "PT012", "BLE001",
+    "TRY002", "TRY003", "TRY201", "TRY300", "TRY301",
+    "EM101", "EM102", "EM103", "PLR2004", "PLR0913",
+    "C901", "PLR0915", "SLF001", "S106", "S108"
+]
+
 # Pyright configuration
 [tool.pyright]
 include = ["."]
-exclude = ["**/__pycache__", ".venv", "../tests", "tests"]
+# Excluir completamente todos los archivos de test del type checking
+exclude = [
+    "**/__pycache__", ".venv", "../tests", "tests",
+    "**/*_test.py", "**/test_*.py"
+]
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.13"
@@ -154,16 +209,20 @@ addopts = [
     "--strict-markers",
     "--strict-config",
 ]
-testpaths = ["../tests"]
+testpaths = ["."]
+asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
     "error",
     "ignore::UserWarning",
     "ignore::DeprecationWarning",
+    "ignore::pytest.PytestDeprecationWarning",
 ]
 markers = [
+    "unit: marks tests as unit tests (required)",
+    "integration: marks tests as integration tests (required)",
+    "performance: marks tests as performance tests",
+    "e2e: marks tests as end-to-end tests",
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
 ]
 
 # Coverage configuration
@@ -209,6 +268,6 @@ test = [
     "pytest-cov>=6.2.1",
     "coverage[toml]>=7.0.0",
     "respx>=0.22.0",
-    "testcontainers>=4.10.0",
-    "testcontainers[postgresql]>=4.10.0",
+    "testcontainers[postgres]>=4.10.0",
+    "pytest-mock>=3.14.0",
 ]

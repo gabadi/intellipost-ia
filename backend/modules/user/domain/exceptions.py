@@ -33,3 +33,41 @@ class AuthenticationError(UserDomainError):
         self, message: str = "Authentication failed", user_id: str | None = None
     ) -> None:
         super().__init__(message, user_id)
+
+
+class UserAlreadyExistsError(UserDomainError):
+    """Raised when attempting to create a user that already exists."""
+
+    def __init__(self, email: str) -> None:
+        super().__init__(f"User with email '{email}' already exists")
+        self.email = email
+
+
+class UserNotFoundError(UserDomainError):
+    """Raised when a user cannot be found."""
+
+    def __init__(self, identifier: str) -> None:
+        super().__init__(f"User not found: {identifier}")
+        self.identifier = identifier
+
+
+class InvalidCredentialsError(UserDomainError):
+    """Raised when authentication credentials are invalid."""
+
+    def __init__(self) -> None:
+        super().__init__("Invalid email or password")
+
+
+class UserNotActiveError(UserDomainError):
+    """Raised when attempting to authenticate inactive user."""
+
+    def __init__(self) -> None:
+        super().__init__("User account is not active")
+
+
+class RepositoryError(UserDomainError):
+    """Raised when repository operations fail."""
+
+    def __init__(self, message: str, original_error: Exception | None = None) -> None:
+        super().__init__(message)
+        self.original_error = original_error

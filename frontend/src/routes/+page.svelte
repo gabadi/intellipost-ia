@@ -33,7 +33,7 @@
 </svelte:head>
 
 <div class="container">
-  <div class="py-6" style="min-height: calc(100vh - 70px);">
+  <div class="py-6" style="min-height: var(--layout-main-min-height);">
     <header class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
       <p class="text-gray-600 mt-2">Welcome to IntelliPost AI Control Panel</p>

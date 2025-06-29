@@ -29,7 +29,7 @@ def postgres_container() -> Generator[PostgresContainer, None, None]:
     """
     with PostgresContainer(
         "postgres:15-alpine",
-        user="test_user",
+        username="test_user",
         password="test_password",
         dbname="test_db",
     ) as postgres:
@@ -42,9 +42,13 @@ def postgres_container() -> Generator[PostgresContainer, None, None]:
 def database_url(postgres_container: PostgresContainer) -> str:
     """Get the database URL for the test container."""
     # Use asyncpg driver for async SQLAlchemy
-    return postgres_container.get_connection_url().replace(
-        "postgresql://", "postgresql+asyncpg://"
-    )
+    url = postgres_container.get_connection_url()
+    # Replace both possible variations with asyncpg
+    if "postgresql+psycopg2://" in url:
+        url = url.replace("postgresql+psycopg2://", "postgresql+asyncpg://")
+    elif "postgresql://" in url:
+        url = url.replace("postgresql://", "postgresql+asyncpg://")
+    return url
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -103,13 +107,6 @@ def test_settings(database_url: str) -> Settings:
     return Settings()
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """
-    Create an event loop for the entire test session.
-
-    This is needed for session-scoped async fixtures to work properly.
-    """
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+# Custom event loop fixture removed - using pytest-asyncio defaults
+# The event_loop fixture is deprecated in pytest-asyncio
+# Using asyncio_default_fixture_loop_scope = function in pytest.ini instead

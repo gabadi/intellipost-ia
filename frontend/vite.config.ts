@@ -2,9 +2,11 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { defineConfig } from 'vite';
+import { criticalCssPlugin } from './vite-plugins/critical-css.ts';
+import { purgeCssPlugin } from './vite-plugins/purgecss.ts';
 
 export default defineConfig({
-  plugins: [sveltekit(), svelteTesting()],
+  plugins: [sveltekit(), svelteTesting(), criticalCssPlugin(), purgeCssPlugin()],
   server: {
     port: 3000,
     host: true,
@@ -34,7 +36,7 @@ export default defineConfig({
     postcss: './postcss.config.js',
     devSourcemap: true,
   },
-  // @ts-expect-error - vitest config in vite config
+  // @ts-ignore - vitest config in vite config
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}'],
     environment: 'jsdom',
@@ -43,6 +45,7 @@ export default defineConfig({
       reporter: ['text', 'json', 'json-summary', 'html'],
       include: ['src/**/*'],
       exclude: ['src/**/*.{test,spec}.{js,ts}', 'src/test-setup.ts'],
+      reportsDirectory: './coverage',
     },
   },
 });

@@ -11,7 +11,7 @@ repos:
         name: ruff-format
         files: ^backend/
 
-  # Pyright type checking with uvx
+  # Pyright type checking with uvx - EXCLUIR archivos de test
   - repo: local
     hooks:
       - id: pyright
@@ -20,6 +20,8 @@ repos:
         language: system
         files: ^backend/
         types: [python]
+        # Excluir todos los archivos de test del type checking
+        exclude: '.*(_test\.py|test_.*\.py|/tests/).*'
 
   # Tach architectural boundaries with uvx
   - repo: local

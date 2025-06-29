@@ -41,6 +41,35 @@ cd frontend && npx vite dev --port 4000
 - Health Check: `http://localhost:8080/health`
 - API Root: `http://localhost:8080/`
 
+## 🔐 Default Authentication
+
+**Development Credentials:**
+- **Email**: `admin@intellipost.ai`
+- **Password**: `IntelliPost2024`
+- **Login URL**: `http://localhost:4000/auth/login`
+
+> **Note**: These are default development credentials. Registration is disabled in favor of controlled access. Password can be changed after login via Settings page.
+
+### 🤖 For LLMs & Automated Testing
+
+When interacting with this application via Playwright MCP or other automation tools:
+
+**Authentication Flow:**
+1. Navigate to: `http://localhost:4000/auth/login`
+2. Email field is pre-populated with `admin@intellipost.ai`
+3. Enter password: `IntelliPost2024`
+4. Access granted to full application
+
+**Available Routes:**
+- **Dashboard**: `http://localhost:4000/` (authenticated)
+- **Products**: `http://localhost:4000/products` (authenticated)
+- **Settings**: `http://localhost:4000/settings` (authenticated)
+- **Login**: `http://localhost:4000/auth/login` (public)
+
+**API Testing:**
+- **Login Endpoint**: `POST http://localhost:8080/auth/login`
+- **API Documentation**: `http://localhost:8080/docs`
+
 ## 📁 Project Structure
 
 ```
@@ -104,12 +133,19 @@ docker exec -it intellipost-ia-postgres-1 psql -U intellipost_user -d intellipos
 
 ## 🏗️ Architecture
 
-**Backend**: Hexagonal architecture with enforced module boundaries
+**Backend**: Protocol-based hexagonal architecture with enforced module boundaries
 - `modules/*/domain/`: Core business logic (no external dependencies)
 - `modules/*/infrastructure/`: External services adapters
 - `modules/*/application/`: Use cases and services
 - `modules/*/api/`: HTTP endpoints and schemas
 - `infrastructure/`: Shared infrastructure (database, logging, config)
+- `di/`: Dependency injection containers (composition root)
+
+**Architecture Documentation**:
+- `ARCHITECTURE.md` - Comprehensive architecture guide
+- `NEW-MODULE-TEMPLATE.md` - Step-by-step implementation template
+- `modules/auth/` - Reference implementation
+- `/docs/architecture/` - Detailed guides
 
 **Tech Stack**:
 - **Backend**: Python 3.13+, FastAPI, SQLAlchemy, Pydantic, Alembic

@@ -33,3 +33,11 @@ class UserRepositoryProtocol(Protocol):
     async def delete(self, user_id: UUID) -> bool:
         """Delete a user by ID."""
         ...
+
+    async def email_exists(self, email: str) -> bool:
+        """Check if email address is already registered."""
+        ...
+
+    async def update_last_login(self, user_id: UUID) -> None:
+        """Update user's last login timestamp."""
+        ...
