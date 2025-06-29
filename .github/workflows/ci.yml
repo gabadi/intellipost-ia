@@ -54,12 +54,12 @@ jobs:
       - name: Run backend unit tests
         working-directory: ./backend
         run: |
-          uv run pytest modules/user/ modules/product/ ../tests/integration/api/test_health.py
+          uv run pytest -v ../tests/modules/
 
       - name: Run backend integration tests
         working-directory: ./backend
         run: |
-          uv run pytest ../tests/integration/
+          uv run pytest -v ../tests/integration/
 
 
   frontend:
@@ -87,9 +87,8 @@ jobs:
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: |
-          # Clean install to ensure fresh state and fix rollup optional deps issue
-          rm -rf node_modules package-lock.json
-          npm install
+          # Clean install to ensure fresh state
+          npm ci
           # Verify prettier and eslint are installed and accessible
           npx prettier --version
           npx eslint --version
