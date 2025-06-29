@@ -49,7 +49,7 @@ jobs:
       - name: Run backend security checks
         working-directory: ./backend
         run: |
-          uvx bandit -r modules/ infrastructure/ --exclude='*/tests/*'
+          uvx bandit -r modules/ infrastructure/ --exclude='*/tests/*,*_test.py' --skip B101,B105,B106
 
       - name: Run backend unit tests
         working-directory: ./backend

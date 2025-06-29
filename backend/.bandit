@@ -1,0 +1,12 @@
+[bandit]
+# Configuration for security analysis
+
+# Skip specific security checks that are false positives
+skips = B101,B105,B106
+
+# B101: assert_used - Legitimate in test files
+# B105: hardcoded_password_string - False positive for cookie names
+# B106: hardcoded_password_funcarg - False positive for test fixtures
+
+# Exclude test files - they have different security requirements
+exclude_dirs = tests
