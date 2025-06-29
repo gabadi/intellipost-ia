@@ -104,12 +104,19 @@ docker exec -it intellipost-ia-postgres-1 psql -U intellipost_user -d intellipos
 
 ## 🏗️ Architecture
 
-**Backend**: Hexagonal architecture with enforced module boundaries
+**Backend**: Protocol-based hexagonal architecture with enforced module boundaries
 - `modules/*/domain/`: Core business logic (no external dependencies)
 - `modules/*/infrastructure/`: External services adapters
 - `modules/*/application/`: Use cases and services
 - `modules/*/api/`: HTTP endpoints and schemas
 - `infrastructure/`: Shared infrastructure (database, logging, config)
+- `di/`: Dependency injection containers (composition root)
+
+**Architecture Documentation**:
+- `ARCHITECTURE.md` - Comprehensive architecture guide
+- `NEW-MODULE-TEMPLATE.md` - Step-by-step implementation template
+- `modules/auth/` - Reference implementation
+- `/docs/architecture/` - Detailed guides
 
 **Tech Stack**:
 - **Backend**: Python 3.13+, FastAPI, SQLAlchemy, Pydantic, Alembic

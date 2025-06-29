@@ -8,9 +8,23 @@ root_module = "allow"
 [[modules]]
 path = "<root>"
 depends_on = [
+    "di",
     "infrastructure",
     "modules.auth.api",
     "modules.product.domain",
+    "modules.user.domain",
+    "modules.user.infrastructure",
+]
+
+# DI module - composition root that can depend on all layers
+[[modules]]
+path = "di"
+depends_on = [
+    "infrastructure",
+    "modules.auth.application",
+    "modules.auth.domain",
+    "modules.auth.infrastructure",
+    "modules.user.application",
     "modules.user.domain",
     "modules.user.infrastructure",
 ]
@@ -46,9 +60,9 @@ depends_on = [
 [[modules]]
 path = "modules.auth.api"
 depends_on = [
+    "di",
     "infrastructure",
     "modules.auth.domain",
-    "modules.auth.infrastructure",
 ]
 
 [[modules]]
@@ -67,11 +81,7 @@ depends_on = []
 path = "modules.auth.infrastructure"
 depends_on = [
     "infrastructure",
-    "modules.auth.application",
     "modules.auth.domain",
-    "modules.user.application",
-    "modules.user.domain",
-    "modules.user.infrastructure",
 ]
 
 [[modules]]

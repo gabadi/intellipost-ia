@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 
+from di.auth_container import get_auth_service
 from infrastructure.config.settings import Settings
 from modules.auth.api.schemas import (
     AccessTokenResponse,
@@ -26,7 +27,6 @@ from modules.auth.api.schemas import (
     user_to_response,
 )
 from modules.auth.domain.protocols import AuthenticationServiceProtocol
-from modules.auth.infrastructure.di_containers import get_auth_service
 
 # Create router
 router = APIRouter(prefix="/auth", tags=["Authentication"])
