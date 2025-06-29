@@ -102,6 +102,41 @@ class LogoutRequest(BaseModel):
     )
 
 
+class PasswordChangeRequest(BaseModel):
+    """Request schema for password change."""
+
+    current_password: str = Field(
+        min_length=1,
+        description="Current password for verification",
+        examples=["CurrentPassword123"],
+    )
+    new_password: str = Field(
+        min_length=8,
+        max_length=128,
+        description="New password (8-128 characters, mixed case, numbers)",
+        examples=["NewSecurePass456"],
+    )
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password_strength(cls, v: str) -> str:
+        """Validate new password strength requirements."""
+        if len(v) < 8:
+            raise ValueError("New password must be at least 8 characters long")
+
+        has_upper = any(c.isupper() for c in v)
+        has_lower = any(c.islower() for c in v)
+        has_digit = any(c.isdigit() for c in v)
+
+        if not (has_upper and has_lower and has_digit):
+            raise ValueError(
+                "New password must contain at least one uppercase letter, "
+                "one lowercase letter, and one number"
+            )
+
+        return v
+
+
 class UserResponse(BaseModel):
     """Response schema for user information."""
 

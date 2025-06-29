@@ -278,3 +278,23 @@ class AuthenticationServiceProtocol(Protocol):
             JWTError: If token is invalid or expired
         """
         ...
+
+    async def change_password(
+        self, access_token: str, current_password: str, new_password: str
+    ) -> bool:
+        """
+        Change user password after validating current password.
+
+        Args:
+            access_token: JWT access token for authentication
+            current_password: Current password for verification
+            new_password: New password to set
+
+        Returns:
+            bool: True if password was changed successfully
+
+        Raises:
+            JWTError: If token is invalid or expired
+            ValueError: If current password is incorrect or new password is invalid
+        """
+        ...

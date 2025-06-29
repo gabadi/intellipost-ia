@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.routers import health
+from di.auth_container import initialize_default_users
 from infrastructure.config.logging import (
     StructuredRequestLoggingMiddleware,
     get_logger,
@@ -35,6 +36,14 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     logger.info("Starting IntelliPost AI Backend...")
     logger.info(f"Environment: {settings.environment}")
     logger.info(f"Debug mode: {settings.debug}")
+
+    # Initialize default users
+    try:
+        await initialize_default_users(settings)
+    except Exception as e:
+        logger.error(f"Failed to initialize default users during startup: {str(e)}")
+        # Continue startup even if user initialization fails
+        # This prevents the app from failing to start completely
 
     yield
 

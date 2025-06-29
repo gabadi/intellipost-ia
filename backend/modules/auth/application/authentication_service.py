@@ -6,6 +6,7 @@ protocol, coordinating between user repository, password service, and JWT servic
 """
 
 import re
+from datetime import UTC, datetime
 
 from jose import JWTError
 
@@ -319,6 +320,61 @@ class AuthenticationService:
             raise
         except Exception as e:
             raise JWTError(f"Profile retrieval failed: {str(e)}") from e
+
+    async def change_password(
+        self, access_token: str, current_password: str, new_password: str
+    ) -> bool:
+        """
+        Change user password after validating current password.
+
+        Args:
+            access_token: JWT access token for authentication
+            current_password: Current password for verification
+            new_password: New password to set
+
+        Returns:
+            bool: True if password was changed successfully
+
+        Raises:
+            JWTError: If token is invalid or expired
+            ValueError: If current password is incorrect or new password is invalid
+        """
+        try:
+            # Validate token and get user info
+            auth_user = self.jwt_service.validate_access_token(access_token)
+
+            # Get full user details from user service
+            user = await self.user_service.get_user_by_id(auth_user.user_id)
+            if not user:
+                raise JWTError("User not found")
+
+            # Verify current password
+            if not self.password_service.verify_password(
+                current_password, user.password_hash
+            ):
+                raise ValueError("Current password is incorrect")
+
+            # Validate new password
+            self._validate_password(new_password)
+
+            # Hash new password
+            new_password_hash = self.password_service.hash_password(new_password)
+
+            # Update user with new password hash and timestamp
+            user.password_hash = new_password_hash
+            user.updated_at = datetime.now(UTC)
+
+            # Save updated user
+            await self.user_service.user_repository.update(user)
+
+            return True
+
+        except JWTError:
+            raise
+        except ValueError:
+            raise
+        except Exception as e:
+            raise ValueError(f"Password change failed: {str(e)}") from e
 
     def _validate_email(self, email: str) -> None:
         """

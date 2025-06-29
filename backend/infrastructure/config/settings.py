@@ -96,6 +96,20 @@ class Settings(BaseSettings):
         default=None, description="MercadoLibre API client secret"
     )
 
+    # Default admin user configuration
+    default_admin_email: str = Field(
+        default="admin@intellipost.ai", description="Default admin user email address"
+    )
+    default_admin_password: str = Field(
+        default="IntelliPost2024", description="Default admin user password"
+    )
+    default_admin_first_name: str = Field(
+        default="Admin", description="Default admin user first name"
+    )
+    default_admin_last_name: str = Field(
+        default="User", description="Default admin user last name"
+    )
+
     @model_validator(mode="after")
     def validate_secret_key_for_production(self):
         """Validate that secret keys are properly set for production."""
@@ -127,6 +141,27 @@ class Settings(BaseSettings):
         if v.lower() not in allowed_formats:
             raise ValueError(f"Log format must be one of: {allowed_formats}")
         return v.lower()
+
+    @field_validator("default_admin_password")
+    @classmethod
+    def validate_default_admin_password(cls, v: str) -> str:
+        """Validate default admin password meets minimum requirements."""
+        if len(v) < 8:
+            raise ValueError(
+                "Default admin password must be at least 8 characters long"
+            )
+
+        has_upper = any(c.isupper() for c in v)
+        has_lower = any(c.islower() for c in v)
+        has_digit = any(c.isdigit() for c in v)
+
+        if not (has_upper and has_lower and has_digit):
+            raise ValueError(
+                "Default admin password must contain at least one uppercase letter, "
+                "one lowercase letter, and one number"
+            )
+
+        return v
 
     model_config = SettingsConfigDict(
         # Look for .env file in project root (one level up from backend)

@@ -19,6 +19,7 @@ from modules.auth.api.schemas import (
     ErrorResponse,
     LogoutRequest,
     MessageResponse,
+    PasswordChangeRequest,
     TokenRefreshRequest,
     TokenResponse,
     UserLoginRequest,
@@ -276,6 +277,79 @@ def create_auth_router(settings: Settings) -> APIRouter:
             user = await auth_service.get_user_profile(credentials.credentials)
             return user_to_response(user)
 
+        except JWTError as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid authentication token: {str(e)}",
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from e
+
+    @router.post(
+        "/change-password",
+        response_model=MessageResponse,
+        summary="Change user password",
+        description="Change authenticated user's password after verifying current password",
+        responses={
+            200: {"description": "Password changed successfully"},
+            400: {
+                "model": ErrorResponse,
+                "description": "Invalid password or validation error",
+            },
+            401: {
+                "model": ErrorResponse,
+                "description": "Authentication required or current password incorrect",
+            },
+        },
+    )
+    async def change_password(  # pyright: ignore[reportUnusedFunction]
+        request: PasswordChangeRequest,
+        credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+        auth_service: Annotated[
+            AuthenticationServiceProtocol, Depends(get_auth_service)
+        ],
+    ) -> MessageResponse:
+        """
+        Change user password.
+
+        Validates the current password and updates to the new password
+        if validation passes.
+        """
+        if not credentials or not credentials.credentials:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication credentials required",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        try:
+            # Change password using auth service
+            success = await auth_service.change_password(
+                access_token=credentials.credentials,
+                current_password=request.current_password,
+                new_password=request.new_password,
+            )
+
+            if not success:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Failed to change password",
+                )
+
+            return MessageResponse(message="Password changed successfully")
+
+        except ValueError as e:
+            # Handle validation errors and incorrect current password
+            error_message = str(e)
+            if "current password is incorrect" in error_message.lower():
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=error_message,
+                ) from e
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=error_message,
+                ) from e
         except JWTError as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
