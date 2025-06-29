@@ -11,7 +11,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import type { LoginFormData, AuthFormProps } from '$types/auth';
+  import type { LoginFormData } from '$types/auth';
   import { validateLoginForm } from '$utils/auth-validation';
   import { authStore } from '$stores/auth';
   import PasswordInput from './PasswordInput.svelte';
@@ -22,13 +22,13 @@
 
   // Event dispatcher
   const dispatch = createEventDispatcher<{
-    success: { user: any };
+    success: { user: unknown };
     error: { error: string };
     switchToRegister: void;
   }>();
 
   // Form state
-  let formData: LoginFormData = {
+  const formData: LoginFormData = {
     email: '',
     password: '',
   };

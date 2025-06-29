@@ -73,7 +73,7 @@ function isRecoverableError(errorCode: string): boolean {
     'USER_INACTIVE',
     'ACCOUNT_SUSPENDED',
     'PERMISSION_DENIED',
-    'INTERNAL_SERVER_ERROR'
+    'INTERNAL_SERVER_ERROR',
   ];
 
   return !nonRecoverableErrors.includes(errorCode);
@@ -95,93 +95,98 @@ export function createUserFriendlyError(error: ApiError | MobileError | any): {
       title: mobileError.title,
       message: mobileError.message,
       action: mobileError.suggested_action,
-      recoverable: mobileError.recoverable
+      recoverable: mobileError.recoverable,
     };
   }
 
   // Handle standard API errors
   const errorCode = error.error_code || error.code || 'UNKNOWN_ERROR';
 
-  const errorMappings: Record<string, {
-    title: string;
-    message: string;
-    action: string;
-    recoverable: boolean;
-  }> = {
+  const errorMappings: Record<
+    string,
+    {
+      title: string;
+      message: string;
+      action: string;
+      recoverable: boolean;
+    }
+  > = {
     INVALID_CREDENTIALS: {
       title: 'Login Failed',
       message: 'Check your email and password, then try again.',
       action: 'Try Again',
-      recoverable: true
+      recoverable: true,
     },
     EMAIL_ALREADY_EXISTS: {
       title: 'Account Exists',
       message: 'An account with this email already exists. Try logging in instead.',
       action: 'Go to Login',
-      recoverable: true
+      recoverable: true,
     },
     WEAK_PASSWORD: {
       title: 'Password Too Weak',
       message: 'Use at least 8 characters with uppercase, lowercase, and numbers.',
       action: 'Try Another Password',
-      recoverable: true
+      recoverable: true,
     },
     INVALID_EMAIL_FORMAT: {
       title: 'Invalid Email',
       message: 'Please enter a valid email address.',
       action: 'Check Email',
-      recoverable: true
+      recoverable: true,
     },
     INVALID_TOKEN: {
       title: 'Session Expired',
       message: 'Your session has expired. Please log in again.',
       action: 'Log In',
-      recoverable: true
+      recoverable: true,
     },
     INVALID_REFRESH_TOKEN: {
       title: 'Session Expired',
       message: 'Your session has expired. Please log in again.',
       action: 'Log In',
-      recoverable: true
+      recoverable: true,
     },
     RATE_LIMIT_EXCEEDED: {
       title: 'Too Many Attempts',
       message: 'Please wait a moment before trying again.',
       action: 'Wait',
-      recoverable: true
+      recoverable: true,
     },
     USER_INACTIVE: {
       title: 'Account Suspended',
       message: 'Your account is temporarily suspended. Contact support for help.',
       action: 'Contact Support',
-      recoverable: false
+      recoverable: false,
     },
     NETWORK_ERROR: {
       title: 'Connection Error',
       message: 'Please check your internet connection and try again.',
       action: 'Retry',
-      recoverable: true
+      recoverable: true,
     },
     VALIDATION_ERROR: {
       title: 'Invalid Input',
       message: 'Please check your input and try again.',
       action: 'Fix Input',
-      recoverable: true
+      recoverable: true,
     },
     MISSING_AUTHORIZATION: {
       title: 'Login Required',
       message: 'Please log in to continue.',
       action: 'Log In',
-      recoverable: true
-    }
+      recoverable: true,
+    },
   };
 
-  return errorMappings[errorCode] || {
-    title: 'Something Went Wrong',
-    message: error.error || error.message || 'An unexpected error occurred.',
-    action: 'Try Again',
-    recoverable: true
-  };
+  return (
+    errorMappings[errorCode] || {
+      title: 'Something Went Wrong',
+      message: error.error || error.message || 'An unexpected error occurred.',
+      action: 'Try Again',
+      recoverable: true,
+    }
+  );
 }
 
 /**
@@ -195,9 +200,9 @@ export function extractValidationErrors(error: any): ValidationError[] {
     for (const validationError of error.detail) {
       const field = validationError.loc?.[validationError.loc.length - 1] || 'unknown';
       validationErrors.push({
-        field: field,
+        field,
         message: validationError.msg || 'Invalid value',
-        code: validationError.type || 'validation_error'
+        code: validationError.type || 'validation_error',
       });
     }
   } else if (error.error_code === 'VALIDATION_ERROR') {
@@ -205,7 +210,7 @@ export function extractValidationErrors(error: any): ValidationError[] {
     validationErrors.push({
       field: 'general',
       message: error.error || 'Validation failed',
-      code: 'validation_error'
+      code: 'validation_error',
     });
   }
 
@@ -267,8 +272,8 @@ export function logAuthenticationError(
       user_id: context.userId,
       email: context.email,
       user_agent: context.userAgent || navigator.userAgent,
-      url: context.url || window.location.href
-    }
+      url: context.url || window.location.href,
+    },
   };
 
   // Log to console in development
@@ -347,7 +352,7 @@ export function requiresReAuthentication(error: AuthenticationError): boolean {
     'INVALID_TOKEN',
     'INVALID_REFRESH_TOKEN',
     'TOKEN_EXPIRED',
-    'MISSING_AUTHORIZATION'
+    'MISSING_AUTHORIZATION',
   ];
 
   return reAuthCodes.includes(error.code);
@@ -359,12 +364,12 @@ export function requiresReAuthentication(error: AuthenticationError): boolean {
 export function getRouterStatusCode(error: AuthenticationError): number {
   // Map authentication errors to appropriate status codes for router handling
   const statusMapping: Record<string, number> = {
-    'INVALID_TOKEN': 401,
-    'INVALID_REFRESH_TOKEN': 401,
-    'MISSING_AUTHORIZATION': 401,
-    'USER_INACTIVE': 403,
-    'RATE_LIMIT_EXCEEDED': 429,
-    'NETWORK_ERROR': 503
+    INVALID_TOKEN: 401,
+    INVALID_REFRESH_TOKEN: 401,
+    MISSING_AUTHORIZATION: 401,
+    USER_INACTIVE: 403,
+    RATE_LIMIT_EXCEEDED: 429,
+    NETWORK_ERROR: 503,
   };
 
   return statusMapping[error.code] || error.statusCode || 400;

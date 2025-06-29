@@ -92,7 +92,7 @@
 <style>
   .products-page {
     padding: var(--space-6) 0;
-    min-height: calc(100vh - 70px);
+    min-height: var(--layout-main-min-height);
   }
 
   .page-header {
@@ -231,33 +231,33 @@
   }
 
   .status-uploading {
-    background-color: #fef3c7;
-    color: #92400e;
+    background-color: var(--color-status-uploading-bg);
+    color: var(--color-status-uploading-text);
   }
 
   .status-processing {
-    background-color: #dbeafe;
-    color: #1e40af;
+    background-color: var(--color-status-processing-bg);
+    color: var(--color-status-processing-text);
   }
 
   .status-ready {
-    background-color: #d1fae5;
-    color: #065f46;
+    background-color: var(--color-status-ready-bg);
+    color: var(--color-status-ready-text);
   }
 
   .status-publishing {
-    background-color: #e0e7ff;
-    color: #3730a3;
+    background-color: var(--color-status-publishing-bg);
+    color: var(--color-status-publishing-text);
   }
 
   .status-published {
-    background-color: #dcfce7;
-    color: #166534;
+    background-color: var(--color-status-published-bg);
+    color: var(--color-status-published-text);
   }
 
   .status-failed {
-    background-color: #fee2e2;
-    color: #991b1b;
+    background-color: var(--color-status-failed-bg);
+    color: var(--color-status-failed-text);
   }
 
   .product-meta {

@@ -102,6 +102,21 @@
   --color-error: var(--color-error-500);
   --color-info: var(--color-info-500);
 
+  /* Product Status Colors */
+  --color-status-uploading-bg: var(--color-warning-100);
+  --color-status-uploading-text: var(--color-warning-800);
+  --color-status-processing-bg: var(--color-info-100);
+  --color-status-processing-text: var(--color-info-800);
+  --color-status-ready-bg: var(--color-success-100);
+  --color-status-ready-text: var(--color-success-800);
+  --color-status-publishing-bg: var(--color-primary-100);
+  --color-status-publishing-text: var(--color-primary-800);
+  /* Enhanced differentiation: Published now uses info colors vs ready's success colors */
+  --color-status-published-bg: var(--color-info-100);
+  --color-status-published-text: var(--color-info-800);
+  --color-status-failed-bg: var(--color-error-100);
+  --color-status-failed-text: var(--color-error-800);
+
   /* Gray Scale */
   --color-gray-50: #f9fafb;
   --color-gray-100: #f3f4f6;
@@ -287,6 +302,10 @@
   --button-border-width: 1px;
   --input-border-width: 1px;
   --card-border-width: 1px;
+
+  /* Layout Tokens */
+  --layout-header-height: 70px;
+  --layout-main-min-height: calc(100vh - var(--layout-header-height));
 }
 
 /* Dark Mode Theme */
@@ -315,6 +334,7 @@
 
   /* Primary adjustments for dark mode */
   --color-primary-light: var(--color-secondary-800);
+  --color-primary-transparent: rgba(30, 64, 175, 0.2);
 
   /* Enhanced status colors for dark mode */
   --color-success: var(--color-success-400);
@@ -359,6 +379,7 @@
 
     /* Primary adjustments for dark mode */
     --color-primary-light: var(--color-secondary-800);
+    --color-primary-transparent: rgba(30, 64, 175, 0.2);
 
     /* Enhanced status colors for dark mode */
     --color-success: var(--color-success-400);

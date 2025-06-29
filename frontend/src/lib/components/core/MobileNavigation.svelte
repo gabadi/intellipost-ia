@@ -40,8 +40,8 @@
     left: 0;
     right: 0;
     display: flex;
-    background: white;
-    border-top: 1px solid #e5e7eb;
+    background: var(--color-background);
+    border-top: 1px solid var(--color-border);
     min-height: 60px; /* Above 44px touch target requirement */
     z-index: 1000;
     padding: 0;
@@ -55,7 +55,7 @@
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: #6b7280;
+    color: var(--color-text-muted);
     padding: 8px 4px;
     min-height: 44px; /* Touch target minimum */
     transition: all 0.2s ease;
@@ -65,13 +65,13 @@
 
   .nav-item:hover,
   .nav-item:focus {
-    background-color: #f3f4f6;
+    background-color: var(--color-background-tertiary);
     outline: none;
   }
 
   .nav-item.active {
-    color: #1e40af;
-    background-color: #eff6ff;
+    color: var(--color-primary);
+    background-color: var(--color-primary-light);
   }
 
   .icon {

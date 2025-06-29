@@ -68,7 +68,7 @@ class AuthenticationMiddleware:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Invalid authentication token: {str(e)}",
                 headers={"WWW-Authenticate": "Bearer"},
-            )
+            ) from e
 
     async def get_current_active_user(
         self,

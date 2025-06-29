@@ -208,7 +208,7 @@ class AuthenticationService:
         except JWTError:
             raise
         except Exception as e:
-            raise JWTError(f"Token validation failed: {str(e)}")
+            raise JWTError(f"Token validation failed: {str(e)}") from e
 
     async def refresh_token(self, refresh_token: str) -> str:
         """
@@ -238,7 +238,7 @@ class AuthenticationService:
         except JWTError:
             raise
         except Exception as e:
-            raise JWTError(f"Token refresh failed: {str(e)}")
+            raise JWTError(f"Token refresh failed: {str(e)}") from e
 
     async def logout_user(self, refresh_token: str) -> bool:
         """

@@ -13,8 +13,8 @@ import { authStore, isAuthenticated } from '../stores/auth';
  * Redirect unauthenticated users to login page
  */
 export function requireAuth(redirectTo?: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const unsubscribe = isAuthenticated.subscribe((authenticated) => {
+  return new Promise(resolve => {
+    const unsubscribe = isAuthenticated.subscribe(authenticated => {
       if (!authenticated) {
         // Build login URL with redirect parameter
         const loginUrl = new URL('/auth/login', window.location.origin);
@@ -38,8 +38,8 @@ export function requireAuth(redirectTo?: string): Promise<boolean> {
  * Redirect authenticated users away from auth pages
  */
 export function requireGuest(redirectTo: string = '/'): Promise<boolean> {
-  return new Promise((resolve) => {
-    const unsubscribe = isAuthenticated.subscribe((authenticated) => {
+  return new Promise(resolve => {
+    const unsubscribe = isAuthenticated.subscribe(authenticated => {
       if (authenticated) {
         goto(redirectTo);
         resolve(false);
@@ -69,7 +69,7 @@ export function getCurrentUser() {
 /**
  * Check if user has specific permissions (placeholder for future role-based access)
  */
-export function hasPermission(permission: string): boolean {
+export function hasPermission(_permission: string): boolean {
   const user = getCurrentUser();
 
   // For MVP, all authenticated users have all permissions
@@ -90,7 +90,12 @@ export async function authGuard(options?: {
   redirectTo?: string;
   permission?: string;
 }) {
-  const { requireAuth: needsAuth, requireGuest: needsGuest, redirectTo, permission } = options || {};
+  const {
+    requireAuth: needsAuth,
+    requireGuest: needsGuest,
+    redirectTo,
+    permission,
+  } = options || {};
 
   const authenticated = isUserAuthenticated();
 
@@ -98,7 +103,7 @@ export async function authGuard(options?: {
   if (needsAuth && !authenticated) {
     const loginUrl = new URL('/auth/login', window.location.origin);
     if (redirectTo || typeof window !== 'undefined') {
-      const redirect = redirectTo || (window.location.pathname + window.location.search);
+      const redirect = redirectTo || window.location.pathname + window.location.search;
       loginUrl.searchParams.set('redirect', redirect);
     }
 
@@ -136,10 +141,7 @@ export async function authGuard(options?: {
 /**
  * Helper for protected page components
  */
-export function useAuthGuard(options?: {
-  redirectTo?: string;
-  permission?: string;
-}) {
+export function useAuthGuard(options?: { redirectTo?: string; permission?: string }) {
   const { redirectTo, permission } = options || {};
 
   // Check authentication

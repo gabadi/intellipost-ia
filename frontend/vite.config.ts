@@ -2,9 +2,11 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { defineConfig } from 'vite';
+import { criticalCssPlugin } from './vite-plugins/critical-css.js';
+import { purgeCssPlugin } from './vite-plugins/purgecss.js';
 
 export default defineConfig({
-  plugins: [sveltekit(), svelteTesting()],
+  plugins: [sveltekit(), svelteTesting(), criticalCssPlugin(), purgeCssPlugin()],
   server: {
     port: 3000,
     host: true,

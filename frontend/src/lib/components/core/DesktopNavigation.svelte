@@ -234,7 +234,7 @@
     }
 
     .nav-item.active {
-      background: rgba(30, 64, 175, 0.2);
+      background: var(--color-primary-transparent);
       color: var(--color-primary-light);
     }
 

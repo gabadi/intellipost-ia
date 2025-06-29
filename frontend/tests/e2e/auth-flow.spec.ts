@@ -2,10 +2,9 @@
  * End-to-end tests for authentication flow
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test.describe('Authentication Flow E2E Tests', () => {
-
   test.beforeEach(async ({ page }) => {
     // Start each test with a clean slate
     await page.goto('/');
@@ -253,5 +252,4 @@ test.describe('Authentication Flow E2E Tests', () => {
     // Wait for completion
     await expect(page).toHaveURL('/', { timeout: 5000 });
   });
-
 });

@@ -13,7 +13,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import type { User } from '$types/auth';
-  import { authStore, isAuthenticated } from '$stores/auth';
+  import { isAuthenticated } from '$stores/auth';
   import LoginForm from '$lib/components/auth/LoginForm.svelte';
 
   // Reactive redirect logic
@@ -54,7 +54,10 @@
 
 <svelte:head>
   <title>Sign In - IntelliPost AI</title>
-  <meta name="description" content="Sign in to your IntelliPost AI account to access intelligent social media posting with AI content generation." />
+  <meta
+    name="description"
+    content="Sign in to your IntelliPost AI account to access intelligent social media posting with AI content generation."
+  />
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -71,7 +74,7 @@
     <main class="main-content">
       <div class="form-container">
         <LoginForm
-          redirectTo={redirectTo}
+          {redirectTo}
           on:success={handleLoginSuccess}
           on:error={handleLoginError}
           on:switchToRegister={switchToRegister}
@@ -148,8 +151,9 @@
     background: var(--color-background);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-8);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
-                0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 10px 25px -5px rgba(0, 0, 0, 0.1),
+      0 8px 10px -6px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--color-border-light);
   }
 
@@ -214,7 +218,11 @@
   /* Dark mode support */
   @media (prefers-color-scheme: dark) {
     .login-page {
-      background: linear-gradient(135deg, var(--color-primary-900) 0%, var(--color-background) 100%);
+      background: linear-gradient(
+        135deg,
+        var(--color-primary-900) 0%,
+        var(--color-background) 100%
+      );
     }
   }
 

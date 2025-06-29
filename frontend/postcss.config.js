@@ -14,7 +14,7 @@ export default {
           {
             // Preserve important CSS custom properties for theme switching
             customProperties: false,
-            // Don't remove unused CSS (handled by Vite's built-in purging)
+            // Don't remove unused CSS (will implement via Vite plugin instead)
             discardUnused: false,
             // Preserve calc() functions for dynamic spacing
             calc: false,

@@ -22,13 +22,13 @@
 
   // Event dispatcher
   const dispatch = createEventDispatcher<{
-    success: { user: any };
+    success: { user: unknown };
     error: { error: string };
     switchToLogin: void;
   }>();
 
   // Form state
-  let formData: RegisterFormData = {
+  const formData: RegisterFormData = {
     email: '',
     password: '',
     first_name: '',
@@ -39,7 +39,7 @@
     email?: string;
     password?: string;
     first_name?: string;
-    last_name?: string
+    last_name?: string;
   } = {};
 
   let isSubmitting = false;
@@ -105,10 +105,12 @@
       formData.last_name
     );
     // Map field names correctly
-    const errorField = field === 'first_name' ? 'firstName' :
-                      field === 'last_name' ? 'lastName' :
-                      field;
-    formErrors = { ...formErrors, [field]: currentValidation.errors[errorField as keyof typeof currentValidation.errors] };
+    const errorField =
+      field === 'first_name' ? 'firstName' : field === 'last_name' ? 'lastName' : field;
+    formErrors = {
+      ...formErrors,
+      [field]: currentValidation.errors[errorField as keyof typeof currentValidation.errors],
+    };
   }
 
   // Clear errors when user starts typing

@@ -152,6 +152,7 @@
     tabindex="0"
   >
     <!-- Modal content -->
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
     <div
       class="modal-content"
       bind:this={modalElement}
@@ -167,8 +168,15 @@
         on:click={closeModal}
         aria-label="Close authentication modal"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 6L6 18M6 6l12 12"/>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M18 6L6 18M6 6l12 12" />
         </svg>
       </button>
 
@@ -215,8 +223,9 @@
     position: relative;
     background: var(--color-background);
     border-radius: var(--border-radius-lg);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-                0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
     width: 100%;
     max-width: 480px;
     max-height: 90vh;

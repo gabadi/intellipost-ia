@@ -1,7 +1,8 @@
 {
   "options": {
     "doNotFollow": "node_modules",
-    "includeOnly": "^src/"
+    "includeOnly": "^src/",
+    "exclude": "\\.svelte$"
   },
   "forbidden": [
     {

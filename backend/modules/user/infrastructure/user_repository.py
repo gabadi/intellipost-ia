@@ -84,11 +84,11 @@ class UserRepository:
         except IntegrityError as e:
             await self.session.rollback()
             if "email" in str(e.orig):
-                raise UserAlreadyExistsError(user.email)
-            raise RepositoryError("Failed to create user", e)
+                raise UserAlreadyExistsError(user.email) from e
+            raise RepositoryError("Failed to create user", e) from e
         except Exception as e:
             await self.session.rollback()
-            raise RepositoryError("Failed to create user", e)
+            raise RepositoryError("Failed to create user", e) from e
 
     async def get_by_id(self, user_id: UUID) -> User | None:
         """
@@ -111,7 +111,7 @@ class UserRepository:
             return self._model_to_entity(user_model) if user_model else None
 
         except Exception as e:
-            raise RepositoryError("Failed to retrieve user by ID", e)
+            raise RepositoryError("Failed to retrieve user by ID", e) from e
 
     async def get_by_email(self, email: str) -> User | None:
         """
@@ -134,7 +134,7 @@ class UserRepository:
             return self._model_to_entity(user_model) if user_model else None
 
         except Exception as e:
-            raise RepositoryError("Failed to retrieve user by email", e)
+            raise RepositoryError("Failed to retrieve user by email", e) from e
 
     async def update(self, user: User) -> User:
         """
@@ -188,7 +188,7 @@ class UserRepository:
             raise
         except Exception as e:
             await self.session.rollback()
-            raise RepositoryError("Failed to update user", e)
+            raise RepositoryError("Failed to update user", e) from e
 
     async def delete(self, user_id: UUID) -> bool:
         """
@@ -217,7 +217,7 @@ class UserRepository:
 
         except Exception as e:
             await self.session.rollback()
-            raise RepositoryError("Failed to delete user", e)
+            raise RepositoryError("Failed to delete user", e) from e
 
     async def email_exists(self, email: str) -> bool:
         """
@@ -238,7 +238,7 @@ class UserRepository:
             return result.scalar_one_or_none() is not None
 
         except Exception as e:
-            raise RepositoryError("Failed to check email existence", e)
+            raise RepositoryError("Failed to check email existence", e) from e
 
     async def update_last_login(self, user_id: UUID) -> None:
         """
@@ -270,7 +270,7 @@ class UserRepository:
             raise
         except Exception as e:
             await self.session.rollback()
-            raise RepositoryError("Failed to update last login", e)
+            raise RepositoryError("Failed to update last login", e) from e
 
     def _model_to_entity(self, model: UserModel) -> User:
         """

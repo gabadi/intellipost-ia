@@ -156,9 +156,9 @@ class JWTService:
             )
 
         except JWTError as e:
-            raise JWTError(f"Token validation failed: {str(e)}")
+            raise JWTError(f"Token validation failed: {str(e)}") from e
         except (ValueError, TypeError) as e:
-            raise JWTError(f"Invalid token format: {str(e)}")
+            raise JWTError(f"Invalid token format: {str(e)}") from e
 
     def validate_refresh_token(self, token: str) -> AuthenticatedUser:
         """
@@ -202,9 +202,9 @@ class JWTService:
             )
 
         except JWTError as e:
-            raise JWTError(f"Refresh token validation failed: {str(e)}")
+            raise JWTError(f"Refresh token validation failed: {str(e)}") from e
         except (ValueError, TypeError) as e:
-            raise JWTError(f"Invalid refresh token format: {str(e)}")
+            raise JWTError(f"Invalid refresh token format: {str(e)}") from e
 
     def create_access_token_from_refresh(self, refresh_token: str) -> str:
         """
@@ -262,7 +262,7 @@ class JWTService:
                 options={"verify_exp": False},  # Skip expiration check for debugging
             )
         except JWTError as e:
-            raise JWTError(f"Token decode failed: {str(e)}")
+            raise JWTError(f"Token decode failed: {str(e)}") from e
 
     def is_token_expired(self, token: str) -> bool:
         """

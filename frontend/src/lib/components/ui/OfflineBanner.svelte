@@ -203,7 +203,7 @@
   /* High contrast mode */
   @media (prefers-contrast: high) {
     .offline-banner {
-      background: #000;
+      background: var(--color-text);
       border-bottom: 3px solid var(--color-warning);
     }
 
