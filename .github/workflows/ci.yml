@@ -51,15 +51,10 @@ jobs:
         run: |
           uvx bandit -r modules/ infrastructure/ --exclude='*/tests/*'
 
-      - name: Run backend unit tests
+      - name: Run backend tests
         working-directory: ./backend
         run: |
-          uv run pytest -v ../tests/modules/
-
-      - name: Run backend integration tests
-        working-directory: ./backend
-        run: |
-          uv run pytest -v ../tests/integration/
+          uv run pytest -v
 
 
   frontend:

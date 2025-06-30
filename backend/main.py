@@ -18,6 +18,10 @@ from infrastructure.config.logging import (
     setup_logging,
 )
 from infrastructure.config.settings import Settings
+from infrastructure.middleware import CSRFMiddleware, RateLimitMiddleware
+from infrastructure.redis_client import RedisClient
+from modules.auth.api.router import router as auth_router
+from modules.user.api.router import router as user_router
 
 # Initialize settings
 settings = Settings()
@@ -35,10 +39,21 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     logger.info(f"Environment: {settings.environment}")
     logger.info(f"Debug mode: {settings.debug}")
 
+    # Initialize Redis connection
+    try:
+        redis_client = await RedisClient.get_client()
+        await redis_client.ping()
+        logger.info("Redis connection established")
+    except Exception as e:
+        logger.error(f"Failed to connect to Redis: {e}")
+        if settings.is_production:
+            raise
+
     yield
 
     # Shutdown
     logger.info("Shutting down IntelliPost AI Backend...")
+    await RedisClient.close()
 
 
 # Create FastAPI application
@@ -53,11 +68,11 @@ app = FastAPI(
 
 # Include routers
 app.include_router(health.router)
+app.include_router(auth_router)
+app.include_router(user_router)
 
-# Add request logging middleware
-app.add_middleware(StructuredRequestLoggingMiddleware)
-
-# Configure CORS using settings
+# Add middleware in correct order (last added = first executed)
+# 1. CORS (needs to be outermost for preflight requests)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -65,6 +80,26 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# 2. Request logging
+app.add_middleware(StructuredRequestLoggingMiddleware)
+
+# 3. Rate limiting (Redis-based distributed)
+app.add_middleware(RateLimitMiddleware, requests_per_minute=60, burst_size=10)
+
+# 4. CSRF protection for cookie-based auth
+if settings.is_production:
+    app.add_middleware(
+        CSRFMiddleware,
+        exclude_paths={
+            "/health",
+            "/health/ready",
+            "/health/live",
+            "/api/auth/login",
+            "/api/auth/register",
+            "/api/auth/refresh",
+        },
+    )
 
 
 @app.get("/")

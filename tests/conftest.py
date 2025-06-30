@@ -17,6 +17,9 @@ backend_dir = Path(__file__).parent.parent / "backend"
 sys.path.insert(0, str(backend_dir))
 
 from infrastructure.config.settings import Settings
+from infrastructure.database import Base, AsyncSessionLocal
+from modules.user.infrastructure.models import UserModel
+from modules.auth.infrastructure.password_manager import PasswordManager
 
 
 @pytest.fixture(scope="session")
@@ -113,3 +116,49 @@ def event_loop():
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def test_db(test_engine):
+    """Create all database tables for testing."""
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    # Return a session factory
+    async_session_maker = sessionmaker(
+        test_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    yield async_session_maker
+
+    # Clean up tables after test
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
+@pytest_asyncio.fixture(scope="function")
+async def test_user(test_db) -> UserModel:
+    """Create a test user."""
+    password_manager = PasswordManager()
+
+    async with test_db() as session:
+        user = UserModel(
+            email="test@example.com",
+            password_hash=password_manager.hash_password("testpass123"),
+            is_active=True,
+            status="active",
+            failed_login_attempts=0
+        )
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user
+
+
+@pytest_asyncio.fixture(scope="function")
+async def async_client(test_settings, test_db):
+    """Create an async test client."""
+    from httpx import AsyncClient
+    from main import app
+
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client

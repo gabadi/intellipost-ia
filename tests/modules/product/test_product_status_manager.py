@@ -22,6 +22,10 @@ class TestProductStatusManager:
         )
         initial_updated_at = product.updated_at
 
+        # Add small delay to ensure timestamp difference
+        import time
+        time.sleep(0.001)
+
         ProductStatusManager.mark_as_processed(product, ConfidenceScore.high())
 
         assert product.status == ProductStatus.PROCESSED
@@ -38,6 +42,10 @@ class TestProductStatusManager:
         initial_updated_at = product.updated_at
         listing_id = "ML123456"
 
+        # Add small delay to ensure timestamp difference
+        import time
+        time.sleep(0.001)
+
         ProductStatusManager.mark_as_published(product, listing_id)
 
         assert product.status == ProductStatus.PUBLISHED
@@ -53,6 +61,10 @@ class TestProductStatusManager:
             status=ProductStatus.PROCESSING
         )
         initial_updated_at = product.updated_at
+
+        # Add small delay to ensure timestamp difference
+        import time
+        time.sleep(0.001)
 
         ProductStatusManager.mark_as_failed(product)
 

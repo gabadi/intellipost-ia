@@ -21,6 +21,21 @@ services:
     networks:
       - intellipost-network
 
+  # Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - intellipost-network
+
   # MinIO for development (S3-compatible object storage)
   minio:
     image: minio/minio:latest
@@ -68,6 +83,7 @@ services:
     environment:
       INTELLIPOST_ENVIRONMENT: development
       INTELLIPOST_DATABASE_URL: postgresql+asyncpg://intellipost_user:intellipost_password@postgres:5432/intellipost_dev
+      INTELLIPOST_REDIS_URL: redis://redis:6379/0
       INTELLIPOST_S3_ENDPOINT_URL: http://minio:9000
       INTELLIPOST_S3_ACCESS_KEY: dev_access_key
       INTELLIPOST_S3_SECRET_KEY: dev_secret_key
@@ -78,6 +94,8 @@ services:
     stop_signal: SIGKILL
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       minio:
         condition: service_healthy
@@ -97,6 +115,7 @@ services:
     environment:
       INTELLIPOST_ENVIRONMENT: development
       INTELLIPOST_DATABASE_URL: postgresql+asyncpg://intellipost_user:intellipost_password@postgres:5432/intellipost_dev
+      INTELLIPOST_REDIS_URL: redis://redis:6379/0
       INTELLIPOST_S3_ENDPOINT_URL: http://minio:9000
       INTELLIPOST_S3_ACCESS_KEY: dev_access_key
       INTELLIPOST_S3_SECRET_KEY: dev_secret_key
@@ -107,6 +126,8 @@ services:
     stop_signal: SIGKILL
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       minio:
         condition: service_healthy
@@ -145,6 +166,8 @@ services:
 
 volumes:
   postgres_dev_data:
+    driver: local
+  redis_dev_data:
     driver: local
   minio_dev_data:
     driver: local

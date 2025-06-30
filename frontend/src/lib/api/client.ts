@@ -1,7 +1,7 @@
 // Base API client for backend communication
 import type { APIResponse, HealthCheckResponse } from '$types';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://localhost:8080';
 
 // Generic API client with error handling
 class APIClient {
@@ -105,29 +105,31 @@ class APIClient {
   }
 
   // GET request
-  async get<T>(endpoint: string): Promise<APIResponse<T>> {
-    return this.request<T>(endpoint, { method: 'GET' });
+  async get<T>(endpoint: string, options: RequestInit = {}): Promise<APIResponse<T>> {
+    return this.request<T>(endpoint, { method: 'GET', ...options });
   }
 
   // POST request
-  async post<T>(endpoint: string, data?: unknown): Promise<APIResponse<T>> {
+  async post<T>(endpoint: string, data?: unknown, options: RequestInit = {}): Promise<APIResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+      ...options,
     });
   }
 
   // PUT request
-  async put<T>(endpoint: string, data?: unknown): Promise<APIResponse<T>> {
+  async put<T>(endpoint: string, data?: unknown, options: RequestInit = {}): Promise<APIResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
+      ...options,
     });
   }
 
   // DELETE request
-  async delete<T>(endpoint: string): Promise<APIResponse<T>> {
-    return this.request<T>(endpoint, { method: 'DELETE' });
+  async delete<T>(endpoint: string, options: RequestInit = {}): Promise<APIResponse<T>> {
+    return this.request<T>(endpoint, { method: 'DELETE', ...options });
   }
 }
 

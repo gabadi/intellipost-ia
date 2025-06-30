@@ -43,6 +43,17 @@ class Settings(BaseSettings):
         description="Secret key for JWT tokens and encryption",
     )
 
+    # JWT configuration (mobile-optimized)
+    jwt_algorithm: str = Field(default="HS256", description="JWT algorithm")
+    jwt_access_token_expire_minutes: int = Field(
+        default=15,  # Battery optimization for mobile
+        description="Access token expiration time in minutes",
+    )
+    jwt_refresh_token_expire_days: int = Field(
+        default=7,  # User convenience
+        description="Refresh token expiration time in days",
+    )
+
     # API configuration
     # Default to localhost for security. Use INTELLIPOST_API_HOST="0.0.0.0" in production if needed
     api_host: str = Field(default="127.0.0.1", description="API host")  # nosec B104
@@ -50,7 +61,12 @@ class Settings(BaseSettings):
 
     # CORS configuration
     cors_origins: list[str] = Field(
-        default=["http://localhost:3000", "http://127.0.0.1:3000"],
+        default=[
+            "http://localhost:4000",
+            "http://127.0.0.1:4000",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ],
         description="Allowed CORS origins",
     )
 
@@ -78,6 +94,14 @@ class Settings(BaseSettings):
         default=None, description="MercadoLibre API client secret"
     )
 
+    # Redis configuration
+    redis_url: str = Field(
+        default="redis://localhost:6379/0", description="Redis connection URL"
+    )
+    redis_max_connections: int = Field(
+        default=50, description="Maximum number of Redis connections"
+    )
+
     @model_validator(mode="after")
     def validate_secret_key_for_production(self):
         """Validate that secret key is properly set for production."""
@@ -88,6 +112,32 @@ class Settings(BaseSettings):
             raise ValueError(
                 "Secret key must be changed from default value in production"
             )
+
+        # Validate secret key strength
+        if self.environment.lower() == "production":
+            if len(self.secret_key) < 32:
+                raise ValueError(
+                    "Secret key must be at least 32 characters long in production"
+                )
+
+            # Check for common weak patterns
+            if self.secret_key.lower() in ["secret", "password", "12345678"]:
+                raise ValueError("Secret key appears to be a weak or common value")
+
+            # Ensure some entropy (mix of character types)
+            has_upper = any(c.isupper() for c in self.secret_key)
+            has_lower = any(c.islower() for c in self.secret_key)
+            has_digit = any(c.isdigit() for c in self.secret_key)
+            has_special = any(
+                c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in self.secret_key
+            )
+
+            entropy_score = sum([has_upper, has_lower, has_digit, has_special])
+            if entropy_score < 3:
+                raise ValueError(
+                    "Secret key must contain at least 3 of: uppercase, lowercase, digits, special characters"
+                )
+
         return self
 
     @field_validator("log_level")
