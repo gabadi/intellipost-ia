@@ -1,15 +1,17 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { HealthCheckResponse } from '$types';
+  import { config } from '$lib/config';
 
   let healthStatus: HealthCheckResponse | null = null;
   let healthError: string | null = null;
   let isLoading = true;
 
   async function checkBackendHealth() {
+
     try {
-      // For browser-side requests, always use localhost (host machine)
-      const response = await fetch('http://localhost:8080/health');
+      // Use centralized configuration for API endpoint
+      const response = await fetch(config.getApiUrl(config.api.HEALTH_ENDPOINT));
       if (!response.ok) {
         throw new Error(`Backend health check failed: ${response.status}`);
       }
@@ -35,61 +37,58 @@
 <div class="container">
   <div class="py-6" style="min-height: var(--layout-main-min-height);">
     <header class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-      <p class="text-gray-600 mt-2">Welcome to IntelliPost AI Control Panel</p>
+      <h1 class="text-3xl font-bold" style="color: var(--color-text);">Dashboard</h1>
+      <p class="mt-2" style="color: var(--color-text-secondary);">Welcome to IntelliPost AI Control Panel</p>
     </header>
 
     <div class="mb-8">
-      <h2 class="text-xl font-semibold text-gray-900 mb-4">System Status</h2>
+      <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">System Status</h2>
 
-      <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+      <div class="status-card">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="font-medium text-gray-900">Backend Connection</h3>
+          <h3 class="font-medium" style="color: var(--color-text);">Backend Connection</h3>
           {#if isLoading}
             <div class="flex items-center gap-2">
               <span class="loading-spinner"></span>
-              <span class="text-sm text-gray-500">Checking...</span>
+              <span class="text-sm" style="color: var(--color-text-muted);">Checking...</span>
             </div>
           {:else if healthStatus}
             <div class="flex items-center gap-2">
               <span class="status-dot success"></span>
-              <span class="text-sm text-gray-600">Healthy</span>
+              <span class="text-sm" style="color: var(--color-text-secondary);">Healthy</span>
             </div>
           {:else}
             <div class="flex items-center gap-2">
               <span class="status-dot error"></span>
-              <span class="text-sm text-gray-600">Disconnected</span>
+              <span class="text-sm" style="color: var(--color-text-secondary);">Disconnected</span>
             </div>
           {/if}
         </div>
 
         {#if healthStatus}
-          <div class="flex flex-col gap-2 pt-4 border-t border-gray-100">
+          <div class="flex flex-col gap-2 pt-4 border-t" style="border-color: var(--color-border-muted);">
             <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-500">Status:</span>
-              <span class="text-sm text-green-600 font-medium">{healthStatus.status}</span>
+              <span class="text-sm" style="color: var(--color-text-muted);">Status:</span>
+              <span class="text-sm font-medium" style="color: var(--color-success);">{healthStatus.status}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-500">Version:</span>
-              <span class="text-sm text-gray-900 font-medium">{healthStatus.version}</span>
+              <span class="text-sm" style="color: var(--color-text-muted);">Version:</span>
+              <span class="text-sm font-medium" style="color: var(--color-text);">{healthStatus.version}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-500">Last Check:</span>
-              <span class="text-sm text-gray-900 font-medium"
+              <span class="text-sm" style="color: var(--color-text-muted);">Last Check:</span>
+              <span class="text-sm font-medium" style="color: var(--color-text);"
                 >{new Date(healthStatus.timestamp).toLocaleString()}</span
               >
             </div>
           </div>
         {:else if healthError}
-          <div class="pt-4 border-t border-gray-100">
-            <p class="text-sm text-gray-600 mb-2">Connection Error:</p>
-            <p class="text-sm text-red-600 mb-3">{healthError}</p>
+          <div class="pt-4 border-t" style="border-color: var(--color-border-muted);">
+            <p class="text-sm mb-2" style="color: var(--color-text-secondary);">Connection Error:</p>
+            <p class="text-sm mb-3" style="color: var(--color-error);">{healthError}</p>
             <button
               class="btn btn--primary btn--sm"
-              on:click={() => {
-                isLoading = true;
-                checkBackendHealth();
-              }}
+              on:click={checkBackendHealth}
             >
               Retry Connection
             </button>
@@ -99,18 +98,18 @@
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">Quick Actions</h2>
       <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
         <a href="/products/new" class="action-card">
           <div class="text-2xl mb-3">➕</div>
-          <h3 class="font-medium text-gray-900 mb-2">Create Product</h3>
-          <p class="text-sm text-gray-500">Start a new AI-powered product listing</p>
+          <h3 class="font-medium mb-2" style="color: var(--color-text);">Create Product</h3>
+          <p class="text-sm" style="color: var(--color-text-muted);">Start a new AI-powered product listing</p>
         </a>
 
         <a href="/products" class="action-card">
           <div class="text-2xl mb-3">📦</div>
-          <h3 class="font-medium text-gray-900 mb-2">View Products</h3>
-          <p class="text-sm text-gray-500">Manage your existing product listings</p>
+          <h3 class="font-medium mb-2" style="color: var(--color-text);">View Products</h3>
+          <p class="text-sm" style="color: var(--color-text-muted);">Manage your existing product listings</p>
         </a>
       </div>
     </div>
@@ -148,11 +147,20 @@
     }
   }
 
+  /* Status Card Component */
+  .status-card {
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+  }
+
   /* Action Card Component */
   .action-card {
     display: block;
-    background: white;
-    border: 1px solid var(--color-gray-200);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
     text-decoration: none;

@@ -95,14 +95,6 @@
   <div class="form-header">
     <h2 class="form-title">Welcome to IntelliPost AI</h2>
     <p class="form-subtitle">Sign in to access the dashboard</p>
-    <div class="default-credentials-info">
-      <p class="default-info-text">
-        <span class="info-icon" aria-hidden="true">💡</span>
-        Development mode: Default credentials in use
-        <br />
-        <small>Check README.md for current password</small>
-      </p>
-    </div>
   </div>
 
   <div class="form-fields">
@@ -206,25 +198,6 @@
     line-height: 1.4;
   }
 
-  .default-credentials-info {
-    margin-top: var(--spacing-4);
-    padding: var(--spacing-3);
-    background: var(--color-primary-50);
-    border: 1px solid var(--color-primary-200);
-    border-radius: var(--border-radius-md);
-  }
-
-  .default-info-text {
-    font-size: var(--font-size-sm);
-    color: var(--color-primary-800);
-    margin: 0;
-    line-height: 1.4;
-    text-align: center;
-  }
-
-  .info-icon {
-    margin-right: var(--spacing-1);
-  }
 
   .form-fields {
     display: flex;

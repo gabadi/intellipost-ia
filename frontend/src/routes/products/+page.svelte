@@ -31,8 +31,8 @@
 <div class="container">
   <div class="products-page">
     <header class="page-header">
-      <h1 class="text-3xl font-bold text-gray-900">Products</h1>
-      <p class="text-gray-600 mt-2">Manage your AI-generated product listings</p>
+      <h1 class="text-3xl font-bold" style="color: var(--color-text);">Products</h1>
+      <p class="mt-2" style="color: var(--color-text-secondary);">Manage your AI-generated product listings</p>
     </header>
 
     <div class="actions-bar">
@@ -45,13 +45,13 @@
     {#if isLoading}
       <div class="loading-state">
         <div class="loading-spinner"></div>
-        <p class="text-gray-500">Loading products...</p>
+        <p style="color: var(--color-text-muted);">Loading products...</p>
       </div>
     {:else if products.length === 0}
       <div class="empty-state">
         <div class="empty-icon">📦</div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-2">No products yet</h3>
-        <p class="text-gray-500 mb-6">
+        <h3 class="text-xl font-semibold mb-2" style="color: var(--color-text);">No products yet</h3>
+        <p class="mb-6" style="color: var(--color-text-muted);">
           Create your first AI-powered product listing to get started.
         </p>
         <a href="/products/new" class="btn-primary">
@@ -64,17 +64,17 @@
         {#each products as product}
           <div class="product-card">
             <div class="product-header">
-              <h3 class="font-semibold text-gray-900">{product.id}</h3>
+              <h3 class="font-semibold" style="color: var(--color-text);">{product.id}</h3>
               <span class="status-badge status-{product.status}">
                 {product.status}
               </span>
             </div>
             <div class="product-meta">
-              <p class="text-sm text-gray-500">
+              <p class="text-sm" style="color: var(--color-text-muted);">
                 Created: {new Date(product.created_at).toLocaleDateString()}
               </p>
               {#if product.confidence}
-                <p class="text-sm text-gray-500">
+                <p class="text-sm" style="color: var(--color-text-muted);">
                   Confidence: {Math.round(product.confidence * 100)}%
                 </p>
               {/if}
@@ -129,10 +129,10 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-3);
-    background-color: white;
-    color: var(--color-gray-700);
+    background-color: var(--color-background);
+    color: var(--color-text-secondary);
     text-decoration: none;
-    border: 1px solid var(--color-gray-200);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     font-weight: 500;
     font-size: var(--text-sm);
@@ -161,7 +161,7 @@
   .loading-spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid var(--color-gray-300);
+    border: 3px solid var(--color-border);
     border-top-color: var(--color-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -202,8 +202,8 @@
   }
 
   .product-card {
-    background: white;
-    border: 1px solid var(--color-gray-200);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
     box-shadow: var(--shadow-sm);
