@@ -34,14 +34,18 @@
 <div class="container">
   <div class="new-product-page">
     <header class="page-header">
-      <h1 class="text-3xl font-bold text-gray-900">Create New Product</h1>
-      <p class="text-gray-600 mt-2">Let AI help you create compelling product listings</p>
+      <h1 class="text-3xl font-bold" style="color: var(--color-text);">Create New Product</h1>
+      <p class="mt-2" style="color: var(--color-text-secondary);">
+        Let AI help you create compelling product listings
+      </p>
     </header>
 
     <div class="form-container">
       <form on:submit={handleSubmit} class="product-form">
         <div class="form-section">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Product Information</h2>
+          <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">
+            Product Information
+          </h2>
 
           <div class="form-group">
             <label for="name" class="form-label">Product Name</label>
@@ -107,10 +111,10 @@
       </form>
 
       <div class="ai-preview">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">AI Preview</h3>
+        <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">AI Preview</h3>
         <div class="preview-card">
           <div class="preview-icon">🤖</div>
-          <p class="text-sm text-gray-500 text-center">
+          <p class="text-sm text-center" style="color: var(--color-text-muted);">
             AI-powered content generation will appear here as you fill out the form
           </p>
         </div>
@@ -142,8 +146,8 @@
   }
 
   .product-form {
-    background: white;
-    border: 1px solid var(--color-gray-200);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
     box-shadow: var(--shadow-sm);
@@ -160,9 +164,9 @@
   .form-label {
     display: block;
     font-weight: 500;
-    color: var(--color-gray-700);
+    color: var(--color-text-secondary);
     margin-bottom: var(--space-2);
-    font-size: var(--text-sm);
+    font-size: var(--font-size-sm);
   }
 
   .form-input,
@@ -170,12 +174,14 @@
   .form-select {
     width: 100%;
     padding: var(--space-3);
-    border: 1px solid var(--color-gray-300);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    font-size: var(--text-base);
-    line-height: var(--leading-normal);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
     transition: border-color 0.2s ease;
     min-height: var(--touch-target-min);
+    background: var(--color-background);
+    color: var(--color-text);
   }
 
   .form-input:focus,
@@ -189,7 +195,8 @@
   .form-input:disabled,
   .form-textarea:disabled,
   .form-select:disabled {
-    background-color: var(--color-gray-100);
+    background-color: var(--color-background-muted);
+    color: var(--color-text-disabled);
     cursor: not-allowed;
   }
 
@@ -203,7 +210,7 @@
     gap: var(--space-4);
     justify-content: flex-end;
     padding-top: var(--space-6);
-    border-top: 1px solid var(--color-gray-200);
+    border-top: 1px solid var(--color-border);
   }
 
   .btn-primary {
@@ -236,12 +243,12 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-3) var(--space-6);
-    background-color: white;
-    color: var(--color-gray-700);
-    border: 1px solid var(--color-gray-300);
+    background-color: var(--color-background);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     font-weight: 500;
-    font-size: var(--text-base);
+    font-size: var(--font-size-base);
     min-height: var(--touch-target-min);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -271,8 +278,8 @@
   }
 
   .ai-preview {
-    background: white;
-    border: 1px solid var(--color-gray-200);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
     box-shadow: var(--shadow-sm);
@@ -285,7 +292,7 @@
     align-items: center;
     justify-content: center;
     padding: var(--space-8);
-    border: 2px dashed var(--color-gray-300);
+    border: 2px dashed var(--color-border-secondary);
     border-radius: var(--radius-lg);
     text-align: center;
   }

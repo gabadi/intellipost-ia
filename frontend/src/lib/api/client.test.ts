@@ -39,7 +39,7 @@ describe('API Client Integration Tests', () => {
 
       expect(result).toEqual(healthData);
 
-      expect(fetch).toHaveBeenCalledWith('http://localhost:8001/health');
+      expect(fetch).toHaveBeenCalledWith('http://localhost:8080/health');
     });
 
     it('should throw error when health check fails', async () => {

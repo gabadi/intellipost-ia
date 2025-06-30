@@ -1,10 +1,12 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import type { NavItem } from '$types/navigation.js';
+  import { themeStore, isDarkMode } from '$lib/stores/theme';
+  import { config } from '$lib/config';
 
   const navItems: NavItem[] = [
     { path: '/', label: 'Dashboard', icon: '🏠' },
-    { path: '/products/new', label: 'New Product', icon: '➕' },
+    { path: '/products/new', label: 'Create Product', icon: '➕' },
     { path: '/products', label: 'Products', icon: '📦' },
     { path: '/settings', label: 'Settings', icon: '⚙️' },
   ];
@@ -12,10 +14,43 @@
   $: currentPath = $page.url.pathname;
 
   function isActive(path: string): boolean {
+    // Handle root path exactly
     if (path === '/') {
       return currentPath === '/';
     }
-    return currentPath.startsWith(path);
+
+    // For other paths, check for exact match first
+    if (currentPath === path) {
+      return true;
+    }
+
+    // For parent paths, only match if current path starts with the path
+    // AND the next character is a slash (to avoid partial matches)
+    // AND there's no more specific match available
+    if (currentPath.startsWith(`${path}/`)) {
+      // Check if there's a more specific navigation item that would match
+      const moreSpecificExists = navItems.some(
+        item =>
+          item.path !== path &&
+          item.path.startsWith(path) &&
+          (currentPath === item.path || currentPath.startsWith(`${item.path}/`))
+      );
+      return !moreSpecificExists;
+    }
+
+    return false;
+  }
+
+  function toggleTheme() {
+    themeStore.toggleTheme();
+
+    // Announce theme change for screen readers
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      const announcement = `Theme changed to ${$isDarkMode ? 'light' : 'dark'} mode`;
+      const utterance = new SpeechSynthesisUtterance(announcement);
+      utterance.volume = 0; // Silent announcement
+      window.speechSynthesis.speak(utterance);
+    }
   }
 </script>
 
@@ -32,6 +67,22 @@
       <span class="label">{item.label}</span>
     </a>
   {/each}
+
+  <!-- Mobile Theme Toggle -->
+  {#if config.features.DARK_MODE}
+    <button
+      class="nav-item theme-toggle"
+      on:click={toggleTheme}
+      aria-label={$isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={$isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+      type="button"
+    >
+      <span class="icon" aria-hidden="true">
+        {$isDarkMode ? '☀️' : '🌙'}
+      </span>
+      <span class="label">Theme</span>
+    </button>
+  {/if}
 </nav>
 
 <style>
@@ -73,6 +124,29 @@
   .nav-item.active {
     color: var(--color-primary);
     background-color: var(--color-primary-light);
+  }
+
+  /* Theme toggle button styles */
+  .nav-item.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .nav-item.theme-toggle:hover,
+  .nav-item.theme-toggle:focus {
+    background-color: var(--color-background-tertiary);
+  }
+
+  .nav-item.theme-toggle:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .nav-item.theme-toggle:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
   }
 
   .icon {

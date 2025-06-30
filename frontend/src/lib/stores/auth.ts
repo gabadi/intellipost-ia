@@ -7,7 +7,13 @@
 
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
-import type { AuthState, User, LoginFormData, RegisterFormData, PasswordChangeRequest } from '../types/auth';
+import type {
+  AuthState,
+  User,
+  LoginFormData,
+  RegisterFormData,
+  PasswordChangeRequest,
+} from '../types/auth';
 import { authAPI } from '../api/auth';
 
 // Storage keys

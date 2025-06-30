@@ -57,5 +57,8 @@
     "fastapi",
     "sveltekit",
     "monorepo"
-  ]
+  ],
+  "dependencies": {
+    "playwright": "^1.53.1"
+  }
 }

@@ -7,7 +7,6 @@
   import { goto } from '$app/navigation';
   import { authStore } from '$stores/auth';
 
-  let isLoggingOut = true;
   let logoutError = '';
 
   onMount(async () => {
@@ -19,8 +18,8 @@
       setTimeout(() => {
         goto('/auth/login');
       }, 1500);
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch {
+      // Logout error, but still continue to redirect
       logoutError = 'Logout failed. Redirecting to login...';
 
       // Still redirect to login even if logout fails

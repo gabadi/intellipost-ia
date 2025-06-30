@@ -175,7 +175,7 @@ include = ["."]
 # Excluir completamente todos los archivos de test del type checking
 exclude = [
     "**/__pycache__", ".venv", "../tests", "tests",
-    "**/*_test.py", "**/test_*.py"
+    "**/*_test.py", "**/test_*.py", "conftest.py"
 ]
 venvPath = "."
 venv = ".venv"

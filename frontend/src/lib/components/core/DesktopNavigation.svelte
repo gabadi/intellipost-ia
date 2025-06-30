@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import type { NavItem } from '$types/navigation.js';
+  import ThemeToggle from '$components/ui/ThemeToggle.svelte';
 
   const navItems: NavItem[] = [
     { path: '/', label: 'Dashboard', icon: '🏠' },
@@ -12,10 +13,31 @@
   $: currentPath = $page.url.pathname;
 
   function isActive(path: string): boolean {
+    // Handle root path exactly
     if (path === '/') {
       return currentPath === '/';
     }
-    return currentPath.startsWith(path);
+
+    // For other paths, check for exact match first
+    if (currentPath === path) {
+      return true;
+    }
+
+    // For parent paths, only match if current path starts with the path
+    // AND the next character is a slash (to avoid partial matches)
+    // AND there's no more specific match available
+    if (currentPath.startsWith(`${path}/`)) {
+      // Check if there's a more specific navigation item that would match
+      const moreSpecificExists = navItems.some(
+        item =>
+          item.path !== path &&
+          item.path.startsWith(path) &&
+          (currentPath === item.path || currentPath.startsWith(`${item.path}/`))
+      );
+      return !moreSpecificExists;
+    }
+
+    return false;
   }
 </script>
 
@@ -47,6 +69,11 @@
   </div>
 
   <div class="nav-footer">
+    <!-- Theme Toggle -->
+    <div class="theme-section">
+      <ThemeToggle />
+    </div>
+
     <div class="user-section">
       <div class="user-avatar" aria-hidden="true">👤</div>
       <div class="user-info">
@@ -55,7 +82,7 @@
       </div>
       <button
         class="logout-button"
-        on:click={() => window.location.href = '/auth/logout'}
+        on:click={() => (window.location.href = '/auth/logout')}
         aria-label="Logout"
         title="Logout"
       >
@@ -73,8 +100,8 @@
     left: 0;
     width: 280px;
     height: 100vh;
-    background: white;
-    border-right: 1px solid var(--color-gray-200);
+    background: var(--color-background);
+    border-right: 1px solid var(--color-border);
     flex-direction: column;
     z-index: 1000;
     overflow-y: auto;
@@ -88,7 +115,7 @@
 
   .nav-header {
     padding: var(--space-6) var(--space-4);
-    border-bottom: 1px solid var(--color-gray-100);
+    border-bottom: 1px solid var(--color-border-muted);
   }
 
   .logo {
@@ -102,9 +129,9 @@
   }
 
   .logo-text {
-    font-size: var(--text-lg);
-    font-weight: 600;
-    color: var(--color-gray-900);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
   }
 
   .nav-content {
@@ -129,16 +156,17 @@
     padding: var(--space-3) var(--space-4);
     margin: 0 var(--space-2);
     text-decoration: none;
-    color: var(--color-gray-700);
+    color: var(--color-text-secondary);
     border-radius: var(--radius-md);
-    transition: all 0.2s ease;
+    transition: all var(--duration-200) var(--ease-out);
     min-height: var(--touch-target-min);
     position: relative;
+    white-space: nowrap;
   }
 
   .nav-item:hover {
-    background: var(--color-gray-50);
-    color: var(--color-gray-900);
+    background: var(--color-background-secondary);
+    color: var(--color-text);
   }
 
   .nav-item:focus {
@@ -149,7 +177,7 @@
   .nav-item.active {
     background: var(--color-primary-light);
     color: var(--color-primary);
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
   }
 
   .nav-item.active::before {
@@ -165,19 +193,25 @@
   }
 
   .nav-icon {
-    font-size: var(--text-lg);
+    font-size: var(--font-size-lg);
     min-width: 24px;
     text-align: center;
   }
 
   .nav-label {
-    font-size: var(--text-base);
-    line-height: var(--leading-normal);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
   }
 
   .nav-footer {
     padding: var(--space-4);
-    border-top: 1px solid var(--color-gray-100);
+    border-top: 1px solid var(--color-border-muted);
+  }
+
+  .theme-section {
+    margin-bottom: var(--space-3);
+    display: flex;
+    justify-content: center;
   }
 
   .user-section {
@@ -185,7 +219,7 @@
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-3);
-    background: var(--color-gray-50);
+    background: var(--color-background-secondary);
     border-radius: var(--radius-md);
   }
 
@@ -197,7 +231,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--text-base);
+    font-size: var(--font-size-base);
   }
 
   .user-info {
@@ -206,32 +240,32 @@
   }
 
   .user-name {
-    font-size: var(--text-sm);
-    font-weight: 500;
-    color: var(--color-gray-900);
-    line-height: var(--leading-tight);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    line-height: var(--line-height-tight);
   }
 
   .user-status {
-    font-size: var(--text-xs);
-    color: var(--color-gray-500);
-    line-height: var(--leading-tight);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    line-height: var(--line-height-tight);
   }
 
   .logout-button {
     background: none;
     border: none;
-    font-size: var(--text-lg);
+    font-size: var(--font-size-lg);
     cursor: pointer;
     padding: var(--space-2);
     border-radius: var(--radius-md);
-    transition: background-color 0.2s ease;
-    color: var(--color-gray-600);
+    transition: background-color var(--duration-200) var(--ease-out);
+    color: var(--color-text-tertiary);
   }
 
   .logout-button:hover {
-    background: var(--color-gray-100);
-    color: var(--color-gray-900);
+    background: var(--color-background-tertiary);
+    color: var(--color-text);
   }
 
   .logout-button:focus {
@@ -239,51 +273,8 @@
     outline-offset: 2px;
   }
 
-  /* Dark mode preparation */
-  @media (prefers-color-scheme: dark) {
-    .desktop-nav {
-      background: var(--color-gray-900);
-      border-right-color: var(--color-gray-700);
-    }
-
-    .nav-header {
-      border-bottom-color: var(--color-gray-700);
-    }
-
-    .logo-text {
-      color: white;
-    }
-
-    .nav-item {
-      color: var(--color-gray-300);
-    }
-
-    .nav-item:hover {
-      background: var(--color-gray-800);
-      color: white;
-    }
-
-    .nav-item.active {
-      background: var(--color-primary-transparent);
-      color: var(--color-primary-light);
-    }
-
-    .nav-footer {
-      border-top-color: var(--color-gray-700);
-    }
-
-    .user-section {
-      background: var(--color-gray-800);
-    }
-
-    .user-name {
-      color: white;
-    }
-
-    .user-status {
-      color: var(--color-gray-400);
-    }
-  }
+  /* Dark mode styles are now handled automatically by design tokens */
+  /* Removed hardcoded @media (prefers-color-scheme: dark) styles */
 
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {

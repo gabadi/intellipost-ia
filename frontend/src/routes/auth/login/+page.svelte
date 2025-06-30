@@ -61,11 +61,7 @@
     <!-- Main content -->
     <main class="main-content">
       <div class="form-container">
-        <LoginForm
-          {redirectTo}
-          on:success={handleLoginSuccess}
-          on:error={handleLoginError}
-        />
+        <LoginForm {redirectTo} on:success={handleLoginSuccess} on:error={handleLoginError} />
       </div>
     </main>
 

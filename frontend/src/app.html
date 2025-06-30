@@ -17,6 +17,57 @@
       /* This is handled by the build process to reduce First Contentful Paint */
     </style>
 
+    <!-- FOUC Prevention Script - Inline for immediate execution -->
+    <script>
+      (function () {
+        // Prevent flash of unstyled content by initializing theme immediately
+        const THEME_STORAGE_KEY = 'intellipost_theme';
+        const FEATURE_DARK_MODE = true; // Match config.features.DARK_MODE
+
+        if (!FEATURE_DARK_MODE) {
+          document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.style.setProperty('--color-scheme', 'light');
+          return;
+        }
+
+        // Get stored theme preference
+        let storedTheme = 'auto';
+        try {
+          const stored = localStorage.getItem(THEME_STORAGE_KEY);
+          if (stored && ['light', 'dark', 'auto'].includes(stored)) {
+            storedTheme = stored;
+          }
+        } catch (error) {
+          // localStorage unavailable, use default
+        }
+
+        // Determine effective theme
+        const isSystemDark =
+          window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const effectiveTheme =
+          storedTheme === 'auto' ? (isSystemDark ? 'dark' : 'light') : storedTheme;
+
+        // Apply theme immediately
+        document.documentElement.setAttribute('data-theme', effectiveTheme);
+        document.documentElement.style.setProperty('--color-scheme', effectiveTheme);
+
+        // Update meta theme-color for mobile browsers
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          const colors = {
+            light: '#1e40af', // Primary blue
+            dark: '#1e293b', // Dark secondary
+          };
+          metaThemeColor.setAttribute('content', colors[effectiveTheme]);
+        }
+
+        // Mark theme as initialized after content loads
+        document.addEventListener('DOMContentLoaded', function () {
+          document.documentElement.classList.add('theme-initialized');
+        });
+      })();
+    </script>
+
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">

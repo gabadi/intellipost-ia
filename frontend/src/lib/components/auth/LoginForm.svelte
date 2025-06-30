@@ -100,9 +100,7 @@
   <div class="form-fields">
     <!-- Email Field (read-only with default user) -->
     <div class="field">
-      <label for="email" class="field-label">
-        Email address (default user)
-      </label>
+      <label for="email" class="field-label"> Email address (default user) </label>
       <input
         id="email"
         type="email"
@@ -161,9 +159,7 @@
     </button>
 
     <div class="form-footer">
-      <p class="switch-form">
-        Having trouble? Contact your system administrator for assistance.
-      </p>
+      <p class="switch-form">Having trouble? Contact your system administrator for assistance.</p>
     </div>
   </div>
 </form>
@@ -197,7 +193,6 @@
     margin: 0;
     line-height: 1.4;
   }
-
 
   .form-fields {
     display: flex;
@@ -245,21 +240,6 @@
     background: var(--color-background-disabled);
     color: var(--color-text-disabled);
     cursor: not-allowed;
-  }
-
-  .field-input.error {
-    border-color: var(--color-error);
-  }
-
-  .field-input.error:focus {
-    border-color: var(--color-error);
-    box-shadow: 0 0 0 3px var(--color-error-alpha);
-  }
-
-  .field-error {
-    color: var(--color-error);
-    font-size: var(--font-size-sm);
-    line-height: 1.4;
   }
 
   .field-help {
@@ -363,33 +343,6 @@
     line-height: 1.4;
   }
 
-  .link-button {
-    background: none;
-    border: none;
-    color: var(--color-primary);
-    font-size: inherit;
-    font-weight: 500;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    transition: color 0.2s ease;
-  }
-
-  .link-button:hover:not(:disabled) {
-    color: var(--color-primary-hover);
-  }
-
-  .link-button:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--color-primary-alpha);
-    border-radius: var(--border-radius-sm);
-  }
-
-  .link-button:disabled {
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-  }
-
   /* Mobile-specific styles */
   @media (max-width: 767px) {
     .field-input {
@@ -412,8 +365,7 @@
   /* Reduce motion for users who prefer it */
   @media (prefers-reduced-motion: reduce) {
     .submit-button,
-    .field-input,
-    .link-button {
+    .field-input {
       transition: none;
     }
 

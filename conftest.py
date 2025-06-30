@@ -3,7 +3,7 @@
 import pytest
 
 
-def pytest_collection_modifyitems(_config, items):
+def pytest_collection_modifyitems(items):
     """
     Ensure all tests have required markers.
 

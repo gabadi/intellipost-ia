@@ -1,19 +1,28 @@
 // Base API client for backend communication
 import type { APIResponse, HealthCheckResponse } from '$types';
-
-const API_BASE_URL = 'http://localhost:8001';
+import { config } from '$lib/config';
+import { browser } from '$app/environment';
 
 // Generic API client with error handling
 class APIClient {
-  private baseURL: string;
+  private baseUrl?: string;
 
-  constructor(baseURL: string = API_BASE_URL) {
-    this.baseURL = baseURL;
+  constructor(baseUrl?: string) {
+    this.baseUrl = baseUrl;
+  }
+
+  private getBaseURL(): string {
+    // Use custom base URL if provided, otherwise use config-based URL
+    if (this.baseUrl) {
+      return this.baseUrl;
+    }
+    // Use internal URL for server-side rendering, external URL for client-side
+    return browser ? config.api.BASE_URL : config.api.INTERNAL_URL;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<APIResponse<T>> {
     try {
-      const url = `${this.baseURL}${endpoint}`;
+      const url = `${this.getBaseURL()}${endpoint}`;
 
       const response = await fetch(url, {
         headers: {
@@ -87,17 +96,19 @@ class APIClient {
   // Health check endpoint
   async checkHealth(): Promise<HealthCheckResponse> {
     try {
-      const response = await fetch(`${this.baseURL}/health`);
+      const baseURL = this.getBaseURL();
+      const response = await fetch(`${baseURL}/health`);
       if (!response.ok) {
         throw new Error(
-          `Backend service is unavailable (${response.status}). Please check that the backend server is running on ${this.baseURL}`
+          `Backend service is unavailable (${response.status}). Please check that the backend server is running on ${baseURL}`
         );
       }
       return response.json();
     } catch (error) {
       if (error instanceof TypeError && error.message.includes('fetch')) {
+        const baseURL = this.getBaseURL();
         throw new Error(
-          `Cannot connect to backend server at ${this.baseURL}. Please ensure the backend is running and accessible.`
+          `Cannot connect to backend server at ${baseURL}. Please ensure the backend is running and accessible.`
         );
       }
       throw error;

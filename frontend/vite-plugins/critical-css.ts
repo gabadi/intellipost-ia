@@ -10,9 +10,14 @@ export function criticalCssPlugin(): Plugin {
     name: 'critical-css',
     transformIndexHtml: {
       order: 'post',
-      handler(html: string, _context: any): string {
-        // Only apply in production builds
-        if (process.env.NODE_ENV !== 'production') {
+      handler(html: string, context: any): string {
+        // Only apply in production builds - check multiple environment indicators
+        const isProduction =
+          process.env.NODE_ENV === 'production' ||
+          context?.bundle ||
+          process.env.VITE_ENVIRONMENT === 'production';
+
+        if (!isProduction) {
           return html;
         }
 

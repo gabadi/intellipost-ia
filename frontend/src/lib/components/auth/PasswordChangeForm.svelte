@@ -12,7 +12,6 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import type { User } from '$types/auth';
   import { validatePassword } from '$utils/auth-validation';
   import { authStore } from '$stores/auth';
   import PasswordInput from './PasswordInput.svelte';
@@ -45,10 +44,7 @@
   $: passwordValidation = validatePassword(formData.newPassword);
   $: passwordsMatch = formData.newPassword && formData.newPassword === formData.confirmPassword;
   $: canSubmit =
-    formData.currentPassword &&
-    passwordValidation.isValid &&
-    passwordsMatch &&
-    !isSubmitting;
+    formData.currentPassword && passwordValidation.isValid && passwordsMatch && !isSubmitting;
 
   // Handle form submission
   async function handleSubmit(event: Event) {
@@ -232,12 +228,7 @@
       {/if}
     </button>
 
-    <button
-      type="button"
-      class="cancel-button"
-      on:click={handleCancel}
-      disabled={isSubmitting}
-    >
+    <button type="button" class="cancel-button" on:click={handleCancel} disabled={isSubmitting}>
       Cancel
     </button>
   </div>

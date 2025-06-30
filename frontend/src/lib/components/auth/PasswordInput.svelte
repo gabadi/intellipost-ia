@@ -25,6 +25,9 @@
   export let showRequirements: boolean = false;
   export let error: string | undefined = undefined;
   export let disabled: boolean = false;
+  export let id: string | undefined = undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export let autocomplete: any = undefined;
 
   // State
   let showPassword = false;
@@ -98,13 +101,14 @@
 <div class="password-input" class:error class:focused={isFocused} class:disabled>
   <div class="input-wrapper">
     <input
+      {id}
       type={inputType}
       bind:value
       {placeholder}
       {required}
       {disabled}
       class="password-field"
-      autocomplete="current-password"
+      {autocomplete}
       on:input={handleInput}
       on:focus={handleFocus}
       on:blur={handleBlur}

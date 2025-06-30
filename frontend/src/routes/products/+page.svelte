@@ -32,7 +32,9 @@
   <div class="products-page">
     <header class="page-header">
       <h1 class="text-3xl font-bold" style="color: var(--color-text);">Products</h1>
-      <p class="mt-2" style="color: var(--color-text-secondary);">Manage your AI-generated product listings</p>
+      <p class="mt-2" style="color: var(--color-text-secondary);">
+        Manage your AI-generated product listings
+      </p>
     </header>
 
     <div class="actions-bar">
@@ -50,7 +52,9 @@
     {:else if products.length === 0}
       <div class="empty-state">
         <div class="empty-icon">📦</div>
-        <h3 class="text-xl font-semibold mb-2" style="color: var(--color-text);">No products yet</h3>
+        <h3 class="text-xl font-semibold mb-2" style="color: var(--color-text);">
+          No products yet
+        </h3>
         <p class="mb-6" style="color: var(--color-text-muted);">
           Create your first AI-powered product listing to get started.
         </p>

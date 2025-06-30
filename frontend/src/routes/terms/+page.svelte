@@ -8,10 +8,7 @@
 
 <svelte:head>
   <title>Terms of Service - IntelliPost AI</title>
-  <meta
-    name="description"
-    content="Terms of Service for IntelliPost AI platform"
-  />
+  <meta name="description" content="Terms of Service for IntelliPost AI platform" />
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -35,16 +32,14 @@
       <div class="content-section">
         <h2>Development Notice</h2>
         <p>
-          This application is currently in development mode with simplified authentication.
-          For production deployment, please ensure proper legal documentation is in place.
+          This application is currently in development mode with simplified authentication. For
+          production deployment, please ensure proper legal documentation is in place.
         </p>
       </div>
 
       <div class="content-section">
         <h2>Contact Information</h2>
-        <p>
-          For questions about these terms, please contact your system administrator.
-        </p>
+        <p>For questions about these terms, please contact your system administrator.</p>
       </div>
     </main>
 

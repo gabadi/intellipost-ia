@@ -15,14 +15,13 @@ import type {
   User,
   PasswordChangeRequest,
 } from '../types/auth';
-
-const API_BASE_URL = 'http://localhost:8001'; // Updated to match backend port
+import { config } from '../config';
 
 class AuthAPI {
   private baseURL: string;
   private authToken: string | null = null;
 
-  constructor(baseURL: string = API_BASE_URL) {
+  constructor(baseURL: string = config.api.BASE_URL) {
     this.baseURL = baseURL;
   }
 

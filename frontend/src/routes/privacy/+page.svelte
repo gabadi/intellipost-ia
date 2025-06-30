@@ -8,10 +8,7 @@
 
 <svelte:head>
   <title>Privacy Policy - IntelliPost AI</title>
-  <meta
-    name="description"
-    content="Privacy Policy for IntelliPost AI platform"
-  />
+  <meta name="description" content="Privacy Policy for IntelliPost AI platform" />
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -35,17 +32,17 @@
       <div class="content-section">
         <h2>Development Notice</h2>
         <p>
-          This application is currently in development mode with simplified authentication.
-          For production deployment, please ensure proper privacy documentation and data
-          protection measures are in place.
+          This application is currently in development mode with simplified authentication. For
+          production deployment, please ensure proper privacy documentation and data protection
+          measures are in place.
         </p>
       </div>
 
       <div class="content-section">
         <h2>Data Handling</h2>
         <p>
-          In the current development setup, only basic authentication data is handled.
-          No personal information beyond the default user credentials is processed.
+          In the current development setup, only basic authentication data is handled. No personal
+          information beyond the default user credentials is processed.
         </p>
       </div>
 

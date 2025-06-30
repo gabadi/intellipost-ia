@@ -8,7 +8,7 @@ import { purgeCssPlugin } from './vite-plugins/purgecss.ts';
 export default defineConfig({
   plugins: [sveltekit(), svelteTesting(), criticalCssPlugin(), purgeCssPlugin()],
   server: {
-    port: 3000,
+    port: 4000,
     host: true,
   },
   build: {

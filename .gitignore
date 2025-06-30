@@ -314,3 +314,15 @@ local_settings.py
 frontend/playwright-report/
 frontend/test-results/
 test-results/
+playwright-report/
+
+# Temporary development files
+*test_*.py
+*debug_*.py
+*navigation_*.py
+connectivity-test.*
+dev_output.log
+
+# IDE cache files
+.ruff_cache/
+.tach/

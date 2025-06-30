@@ -10,8 +10,13 @@ export function purgeCssPlugin(): Plugin {
     generateBundle: {
       order: 'post',
       async handler(options: any, bundle: any): Promise<void> {
-        // Only apply in production builds
-        if (process.env.NODE_ENV !== 'production') {
+        // Only apply in production builds - check multiple environment indicators
+        const isProduction =
+          process.env.NODE_ENV === 'production' ||
+          process.env.VITE_ENVIRONMENT === 'production' ||
+          options?.format === 'es'; // Build bundle indicates production
+
+        if (!isProduction) {
           return;
         }
 

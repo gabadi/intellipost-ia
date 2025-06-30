@@ -8,7 +8,6 @@
   let isLoading = true;
 
   async function checkBackendHealth() {
-
     try {
       // Use centralized configuration for API endpoint
       const response = await fetch(config.getApiUrl(config.api.HEALTH_ENDPOINT));
@@ -38,7 +37,9 @@
   <div class="py-6" style="min-height: var(--layout-main-min-height);">
     <header class="mb-8">
       <h1 class="text-3xl font-bold" style="color: var(--color-text);">Dashboard</h1>
-      <p class="mt-2" style="color: var(--color-text-secondary);">Welcome to IntelliPost AI Control Panel</p>
+      <p class="mt-2" style="color: var(--color-text-secondary);">
+        Welcome to IntelliPost AI Control Panel
+      </p>
     </header>
 
     <div class="mb-8">
@@ -66,14 +67,21 @@
         </div>
 
         {#if healthStatus}
-          <div class="flex flex-col gap-2 pt-4 border-t" style="border-color: var(--color-border-muted);">
+          <div
+            class="flex flex-col gap-2 pt-4 border-t"
+            style="border-color: var(--color-border-muted);"
+          >
             <div class="flex justify-between items-center">
               <span class="text-sm" style="color: var(--color-text-muted);">Status:</span>
-              <span class="text-sm font-medium" style="color: var(--color-success);">{healthStatus.status}</span>
+              <span class="text-sm font-medium" style="color: var(--color-success);"
+                >{healthStatus.status}</span
+              >
             </div>
             <div class="flex justify-between items-center">
               <span class="text-sm" style="color: var(--color-text-muted);">Version:</span>
-              <span class="text-sm font-medium" style="color: var(--color-text);">{healthStatus.version}</span>
+              <span class="text-sm font-medium" style="color: var(--color-text);"
+                >{healthStatus.version}</span
+              >
             </div>
             <div class="flex justify-between items-center">
               <span class="text-sm" style="color: var(--color-text-muted);">Last Check:</span>
@@ -84,12 +92,11 @@
           </div>
         {:else if healthError}
           <div class="pt-4 border-t" style="border-color: var(--color-border-muted);">
-            <p class="text-sm mb-2" style="color: var(--color-text-secondary);">Connection Error:</p>
+            <p class="text-sm mb-2" style="color: var(--color-text-secondary);">
+              Connection Error:
+            </p>
             <p class="text-sm mb-3" style="color: var(--color-error);">{healthError}</p>
-            <button
-              class="btn btn--primary btn--sm"
-              on:click={checkBackendHealth}
-            >
+            <button class="btn btn--primary btn--sm" on:click={checkBackendHealth}>
               Retry Connection
             </button>
           </div>
@@ -103,13 +110,17 @@
         <a href="/products/new" class="action-card">
           <div class="text-2xl mb-3">➕</div>
           <h3 class="font-medium mb-2" style="color: var(--color-text);">Create Product</h3>
-          <p class="text-sm" style="color: var(--color-text-muted);">Start a new AI-powered product listing</p>
+          <p class="text-sm" style="color: var(--color-text-muted);">
+            Start a new AI-powered product listing
+          </p>
         </a>
 
         <a href="/products" class="action-card">
           <div class="text-2xl mb-3">📦</div>
           <h3 class="font-medium mb-2" style="color: var(--color-text);">View Products</h3>
-          <p class="text-sm" style="color: var(--color-text-muted);">Manage your existing product listings</p>
+          <p class="text-sm" style="color: var(--color-text-muted);">
+            Manage your existing product listings
+          </p>
         </a>
       </div>
     </div>

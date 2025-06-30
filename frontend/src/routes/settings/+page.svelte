@@ -28,7 +28,11 @@
   // Handle password change error
   function handlePasswordChangeError(event: CustomEvent<{ error: string }>) {
     // Error is handled within the form component
-    console.error('Password change error:', event.detail.error);
+    // Log error details for debugging in development only
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.error('Password change error:', event.detail.error);
+    }
   }
 
   // Handle password change cancel
@@ -51,10 +55,7 @@
 
 <svelte:head>
   <title>Settings - IntelliPost AI</title>
-  <meta
-    name="description"
-    content="Account settings and preferences for IntelliPost AI"
-  />
+  <meta name="description" content="Account settings and preferences for IntelliPost AI" />
 </svelte:head>
 
 <div class="settings-page">
@@ -94,7 +95,9 @@
           <div class="info-item">
             <span class="info-label">Member Since:</span>
             <span class="info-value">
-              {$currentUser?.created_at ? new Date($currentUser.created_at).toLocaleDateString() : 'N/A'}
+              {$currentUser?.created_at
+                ? new Date($currentUser.created_at).toLocaleDateString()
+                : 'N/A'}
             </span>
           </div>
         </div>
@@ -111,9 +114,7 @@
                 Change your account password. Use a strong password with at least 8 characters.
               </p>
             </div>
-            <button class="action-button" on:click={openPasswordChange}>
-              Change Password
-            </button>
+            <button class="action-button" on:click={openPasswordChange}> Change Password </button>
           </div>
         </div>
       </section>

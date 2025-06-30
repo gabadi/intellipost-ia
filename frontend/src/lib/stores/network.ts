@@ -1,5 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
+import { config } from '$lib/config';
 
 // Network status store
 function createNetworkStore() {
@@ -13,8 +14,8 @@ function createNetworkStore() {
       if (!browser) return true;
 
       try {
-        // Use a lightweight request to check connectivity
-        const response = await fetch('http://localhost:8001/health', {
+        // Use centralized configuration for health check
+        const response = await fetch(config.getApiUrl(config.api.HEALTH_ENDPOINT), {
           method: 'GET',
           cache: 'no-cache',
         });
@@ -35,10 +36,9 @@ export const networkStatus = createNetworkStore();
 export const isOnline = derived(networkStatus, $network => $network);
 export const isOffline = derived(networkStatus, $network => !$network);
 
-// Initialize network listeners if in browser
-if (browser) {
+// Initialize network listeners if in browser and feature is enabled
+if (browser && config.features.NETWORK_MONITORING) {
   // Listen for online/offline events
-
   window.addEventListener('online', () => {
     networkStatus.setOnline();
   });
@@ -50,9 +50,8 @@ if (browser) {
   // Initial check
   networkStatus.checkConnection();
 
-  // Periodic connectivity check (every 30 seconds when offline)
-
+  // Periodic connectivity check using configured interval (but less frequent)
   setInterval(() => {
     networkStatus.checkConnection();
-  }, 30000);
+  }, config.network.HEALTH_CHECK_INTERVAL);
 }

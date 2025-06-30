@@ -5,11 +5,15 @@
   import DesktopNavigation from '$components/core/DesktopNavigation.svelte';
   import OfflineBanner from '$components/ui/OfflineBanner.svelte';
   import { authStore } from '$stores/auth';
+  import { themeStore } from '$stores/theme';
   import '../app.css';
 
-  // Initialize authentication on app startup
+  // Initialize stores on app startup
   onMount(() => {
     authStore.initialize();
+
+    // Initialize theme store (redundant safety check)
+    themeStore.initialize();
   });
 
   // Check if we're on an auth page
@@ -18,7 +22,7 @@
 
 <svelte:head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1e40af" />
+  <!-- theme-color meta tag is handled by theme system in app.html -->
 </svelte:head>
 
 <!-- Skip Navigation Links for Accessibility -->
