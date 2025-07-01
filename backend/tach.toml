@@ -5,10 +5,10 @@ source_roots = [
 ]
 root_module = "allow"
 
-# Infrastructure layer - shared infrastructure only
+# Infrastructure layer - shared infrastructure, can depend on modules for protocols
 [[modules]]
 path = "infrastructure"
-depends_on = ["<root>"]
+depends_on = ["<root>", "modules.ai_content", "modules.communications", "modules.mercadolibre", "modules.product", "modules.user", "modules.user_management"]
 
 # Root application - global orchestration
 [[modules]]
@@ -25,32 +25,37 @@ depends_on = []
 path = "application"
 depends_on = []
 
-# User Management module (unified user + auth) - completely independent
+# User Management module (unified user + auth) - can use infrastructure
 [[modules]]
 path = "modules.user_management"
-depends_on = []
+depends_on = ["infrastructure"]
 
-# Product Management module - completely independent
+# Legacy Auth module - can use infrastructure
 [[modules]]
-path = "modules.product_management"
-depends_on = []
+path = "modules.auth"
+depends_on = ["infrastructure"]
 
-# Content Generation module (renamed from ai_content) - completely independent
+# Legacy User module - can use infrastructure
 [[modules]]
-path = "modules.content_generation"
-depends_on = []
+path = "modules.user"
+depends_on = ["infrastructure"]
 
-# Image Processing module (new, extracted from product) - completely independent
+# Product module - can use infrastructure
 [[modules]]
-path = "modules.image_processing"
-depends_on = []
+path = "modules.product"
+depends_on = ["infrastructure"]
 
-# Marketplace Integration module (renamed from mercadolibre) - completely independent
+# AI Content module - can use infrastructure
 [[modules]]
-path = "modules.marketplace_integration"
-depends_on = []
+path = "modules.ai_content"
+depends_on = ["infrastructure"]
 
-# Notifications module (renamed from communications) - completely independent
+# MercadoLibre Integration module - can use infrastructure
 [[modules]]
-path = "modules.notifications"
-depends_on = []
+path = "modules.mercadolibre"
+depends_on = ["infrastructure"]
+
+# Communications module - can use infrastructure
+[[modules]]
+path = "modules.communications"
+depends_on = ["infrastructure"]

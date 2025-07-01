@@ -68,8 +68,8 @@ class User:
 
     def __post_init__(self) -> None:
         """Post-initialization validation and setup."""
-        if self.updated_at is None:
-            self.updated_at = datetime.now(UTC)
+        # updated_at is already set by the field default_factory
+        pass
 
     # User Profile Methods
     @property
