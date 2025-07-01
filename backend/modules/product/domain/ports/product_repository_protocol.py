@@ -5,28 +5,26 @@ This module defines Protocol interface for product data persistence operations,
 ensuring loose coupling between domain logic and infrastructure concerns.
 """
 
-from typing import Protocol
+from typing import Any, Protocol
 from uuid import UUID
-
-from modules.product.domain.product import Product
 
 
 class ProductRepositoryProtocol(Protocol):
     """Protocol for product data persistence operations."""
 
-    async def create(self, product: Product) -> Product:
+    async def create(self, product: Any) -> Any:
         """Create a new product."""
         ...
 
-    async def get_by_id(self, product_id: UUID) -> Product | None:
+    async def get_by_id(self, product_id: UUID) -> Any | None:
         """Get product by ID."""
         ...
 
-    async def get_by_user_id(self, user_id: UUID) -> list[Product]:
+    async def get_by_user_id(self, user_id: UUID) -> list[Any]:
         """Get all products for a user."""
         ...
 
-    async def update(self, product: Product) -> Product:
+    async def update(self, product: Any) -> Any:
         """Update an existing product."""
         ...
 

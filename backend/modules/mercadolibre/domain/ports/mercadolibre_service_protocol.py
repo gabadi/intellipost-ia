@@ -4,10 +4,7 @@ Defines the contract for MercadoLibre marketplace integration capabilities
 required by the domain. Infrastructure layer provides concrete implementations (adapters).
 """
 
-from typing import TYPE_CHECKING, Protocol
-
-if TYPE_CHECKING:
-    from modules.product.domain.product import Product
+from typing import Any, Protocol
 
 
 class MercadoLibreServiceProtocol(Protocol):
@@ -62,7 +59,7 @@ class MercadoLibreServiceProtocol(Protocol):
         ...
 
     async def create_listing(
-        self, product: "Product", access_token: str, category_id: str
+        self, product: Any, access_token: str, category_id: str
     ) -> str:
         """Create a new product listing.
 
@@ -77,7 +74,7 @@ class MercadoLibreServiceProtocol(Protocol):
         ...
 
     async def update_listing(
-        self, listing_id: str, product: "Product", access_token: str
+        self, listing_id: str, product: Any, access_token: str
     ) -> bool:
         """Update an existing product listing.
 

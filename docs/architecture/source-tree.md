@@ -29,90 +29,109 @@ intellipost-ia/                    # Root monorepo
 
 ## Backend Structure (Python/FastAPI)
 
-### Hexagonal Architecture Layout
+### Module-Based Architecture Layout
 ```
 backend/
 ├── __init__.py
 ├── main.py                        # FastAPI application entry point
-├── domain/                        # Core business logic (no external deps)
+├── infrastructure/                # Shared infrastructure (database, config, health)
 │   ├── __init__.py
-│   ├── entities/                  # Business entities
+│   ├── database.py                # SQLAlchemy setup & session management
+│   ├── config/                    # Settings, logging, dependencies
 │   │   ├── __init__.py
-│   │   ├── product.py             # Product aggregate root
-│   │   ├── user.py                # User entity
-│   │   ├── generated_content.py   # AI-generated content entity
-│   │   └── confidence.py          # Confidence scoring value objects
-│   ├── repositories/              # Repository interfaces (Protocols)
-│   │   ├── __init__.py
-│   │   ├── product_repository.py  # Product persistence interface
-│   │   └── user_repository.py     # User persistence interface
-│   ├── services/                  # Domain services (business logic)
-│   │   ├── __init__.py
-│   │   ├── ai_content_generator.py # AI generation interface
-│   │   ├── image_processor.py     # Image processing interface
-│   │   └── ml_publisher.py        # MercadoLibre publishing interface
-│   └── exceptions.py              # Domain-specific exceptions
-├── application/                   # Use cases & orchestration
-│   ├── __init__.py
-│   ├── use_cases/                 # Application use cases
-│   │   ├── __init__.py
-│   │   ├── create_product.py      # Product creation workflow
-│   │   ├── generate_content.py    # AI content generation workflow
-│   │   ├── process_images.py      # Image processing workflow
-│   │   └── publish_listing.py     # MercadoLibre publishing workflow
-│   ├── dto/                       # Data Transfer Objects
-│   │   ├── __init__.py
-│   │   ├── product_dto.py         # Product-related DTOs
-│   │   └── content_dto.py         # Content-related DTOs
-│   └── services/                  # Application services
+│   │   └── settings.py
+│   └── health/                    # Health checking
 │       ├── __init__.py
-│       └── product_service.py     # Product orchestration service
-├── infrastructure/                # External concerns (duck-type compatible services)
-│   ├── __init__.py
-│   ├── database/                  # Database implementations
+│       └── health_check.py
+├── modules/                       # Independent feature modules
+│   ├── user_management/           # User + Auth + ML credentials (unified)
 │   │   ├── __init__.py
-│   │   ├── models.py              # SQLAlchemy models
-│   │   ├── repositories/          # Repository duck-type implementations
+│   │   ├── domain/
+│   │   │   ├── entities/          # User, UserProfile, UserAuth entities
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── user.py        # Core User entity
+│   │   │   │   ├── user_profile.py
+│   │   │   │   └── user_auth.py
+│   │   │   ├── services/          # Pure business logic (authentication.py, user_registration.py)
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── authentication.py  # No "service" suffix
+│   │   │   │   └── user_registration.py
+│   │   │   └── ports/             # Protocols (client-side interface definitions)
+│   │   │       ├── __init__.py
+│   │   │       ├── user_repository_protocol.py
+│   │   │       ├── password_service_protocol.py
+│   │   │       └── jwt_service_protocol.py
+│   │   ├── application/
 │   │   │   ├── __init__.py
-│   │   │   ├── product_repository_impl.py  # Duck-type compatible with domain Protocol
-│   │   │   └── user_repository_impl.py     # Duck-type compatible with domain Protocol
-│   │   └── migrations/            # Database migrations
-│   ├── ai_services/               # AI service implementations (NO explicit adapters)
+│   │   │   └── use_cases/         # Orchestration only (NO services/ folder)
+│   │   │       ├── __init__.py
+│   │   │       ├── register_user.py
+│   │   │       ├── authenticate_user.py
+│   │   │       └── refresh_token.py
+│   │   ├── infrastructure/
+│   │   │   ├── __init__.py
+│   │   │   ├── repositories/      # Protocol implementations (SQLAlchemy, etc.)
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── sqlalchemy_user_repository.py
+│   │   │   ├── services/          # External service adapters (HTTP clients, etc.)
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── bcrypt_password_service.py
+│   │   │   │   └── jose_jwt_service.py
+│   │   │   └── models/            # External resource models (SQLAlchemy, etc.)
+│   │   │       ├── __init__.py
+│   │   │       └── user_model.py
+│   │   ├── api/
+│   │   │   ├── __init__.py
+│   │   │   ├── routers/           # HTTP endpoints
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── auth_router.py
+│   │   │   │   └── user_router.py
+│   │   │   └── schemas/           # Request/Response DTOs
+│   │   │       ├── __init__.py
+│   │   │       ├── auth_schemas.py
+│   │   │       └── user_schemas.py
+│   │   └── tests/                 # Tests INSIDE module (not global /tests/)
+│   │       ├── __init__.py
+│   │       ├── test_entities.py   # Unit tests for domain entities
+│   │       ├── test_use_cases.py  # Unit tests for application use cases
+│   │       └── test_integration.py # Integration tests with real infrastructure
+│   ├── product_management/        # Core product domain
+│   │   ├── [same structure as user_management]
+│   │   └── # Entities: Product, ProductCore, ProductStatus, ProductBusinessRules
+│   ├── content_generation/        # AI content creation
+│   │   ├── [same structure as user_management]
+│   │   └── # Entities: GeneratedContent, ConfidenceScore, AIGeneration, ContentVersion
+│   ├── image_processing/          # Image handling
+│   │   ├── [same structure as user_management]
+│   │   └── # Entities: ProductImage, ImageData, ProcessedImage, ImageProcessingMetadata
+│   ├── marketplace_integration/   # External marketplace publishing
+│   │   ├── [same structure as user_management]
+│   │   └── # Entities: MLCredentials, MLListing, MLCategory, MLAttributes, MLSaleTerms
+│   └── notifications/             # User communications
+│       ├── [same structure as user_management]
+│       └── # Entities: Notification, EmailNotification, NotificationPreferences
+├── application/                   # Global orchestration (cross-module use cases)
+│   ├── __init__.py
+│   ├── orchestration/             # Cross-module workflows
 │   │   ├── __init__.py
-│   │   ├── gemini_service.py      # Statically compatible with AIContentGenerator Protocol
-│   │   ├── claude_service.py      # Statically compatible with AIContentGenerator Protocol
-│   │   └── photoroom_service.py   # Statically compatible with ImageProcessor Protocol
-│   ├── storage/                   # Object storage implementations
-│   │   ├── __init__.py
-│   │   ├── s3_storage.py          # S3-compatible storage
-│   │   └── local_storage.py       # Local development storage
-│   ├── ml_api/                    # MercadoLibre API integration
-│   │   ├── __init__.py
-│   │   ├── ml_client.py           # ML API client
-│   │   └── ml_publisher_impl.py   # ML publishing implementation
-│   └── config/                    # Configuration management
-│       ├── __init__.py
-│       ├── settings.py            # Application settings
-│       └── database.py            # Database configuration
-└── api/                           # HTTP interface layer
+│   │   ├── product_creation_orchestrator.py  # Coordinates user_management + product_management
+│   │   └── publishing_orchestrator.py        # Coordinates multiple modules for publishing
+│   └── dependencies.py           # Global dependency injection setup
+└── api/                           # Global HTTP interface layer
     ├── __init__.py
-    ├── main.py                    # API router setup
-    ├── dependencies.py            # FastAPI dependencies
-    ├── middleware.py              # Custom middleware
-    ├── routers/                   # API route handlers
+    ├── main.py                    # API router setup & module router aggregation
+    ├── dependencies.py            # Global FastAPI dependencies & DI setup
+    ├── middleware.py              # Global middleware (CORS, auth, etc.)
+    ├── routers/                   # Global API route aggregation
     │   ├── __init__.py
-    │   ├── auth.py                # Authentication endpoints
-    │   ├── products.py            # Product management endpoints
-    │   ├── images.py              # Image upload/management endpoints
-    │   └── ml_credentials.py      # MercadoLibre credential endpoints
-    ├── schemas/                   # Pydantic request/response models
+    │   └── router_aggregator.py   # Combines all module routers
+    ├── schemas/                   # Global API schemas
     │   ├── __init__.py
-    │   ├── auth.py                # Auth-related schemas
-    │   ├── product.py             # Product-related schemas
-    │   └── error.py               # Error response schemas
-    └── websocket/                 # WebSocket handlers
+    │   ├── common.py              # Shared response schemas
+    │   └── error.py               # Global error response schemas
+    └── websocket/                 # Global WebSocket handlers
         ├── __init__.py
-        └── product_updates.py     # Real-time product updates
+        └── connection_manager.py  # Cross-module real-time updates
 ```
 
 ### Backend File Naming Conventions
@@ -373,20 +392,84 @@ intellipost-ia/
 
 ---
 
+## Project Module Organization
+
+### Current Module Structure
+
+**6 Independent Modules:**
+- **user_management**: User + Auth + ML credentials (unified bounded context)
+- **product_management**: Core product domain
+- **content_generation**: AI content creation
+- **image_processing**: Image handling
+- **marketplace_integration**: External marketplace publishing
+- **notifications**: User communications
+
+### Module Responsibilities
+
+#### user_management (Unified Module)
+**Entities**: User, UserProfile, UserAuth, UserMLIntegration, UserStatus
+**Rationale**: Auth without User makes no sense - same bounded context
+**Responsibilities**: User account lifecycle, authentication, MercadoLibre OAuth integration
+
+#### product_management
+**Entities**: Product, ProductCore, ProductStatus, ProductBusinessRules
+**Responsibilities**: Product creation, lifecycle management, business rule validation
+
+#### content_generation
+**Entities**: GeneratedContent, ConfidenceScore, AIGeneration, ContentVersion
+**Responsibilities**: AI-powered content creation, confidence scoring, content versioning
+
+#### image_processing
+**Entities**: ProductImage, ImageData, ProcessedImage, ImageProcessingMetadata
+**Responsibilities**: Image upload, transformation, optimization, metadata extraction
+
+#### marketplace_integration
+**Entities**: MLCredentials, MLListing, MLCategory, MLAttributes, MLSaleTerms
+**Responsibilities**: External marketplace publishing, credential management, listing synchronization
+
+#### notifications
+**Entities**: Notification, EmailNotification, NotificationPreferences
+**Responsibilities**: User communication, notification delivery, preference management
+
+### Protocol Placement Guidelines
+
+**Within Each Module:**
+```
+modules/{module_name}/domain/ports/
+├── {entity}_repository_protocol.py     # Data persistence interfaces
+├── {external_service}_protocol.py      # External service interfaces
+└── {cross_module}_protocol.py          # Cross-module communication interfaces
+```
+
+**Protocol Definition Rules:**
+- Protocols defined in CONSUMER module's domain/ports/
+- Producer modules implement via structural subtyping (no imports)
+- Validated statically by Pyright during development
+- Cross-module communication ONLY via protocols + dependency injection
+
+### Module Independence Validation
+
+**Zero Cross-Module Dependencies:**
+- No imports between modules
+- Communication via protocols only
+- Each module developable independently
+- Pyright validates Protocol compliance automatically
+
 ## File Organization Principles
 
-### Hexagonal Architecture Enforcement (Go-Style)
-1. **Domain** → No external dependencies, defines Protocol interfaces
-2. **Application** → Depends only on Domain, accepts interfaces, returns instances
-3. **Infrastructure** → Duck-type compatible services (NO explicit adapters)
-4. **API** → Orchestrates Application use cases
+### Module Architecture Enforcement
+1. **Domain** → Pure Python, defines Protocol interfaces, no external dependencies
+2. **Application** → Use cases only, accepts protocol interfaces via DI
+3. **Infrastructure** → External resource implementations (SQLAlchemy, HTTP clients, etc.)
+4. **API** → HTTP endpoints + schemas specific to module
+5. **Tests** → Inside each module, tests module isolation
 
-### Go-Style Pattern Implementation (Static Duck-Typing)
-- **Protocols in domain/services/**: Define what business logic expects
-- **Static compatibility via Pyright**: Compile-time validation, not runtime duck-typing
-- **NO adapter classes**: Services implement Protocol signatures by convention
-- **"Accept interfaces, return instances"**: Business logic never depends on concrete types
-- **SOLID Principles**: Dependency Inversion through Protocol abstractions
+### Protocol-Based Communication Pattern
+- **Protocols in domain/ports/**: Define what module needs from external dependencies
+- **Static compatibility via Pyright**: Compile-time validation, zero runtime overhead
+- **NO adapter classes**: Services implement Protocol signatures automatically
+- **"Accept interfaces, return instances"**: Modules never depend on concrete implementations
+- **Module Independence**: Zero imports between modules, communication via DI only
 
 ### Mobile-First Frontend
 1. **Components** → Mobile-optimized by default

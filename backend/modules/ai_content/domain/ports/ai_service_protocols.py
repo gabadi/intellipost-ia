@@ -5,10 +5,7 @@ This module defines Protocol interfaces for AI-related services,
 ensuring loose coupling between domain logic and AI service implementations.
 """
 
-from typing import TYPE_CHECKING, Any, Protocol
-
-if TYPE_CHECKING:
-    from modules.product.domain.confidence_score import ConfidenceScore
+from typing import Any, Protocol
 
 
 class AIContentServiceProtocol(Protocol):
@@ -26,8 +23,6 @@ class AIContentServiceProtocol(Protocol):
         """Generate relevant tags for a product."""
         ...
 
-    async def calculate_confidence(
-        self, generated_content: dict[str, Any]
-    ) -> "ConfidenceScore":
+    async def calculate_confidence(self, generated_content: dict[str, Any]) -> Any:
         """Calculate confidence score for generated content."""
         ...

@@ -1,0 +1,1 @@
+"""Authentication module protocol interfaces."""

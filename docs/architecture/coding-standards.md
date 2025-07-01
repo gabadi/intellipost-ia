@@ -360,4 +360,235 @@ Before Story Completion:
 
 ---
 
+## Module Independence & Protocol Standards
+
+### Protocol-First Architecture (Validated via PoC)
+
+**Core Principle:** Modules must be 100% independent with zero cross-module imports.
+
+- **Zero Import Rule:** Modules MUST NOT import from other domain modules
+- **Interface Contracts:** All cross-module communication via Protocol interfaces only
+- **Static Validation:** Pyright validates Protocol compliance without runtime overhead
+- **Research Validation:** Static duck typing with Protocols achieves true module independence
+
+### Protocol Design Patterns
+
+#### Pattern 1: Protocol @property ↔ Entity field
+```python
+# Consumer module defines protocol
+class ManagerProtocol(Protocol):
+    @property
+    def is_active(self) -> bool: ...
+
+# Producer module satisfies automatically
+@dataclass
+class User:
+    is_active: bool = True  # ✅ Field satisfies @property automatically
+```
+
+#### Pattern 2: Protocol method ↔ Entity field + method
+```python
+# Consumer module defines interface
+class OwnerProtocol(Protocol):
+    def get_email(self) -> str: ...
+
+# Producer module implements via field + accessor
+@dataclass
+class User:
+    email: str
+
+    def get_email(self) -> str:
+        return self.email  # ✅ Method satisfies protocol
+```
+
+#### Pattern 3: Runtime checkable protocols
+```python
+from typing import Protocol, runtime_checkable
+
+@runtime_checkable
+class ProcessorProtocol(Protocol):
+    def process(self, data: Any) -> Any: ...
+
+# Enables isinstance checks when needed
+if isinstance(service, ProcessorProtocol):
+    result = service.process(data)
+```
+
+### External Resource Placement Rules
+
+**Infrastructure Layer Only:**
+- **Database Access:** SQLAlchemy models, sessions, repositories
+- **HTTP Clients:** External API clients (MercadoLibre, Gemini, PhotoRoom)
+- **File Systems:** File storage, image processing services
+- **Message Queues:** Redis, RabbitMQ, task queues
+- **Caching:** Redis clients, memory caches
+
+**Domain Layer:**
+- **Pure Python:** No external dependencies
+- **Business Logic:** Entities, services, value objects
+- **Interfaces:** Protocol definitions for external dependencies
+
+```python
+# ✅ Correct: Repository protocol in domain
+class UserRepositoryProtocol(Protocol):
+    async def save(self, user: User) -> None: ...
+    async def find_by_id(self, user_id: UUID) -> User | None: ...
+
+# ✅ Correct: SQLAlchemy implementation in infrastructure
+class SQLAlchemyUserRepository:
+    def __init__(self, session: AsyncSession):
+        self._session = session
+
+    async def save(self, user: User) -> None:
+        # SQLAlchemy implementation details
+        pass
+```
+
+### Module Structure Standards
+
+```
+modules/{module_name}/
+├── domain/
+│   ├── entities/          # Domain entities (dataclasses, pure Python)
+│   ├── services/          # Pure business logic ({name}.py - no "service" suffix)
+│   └── ports/            # Protocols (client-side interface definitions)
+├── application/
+│   └── use_cases/        # Orchestration only (NO services/ folder)
+├── infrastructure/
+│   ├── repositories/     # Protocol implementations (SQLAlchemy, etc.)
+│   ├── services/        # External service adapters (HTTP clients, etc.)
+│   └── models/          # External resource models (SQLAlchemy, etc.)
+├── api/
+│   ├── routers/         # HTTP endpoints
+│   └── schemas/         # Request/Response DTOs
+└── tests/               # Tests INSIDE module (not global /tests/)
+    ├── test_entities.py  # Unit tests for domain entities
+    ├── test_use_cases.py # Unit tests for application use cases
+    └── test_integration.py # Integration tests with real infrastructure
+```
+
+### Module Communication Patterns
+
+```python
+# ✅ Correct: Define protocols in consumer module
+# modules/product_management/domain/ports/owner_service.py
+class OwnerServiceProtocol(Protocol):
+    def get_owner_info(self, owner_id: UUID) -> OwnerInfo: ...
+
+# ✅ Correct: Producer satisfies protocol without importing it
+# modules/user_management/domain/entities/user.py
+class User:
+    def get_owner_info(self, owner_id: UUID) -> OwnerInfo:
+        # Implementation automatically satisfies protocol
+        pass
+
+# ✅ Correct: Application layer uses dependency injection
+# application/use_cases/create_product.py
+async def create_product(
+    product_data: ProductData,
+    owner_service: OwnerServiceProtocol  # Injected, no imports
+) -> Product:
+    owner_info = await owner_service.get_owner_info(product_data.owner_id)
+    return Product.create(owner_info, product_data)
+```
+
+### Testing Strategy for Module Independence
+
+#### Test Location
+- **Module Tests:** `modules/{module}/tests/` (inside each module)
+- **Integration Tests:** Can be global for cross-module scenarios
+- **NO Global Module Tests:** No `/tests/modules/` directory
+
+#### Testing Patterns
+```python
+# ✅ Unit Test: Mock protocol interfaces
+async def test_create_product_use_case():
+    # Mock the protocol, not the implementation
+    mock_owner_service = AsyncMock(spec=OwnerServiceProtocol)
+    mock_owner_service.get_owner_info.return_value = OwnerInfo(...)
+
+    result = await create_product(product_data, mock_owner_service)
+    assert result.owner_id == product_data.owner_id
+
+# ✅ Integration Test: Test protocol compliance
+def test_user_satisfies_owner_protocol():
+    user = User.create(email="test@example.com", name="Test User")
+    # Type checker validates this assignment
+    owner: OwnerServiceProtocol = user
+    owner_info = owner.get_owner_info(user.id)
+    assert owner_info.name == "Test User"
+
+# ✅ Cross-Module Test: Real implementations via DI
+async def test_product_creation_integration():
+    # Real implementations, no mocks
+    user_repository = SQLAlchemyUserRepository(session)
+    user_service = UserService(user_repository)
+
+    product = await create_product(product_data, user_service)
+    # Validates actual protocol compliance
+```
+
+### Critical Implementation Rules (Problem Prevention)
+
+**Rule 1: External Resources ONLY in Infrastructure**
+```python
+# ❌ Forbidden: SQLAlchemy in application/domain
+from sqlalchemy.orm import Session  # In application layer
+
+# ✅ Required: External resources in infrastructure only
+# modules/{module}/infrastructure/repositories/{name}_repository.py
+```
+
+**Rule 2: NO Cross-Module Imports**
+```python
+# ❌ Forbidden: Direct module imports
+from modules.user_management.domain.entities.user import User
+
+# ✅ Required: Protocol-based communication only
+from modules.product_management.domain.ports.owner_service import OwnerServiceProtocol
+```
+
+**Rule 3: Tests Inside Modules**
+```python
+# ❌ Forbidden: Global test directory
+/tests/modules/user_management/test_user.py
+
+# ✅ Required: Tests inside module
+modules/user_management/tests/test_user.py
+```
+
+**Rule 4: NO Performance Tests for MVP**
+```python
+# ❌ Forbidden: Performance testing for MVP features
+@pytest.mark.performance
+def test_user_creation_performance():
+    # Not needed for MVP
+
+# ✅ Required: Functional testing only
+def test_user_creation():
+    user = User.create(...)
+    assert user.is_valid()
+```
+
+**Rule 5: Real Protocol Implementation (No ServiceImpl)**
+```python
+# ❌ Forbidden: ServiceImpl without Protocol
+class UserServiceImpl:  # What protocol does this implement?
+    pass
+
+# ✅ Required: Clear protocol implementation
+class DatabaseUserRepository:  # Implements UserRepositoryProtocol
+    def save(self, user: User) -> None:
+        # Implementation
+```
+
+### Naming Conventions
+
+- **Protocols:** `{Purpose}Protocol` (e.g., `UserRepositoryProtocol`, `EmailServiceProtocol`)
+- **Implementations:** `{Technology}{Purpose}` (e.g., `SQLAlchemyUserRepository`, `SMTPEmailService`)
+- **Domain Services:** `{name}.py` (e.g., `authentication.py`, not `authentication_service.py`)
+- **Use Cases:** `{verb}_{noun}.py` (e.g., `create_user.py`, `authenticate_user.py`)
+
+---
+
 **Quality Enforcement:** All standards are enforced through automated tooling and code review. Non-compliance blocks story completion per NFR8.1.

@@ -5,28 +5,26 @@ This module defines Protocol interface for user data persistence operations,
 ensuring loose coupling between domain logic and infrastructure concerns.
 """
 
-from typing import Protocol
+from typing import Any, Protocol
 from uuid import UUID
-
-from modules.user.domain.user import User
 
 
 class UserRepositoryProtocol(Protocol):
     """Protocol for user data persistence operations."""
 
-    async def create(self, user: User) -> User:
+    async def create(self, user: Any) -> Any:
         """Create a new user."""
         ...
 
-    async def get_by_id(self, user_id: UUID) -> User | None:
+    async def get_by_id(self, user_id: UUID) -> Any | None:
         """Get user by ID."""
         ...
 
-    async def get_by_email(self, email: str) -> User | None:
+    async def get_by_email(self, email: str) -> Any | None:
         """Get user by email address."""
         ...
 
-    async def update(self, user: User) -> User:
+    async def update(self, user: Any) -> Any:
         """Update an existing user."""
         ...
 

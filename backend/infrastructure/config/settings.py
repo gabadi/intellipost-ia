@@ -78,6 +78,82 @@ class Settings(BaseSettings):
         default=None, description="MercadoLibre API client secret"
     )
 
+    # User Management Module Configuration
+    user_jwt_secret_key: str = Field(
+        default="dev-jwt-secret-change-in-production",
+        description="JWT secret key for user authentication",
+    )
+    user_jwt_expire_minutes: int = Field(
+        default=30, description="JWT token expiry time in minutes"
+    )
+    user_session_expire_hours: int = Field(
+        default=24, description="User session expiry time in hours"
+    )
+    user_max_login_attempts: int = Field(
+        default=5, description="Maximum login attempts before lockout"
+    )
+    user_password_min_length: int = Field(
+        default=8, description="Minimum password length"
+    )
+
+    # Product Management Module Configuration
+    product_max_image_size_mb: int = Field(
+        default=10, description="Maximum image size in MB"
+    )
+    product_ai_analysis_enabled: bool = Field(
+        default=True, description="Enable AI analysis for products"
+    )
+    product_ai_confidence_threshold: float = Field(
+        default=0.8, description="AI confidence threshold for auto-publishing"
+    )
+    product_cache_product_data: bool = Field(
+        default=True, description="Enable product data caching"
+    )
+    product_cache_ttl_seconds: int = Field(
+        default=300, description="Product cache TTL in seconds"
+    )
+
+    # MercadoLibre Integration Module Configuration
+    mercadolibre_requests_per_minute: int = Field(
+        default=200, description="MercadoLibre API requests per minute limit"
+    )
+    mercadolibre_default_country: str = Field(
+        default="AR", description="Default MercadoLibre country code"
+    )
+    mercadolibre_sync_interval_minutes: int = Field(
+        default=15, description="MercadoLibre sync interval in minutes"
+    )
+
+    # AI Content Generation Module Configuration
+    ai_content_primary_provider: str = Field(
+        default="gemini", description="Primary AI content provider"
+    )
+    ai_content_gemini_api_key: str | None = Field(
+        default=None, description="Gemini API key"
+    )
+    ai_content_gemini_model: str = Field(
+        default="gemini-1.5-flash", description="Gemini model name"
+    )
+    ai_content_max_title_length: int = Field(
+        default=60, description="Maximum title length for generated content"
+    )
+    ai_content_max_description_length: int = Field(
+        default=500, description="Maximum description length for generated content"
+    )
+    ai_content_quality_score_threshold: float = Field(
+        default=0.7, description="Quality score threshold for content acceptance"
+    )
+    ai_content_default_language: str = Field(
+        default="es", description="Default language for content generation"
+    )
+
+    # External API Keys
+    google_gemini_api_key: str | None = Field(
+        default=None, description="Google Gemini API key"
+    )
+    openai_api_key: str | None = Field(default=None, description="OpenAI API key")
+    photoroom_api_key: str | None = Field(default=None, description="PhotoRoom API key")
+
     @model_validator(mode="after")
     def validate_secret_key_for_production(self):
         """Validate that secret key is properly set for production."""
@@ -115,6 +191,8 @@ class Settings(BaseSettings):
         case_sensitive=False,
         # Allow environment variables to override defaults
         env_prefix="INTELLIPOST_",
+        # Allow extra variables during migration - we'll clean this up later
+        extra="ignore",
     )
 
     @property
