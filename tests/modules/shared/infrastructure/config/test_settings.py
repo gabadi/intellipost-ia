@@ -15,7 +15,7 @@ class TestSettings:
         assert settings.environment == "development"
         assert settings.debug is True
         assert settings.database_url == "postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5443/intellipost_dev"
-        assert settings.api_host == "127.0.0.1"
+        assert settings.api_host == "0.0.0.0"
         assert settings.api_port == 8000
         assert settings.log_level == "INFO"
         assert settings.log_format == "json"

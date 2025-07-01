@@ -29,7 +29,7 @@
     "arch-check": "cd backend && uvx tach check",
     "quality": "npm run lint && npm run typecheck && npm run arch-check",
     "ci": "npm run install:all && npm run quality && npm run test",
-    "install:backend": "cd backend && uv sync",
+    "install:backend": "cd backend && uv sync --group test",
     "install:frontend": "npm install --workspace=frontend",
     "install:all": "npm run install:backend && npm run install:frontend",
     "clean": "rm -rf backend/__pycache__ backend/**/__pycache__ frontend/node_modules frontend/dist frontend/.svelte-kit",
