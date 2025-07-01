@@ -184,6 +184,14 @@ class Settings(BaseSettings):
             raise ValueError(f"Log format must be one of: {allowed_formats}")
         return v.lower()
 
+    @field_validator("api_host")
+    @classmethod
+    def validate_api_host(cls, v: str) -> str:
+        """Validate api_host and handle empty strings by returning default."""
+        if not v or v.strip() == "":
+            return "127.0.0.1"  # Return default if empty
+        return v
+
     model_config = SettingsConfigDict(
         # Look for .env file in project root (one level up from backend)
         env_file="../.env",

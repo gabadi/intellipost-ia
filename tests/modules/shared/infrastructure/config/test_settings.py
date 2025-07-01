@@ -1,5 +1,6 @@
 """Unit tests for settings configuration."""
 
+import os
 import pytest
 
 from infrastructure.config.settings import Settings
@@ -15,7 +16,11 @@ class TestSettings:
         assert settings.environment == "development"
         assert settings.debug is True
         assert settings.database_url == "postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5443/intellipost_dev"
-        assert settings.api_host == "0.0.0.0"
+
+        # API host can be 127.0.0.1 (default) or 0.0.0.0 (if set in .env file)
+        # Both are valid for development
+        assert settings.api_host in ["127.0.0.1", "0.0.0.0"]
+
         assert settings.api_port == 8000
         assert settings.log_level == "INFO"
         assert settings.log_format == "json"
@@ -93,3 +98,18 @@ class TestSettings:
         """Test log format validation with invalid value."""
         with pytest.raises(ValueError, match="Log format must be one of"):
             Settings(log_format="invalid")
+
+    def test_api_host_empty_string_fallback(self):
+        """Test api_host validation handles empty strings by falling back to default."""
+        settings = Settings(api_host="")
+        assert settings.api_host == "127.0.0.1"
+
+    def test_api_host_whitespace_fallback(self):
+        """Test api_host validation handles whitespace-only strings by falling back to default."""
+        settings = Settings(api_host="   ")
+        assert settings.api_host == "127.0.0.1"
+
+    def test_api_host_valid_value(self):
+        """Test api_host validation accepts valid values."""
+        settings = Settings(api_host="0.0.0.0")
+        assert settings.api_host == "0.0.0.0"

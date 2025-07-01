@@ -51,7 +51,7 @@ class TestUserProfile:
         user = UserCore(
             id=uuid4(),
             email="john.doe@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
 
         assert UserProfile.get_full_name(user) == "john.doe"

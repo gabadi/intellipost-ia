@@ -51,7 +51,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
 
         assert UserAuth.is_email_verified(user) is False
@@ -61,7 +61,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
         initial_updated_at = user.updated_at
 
@@ -75,7 +75,7 @@ class TestUserAuth:
         user = UserCore(
             id=uuid4(),
             email="test@example.com",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
         initial_updated_at = user.updated_at
 
