@@ -29,3 +29,28 @@ depends_on = []
 [[modules]]
 path = "modules.user_management"
 depends_on = []
+
+# Product Management module - completely independent
+[[modules]]
+path = "modules.product_management"
+depends_on = []
+
+# Content Generation module (renamed from ai_content) - completely independent
+[[modules]]
+path = "modules.content_generation"
+depends_on = []
+
+# Image Processing module (new, extracted from product) - completely independent
+[[modules]]
+path = "modules.image_processing"
+depends_on = []
+
+# Marketplace Integration module (renamed from mercadolibre) - completely independent
+[[modules]]
+path = "modules.marketplace_integration"
+depends_on = []
+
+# Notifications module (renamed from communications) - completely independent
+[[modules]]
+path = "modules.notifications"
+depends_on = []
