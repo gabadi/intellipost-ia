@@ -8,12 +8,10 @@ including provider settings, model configurations, and content processing parame
 from typing import Any
 
 from pydantic import Field
-from pydantic_settings import SettingsConfigDict
-
-from infrastructure.config.base_config import BaseModuleConfig, ExternalServiceMixin
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class AIContentModuleConfig(BaseModuleConfig, ExternalServiceMixin):
+class AIContentModuleConfig(BaseSettings):
     """
     Configuration for the AI content generation module.
 
@@ -24,6 +22,12 @@ class AIContentModuleConfig(BaseModuleConfig, ExternalServiceMixin):
     module_name: str = Field(
         default="ai_content", description="AI Content module identifier"
     )
+
+    # Environment configuration (from BaseModuleConfig)
+    environment: str = Field(
+        default="development", description="Application environment"
+    )
+    debug: bool = Field(default=True, description="Debug mode flag")
 
     # AI Provider configuration
     primary_provider: str = Field(

@@ -4,22 +4,23 @@ from typing import Annotated, Any
 
 from fastapi import Depends
 
-from modules.ai_content.domain.ports.ai_service_protocols import (
+from infrastructure.config.logging import get_logger
+from infrastructure.config.settings import Settings
+from modules.content_generation.domain.ports.ai_service_protocols import (
     AIContentServiceProtocol,
 )
-from modules.communications.domain.ports.email_service_protocol import (
-    EmailServiceProtocol,
-)
-from modules.mercadolibre.domain.ports.mercadolibre_service_protocol import (
+from modules.marketplace_integration.domain.ports.mercadolibre_service_protocol import (
     MercadoLibreServiceProtocol,
 )
-from modules.product.domain.ports.product_repository_protocol import (
+from modules.notifications.domain.ports.email_service_protocol import (
+    EmailServiceProtocol,
+)
+from modules.product_management.domain.ports.product_repository_protocol import (
     ProductRepositoryProtocol,
 )
-from modules.user.domain.ports.user_repository_protocol import UserRepositoryProtocol
-
-from .logging import get_logger
-from .settings import Settings
+from modules.user_management.domain.ports.user_repository_protocol import (
+    UserRepositoryProtocol,
+)
 
 
 # Settings dependency

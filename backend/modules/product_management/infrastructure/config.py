@@ -8,16 +8,10 @@ including image processing, AI analysis, and product validation settings.
 from typing import Any
 
 from pydantic import Field
-from pydantic_settings import SettingsConfigDict
-
-from infrastructure.config.base_config import (
-    BaseModuleConfig,
-    DatabaseMixin,
-    ExternalServiceMixin,
-)
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class ProductModuleConfig(BaseModuleConfig, DatabaseMixin, ExternalServiceMixin):
+class ProductModuleConfig(BaseSettings):
     """
     Configuration for the product management module.
 
@@ -26,6 +20,12 @@ class ProductModuleConfig(BaseModuleConfig, DatabaseMixin, ExternalServiceMixin)
     """
 
     module_name: str = Field(default="product", description="Product module identifier")
+
+    # Environment configuration (from BaseModuleConfig)
+    environment: str = Field(
+        default="development", description="Application environment"
+    )
+    debug: bool = Field(default=True, description="Debug mode flag")
 
     # Override database URL with default for product module
     database_url: str = Field(

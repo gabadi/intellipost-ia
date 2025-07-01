@@ -5,17 +5,22 @@ source_roots = [
 ]
 root_module = "allow"
 
-# Infrastructure layer - shared infrastructure, can depend on modules for protocols
+# Dependency Injection module - orchestrates all modules
+[[modules]]
+path = "di"
+depends_on = ["modules.content_generation", "modules.notifications", "modules.marketplace_integration", "modules.product_management", "modules.user_management", "infrastructure"]
+
+# Infrastructure layer - shared utilities only
 [[modules]]
 path = "infrastructure"
-depends_on = ["<root>", "modules.ai_content", "modules.communications", "modules.mercadolibre", "modules.product", "modules.user", "modules.user_management"]
+depends_on = []
 
-# Root application - global orchestration
+# Root application - needs API and infrastructure (main.py proves it)
 [[modules]]
 path = "<root>"
-depends_on = ["infrastructure", "api"]
+depends_on = ["api", "infrastructure"]
 
-# Global API layer
+# Global API layer - clean
 [[modules]]
 path = "api"
 depends_on = []
@@ -25,37 +30,27 @@ depends_on = []
 path = "application"
 depends_on = []
 
-# User Management module (unified user + auth) - can use infrastructure
+# User Management module - TRUE INDEPENDENCE with protocols
 [[modules]]
 path = "modules.user_management"
-depends_on = ["infrastructure"]
+depends_on = []
 
-# Legacy Auth module - can use infrastructure
+# Product Management module - TRUE INDEPENDENCE
 [[modules]]
-path = "modules.auth"
-depends_on = ["infrastructure"]
+path = "modules.product_management"
+depends_on = []
 
-# Legacy User module - can use infrastructure
+# Content Generation module - TRUE INDEPENDENCE
 [[modules]]
-path = "modules.user"
-depends_on = ["infrastructure"]
+path = "modules.content_generation"
+depends_on = []
 
-# Product module - can use infrastructure
+# Marketplace Integration module - TRUE INDEPENDENCE
 [[modules]]
-path = "modules.product"
-depends_on = ["infrastructure"]
+path = "modules.marketplace_integration"
+depends_on = []
 
-# AI Content module - can use infrastructure
+# Notifications module - TRUE INDEPENDENCE
 [[modules]]
-path = "modules.ai_content"
-depends_on = ["infrastructure"]
-
-# MercadoLibre Integration module - can use infrastructure
-[[modules]]
-path = "modules.mercadolibre"
-depends_on = ["infrastructure"]
-
-# Communications module - can use infrastructure
-[[modules]]
-path = "modules.communications"
-depends_on = ["infrastructure"]
+path = "modules.notifications"
+depends_on = []

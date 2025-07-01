@@ -8,12 +8,10 @@ including API settings, rate limiting, and marketplace-specific configurations.
 from typing import Any
 
 from pydantic import Field
-from pydantic_settings import SettingsConfigDict
-
-from infrastructure.config.base_config import BaseModuleConfig, ExternalServiceMixin
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class MercadoLibreModuleConfig(BaseModuleConfig, ExternalServiceMixin):
+class MercadoLibreModuleConfig(BaseSettings):
     """
     Configuration for the MercadoLibre integration module.
 
@@ -24,6 +22,12 @@ class MercadoLibreModuleConfig(BaseModuleConfig, ExternalServiceMixin):
     module_name: str = Field(
         default="mercadolibre", description="MercadoLibre module identifier"
     )
+
+    # Environment configuration (from BaseModuleConfig)
+    environment: str = Field(
+        default="development", description="Application environment"
+    )
+    debug: bool = Field(default=True, description="Debug mode flag")
 
     # API configuration
     client_id: str | None = Field(
