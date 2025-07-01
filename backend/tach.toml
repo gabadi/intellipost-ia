@@ -5,124 +5,52 @@ source_roots = [
 ]
 root_module = "allow"
 
-# Infrastructure layer - can depend on all domain interfaces
+# Infrastructure layer - shared infrastructure only
 [[modules]]
 path = "infrastructure"
-depends_on = [
-    "modules.ai_content.domain",
-    "modules.communications.domain",
-    "modules.mercadolibre.domain",
-    "modules.product.domain",
-    "modules.user.domain",
-]
+depends_on = []
 
-# Root application - can depend on infrastructure and domain
+# Root application - global orchestration
 [[modules]]
 path = "<root>"
-depends_on = [
-    "infrastructure",
-    "modules.product.domain",
-    "modules.user.domain",
-]
+depends_on = ["infrastructure"]
 
-# AI Content module - domain is pure, infrastructure can depend on shared infrastructure
+# Global API layer
 [[modules]]
-path = "modules.ai_content.domain"
+path = "api"
 depends_on = []
 
+# Global application orchestration
 [[modules]]
-path = "modules.ai_content.application"
+path = "application"
 depends_on = []
 
+# User Management module (unified user + auth) - completely independent
 [[modules]]
-path = "modules.ai_content.infrastructure"
-depends_on = [ "infrastructure"]
-
-[[modules]]
-path = "modules.ai_content.api"
+path = "modules.user_management"
 depends_on = []
 
-# Auth module - domain is pure, infrastructure can depend on shared infrastructure
+# Product Management module - completely independent
 [[modules]]
-path = "modules.auth.domain"
+path = "modules.product_management"
 depends_on = []
 
+# Content Generation module (renamed from ai_content) - completely independent
 [[modules]]
-path = "modules.auth.application"
+path = "modules.content_generation"
 depends_on = []
 
+# Image Processing module (new, extracted from product) - completely independent
 [[modules]]
-path = "modules.auth.infrastructure"
+path = "modules.image_processing"
 depends_on = []
 
+# Marketplace Integration module (renamed from mercadolibre) - completely independent
 [[modules]]
-path = "modules.auth.api"
+path = "modules.marketplace_integration"
 depends_on = []
 
-# Communications module - domain is pure, infrastructure can depend on shared infrastructure
+# Notifications module (renamed from communications) - completely independent
 [[modules]]
-path = "modules.communications.domain"
-depends_on = []
-
-[[modules]]
-path = "modules.communications.application"
-depends_on = []
-
-[[modules]]
-path = "modules.communications.infrastructure"
-depends_on = []
-
-[[modules]]
-path = "modules.communications.api"
-depends_on = []
-
-# MercadoLibre module - domain is pure, infrastructure can depend on shared infrastructure
-[[modules]]
-path = "modules.mercadolibre.domain"
-depends_on = []
-
-[[modules]]
-path = "modules.mercadolibre.application"
-depends_on = []
-
-[[modules]]
-path = "modules.mercadolibre.infrastructure"
-depends_on = [ "infrastructure"]
-
-[[modules]]
-path = "modules.mercadolibre.api"
-depends_on = []
-
-# Product module - domain is pure, infrastructure can depend on shared infrastructure
-[[modules]]
-path = "modules.product.domain"
-depends_on = []
-
-[[modules]]
-path = "modules.product.application"
-depends_on = []
-
-[[modules]]
-path = "modules.product.infrastructure"
-depends_on = [ "infrastructure"]
-
-[[modules]]
-path = "modules.product.api"
-depends_on = []
-
-# User module - domain is pure, infrastructure can depend on shared infrastructure
-[[modules]]
-path = "modules.user.domain"
-depends_on = []
-
-[[modules]]
-path = "modules.user.application"
-depends_on = []
-
-[[modules]]
-path = "modules.user.infrastructure"
-depends_on = [ "infrastructure"]
-
-[[modules]]
-path = "modules.user.api"
+path = "modules.notifications"
 depends_on = []
