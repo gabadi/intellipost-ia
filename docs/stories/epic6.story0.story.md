@@ -1,6 +1,6 @@
 # Story 6.0: Architecture Migration for User Authentication Foundation
 
-## Status: Changes Committed
+## Status: Done - Delivered
 
 ## Story
 
@@ -401,6 +401,8 @@ All 6 acceptance criteria successfully implemented:
 - **All AC Completed**: YES
 - **Quality Gates Passing**: YES
 - **Ready for Epic 6.1**: YES
+- **PR Created**: https://github.com/gabadi/intellipost-ia/pull/11
+- **Status**: Done - Delivered
 
 ### Completion Notes List
 
