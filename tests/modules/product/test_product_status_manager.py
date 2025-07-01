@@ -4,10 +4,10 @@ from uuid import uuid4
 
 import pytest
 
-from backend.modules.product.domain.product_core import ProductCore
-from backend.modules.product.domain.product_status_manager import ProductStatusManager
-from backend.modules.product.domain.product_status import ProductStatus
-from backend.modules.product.domain.confidence_score import ConfidenceScore
+from modules.product_management.domain.product_core import ProductCore
+from modules.product_management.domain.product_status_manager import ProductStatusManager
+from modules.product_management.domain.product_status import ProductStatus
+from modules.product_management.domain.confidence_score import ConfidenceScore
 
 
 class TestProductStatusManager:
@@ -53,6 +53,10 @@ class TestProductStatusManager:
             status=ProductStatus.PROCESSING
         )
         initial_updated_at = product.updated_at
+
+        # Add small delay to ensure timestamp difference
+        import time
+        time.sleep(0.001)
 
         ProductStatusManager.mark_as_failed(product)
 

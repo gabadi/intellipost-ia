@@ -332,3 +332,287 @@ class TestUser:
         assert user.ai_confidence_threshold == "high"
         assert user.default_ml_site == "MLB"
         assert user.updated_at > initial_updated_at
+
+    # Additional Authentication Tests
+    def test_verify_email_from_pending_status(self):
+        """Test email verification activates user from pending status."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+            status=UserStatus.PENDING_VERIFICATION,
+            is_email_verified=False,
+        )
+
+        user.verify_email()
+
+        assert user.is_email_verified is True
+        assert user.status == UserStatus.ACTIVE
+        assert user.email_verified_at is not None
+        assert user.email_verification_token is None
+
+    def test_verify_email_from_active_status(self):
+        """Test email verification doesn't change status if already active."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+            status=UserStatus.ACTIVE,
+            is_email_verified=False,
+        )
+
+        user.verify_email()
+
+        assert user.is_email_verified is True
+        assert user.status == UserStatus.ACTIVE  # Should remain active
+        assert user.email_verified_at is not None
+
+    # Additional MercadoLibre Integration Tests
+    def test_is_ml_connected_false_no_access_token(self):
+        """Test MercadoLibre connection when access token is missing."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+            ml_user_id="ML123",
+            ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1),
+        )
+
+        assert user.is_ml_connected is False
+
+    def test_is_ml_connected_false_no_expires_at(self):
+        """Test MercadoLibre connection when expires_at is missing."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+            ml_user_id="ML123",
+            ml_access_token="token123",
+        )
+
+        assert user.is_ml_connected is False
+
+    def test_update_ml_tokens_with_user_id(self):
+        """Test updating ML tokens behavior with user ID."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+        )
+
+        access_token = "new_access_token"
+        refresh_token = "new_refresh_token"
+        expires_at = datetime.now(UTC) + timedelta(hours=2)
+
+        # Note: The current implementation doesn't set ml_user_id
+        # This test validates the current behavior
+        user.update_ml_tokens(access_token, refresh_token, expires_at)
+
+        assert user.ml_access_token == access_token
+        assert user.ml_refresh_token == refresh_token
+        assert user.ml_token_expires_at == expires_at
+        # ml_user_id should remain None as the method doesn't set it
+        assert user.ml_user_id is None
+
+    # Additional Profile Tests
+    def test_update_profile_partial_update(self):
+        """Test updating only some profile fields."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+            first_name="Original",
+            last_name="Name",
+            auto_publish=False,
+            ai_confidence_threshold="low",
+            default_ml_site="MLA",
+        )
+        initial_updated_at = user.updated_at
+
+        # Update only first name and auto_publish
+        user.update_profile(first_name="Updated", auto_publish=True)
+
+        assert user.first_name == "Updated"
+        assert user.last_name == "Name"  # Unchanged
+        assert user.auto_publish is True
+        assert user.ai_confidence_threshold == "low"  # Unchanged
+        assert user.default_ml_site == "MLA"  # Unchanged
+        assert user.updated_at > initial_updated_at
+
+    def test_update_profile_no_changes(self):
+        """Test update_profile with no parameters doesn't change anything."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+            first_name="John",
+            last_name="Doe",
+        )
+        initial_updated_at = user.updated_at
+
+        user.update_profile()
+
+        assert user.first_name == "John"
+        assert user.last_name == "Doe"
+        # Note: updated_at is still updated even with no changes due to implementation
+        assert user.updated_at > initial_updated_at
+
+    def test_update_profile_with_none_values(self):
+        """Test update_profile with explicit None values doesn't update fields."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+            first_name="John",
+            last_name="Doe",
+        )
+
+        # Passing None explicitly should NOT update the fields (design choice)
+        user.update_profile(first_name=None, last_name=None)
+
+        # Fields should remain unchanged when None is passed
+        assert user.first_name == "John"
+        assert user.last_name == "Doe"
+
+    # Additional Failed Login Tests
+    def test_multiple_failed_logins(self):
+        """Test multiple failed login attempts increment counter."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+        )
+
+        # Record multiple failed logins
+        user.record_failed_login()
+        assert user.failed_login_attempts == 1
+
+        user.record_failed_login()
+        assert user.failed_login_attempts == 2
+
+        user.record_failed_login()
+        assert user.failed_login_attempts == 3
+
+    def test_successful_login_resets_failed_attempts(self):
+        """Test successful login resets failed login attempts."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+            failed_login_attempts=3,
+            last_failed_login_at=datetime.now(UTC),
+        )
+
+        user.record_login()
+
+        assert user.failed_login_attempts == 0
+        assert user.last_failed_login_at is None
+        assert user.last_login_at is not None
+
+    def test_account_locking_edge_cases(self):
+        """Test account locking with different max attempt values."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+            failed_login_attempts=3,
+        )
+
+        # Should not be locked with default (5 attempts)
+        assert user.is_account_locked() is False
+
+        # Should be locked with lower threshold
+        assert user.is_account_locked(max_attempts=3) is True
+        assert user.is_account_locked(max_attempts=2) is True
+
+        # Should not be locked with higher threshold
+        assert user.is_account_locked(max_attempts=10) is False
+
+    # Edge Cases and Validation Tests
+    def test_user_defaults(self):
+        """Test user creation with minimum required fields has correct defaults."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+        )
+
+        # Verify all default values
+        assert user.first_name is None
+        assert user.last_name is None
+        assert user.status == UserStatus.PENDING_VERIFICATION
+        assert user.is_active is True
+        assert user.is_email_verified is False
+        assert user.failed_login_attempts == 0
+        assert user.last_failed_login_at is None
+        assert user.password_reset_token is None
+        assert user.password_reset_expires_at is None
+        assert user.email_verification_token is None
+        assert user.ml_user_id is None
+        assert user.ml_access_token is None
+        assert user.ml_refresh_token is None
+        assert user.ml_token_expires_at is None
+        assert user.default_ml_site == "MLA"
+        assert user.auto_publish is False
+        assert user.ai_confidence_threshold == "medium"
+        assert user.last_login_at is None
+        assert user.email_verified_at is None
+
+    def test_full_name_edge_cases(self):
+        """Test full name property with various edge cases."""
+        # Test with complex email
+        user = User(
+            id=uuid4(),
+            email="user.name+tag@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+        )
+        assert user.full_name == "user.name+tag"
+
+        # Test with empty string names (treated as None)
+        user.first_name = ""
+        user.last_name = ""
+        # Empty strings should still use email fallback
+        assert user.full_name == "user.name+tag"
+
+    def test_status_transitions(self):
+        """Test valid status transitions."""
+        user = User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            created_at=datetime.now(UTC),
+            status=UserStatus.PENDING_VERIFICATION,
+        )
+
+        # Pending -> Active (via activation)
+        user.activate()
+        assert user.status == UserStatus.ACTIVE
+        assert user.is_active is True
+
+        # Active -> Suspended
+        user.suspend()
+        assert user.status == UserStatus.SUSPENDED
+        assert user.is_active is False
+
+        # Suspended -> Active (via activation)
+        user.activate()
+        assert user.status == UserStatus.ACTIVE
+        assert user.is_active is True
+
+        # Active -> Inactive
+        user.deactivate()
+        assert user.status == UserStatus.INACTIVE
+        assert user.is_active is False

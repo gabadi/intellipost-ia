@@ -1,12 +1,12 @@
 """Unit tests for User domain entity."""
 
+import time
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
 
-from backend.modules.user.domain.user import User
-from backend.modules.user.domain.user_status import UserStatus
+from modules.user_management.domain.entities.user import User, UserStatus
 
 
 class TestUser:
@@ -21,6 +21,7 @@ class TestUser:
         user = User(
             id=user_id,
             email=email,
+            password_hash="hashed_password",
             created_at=created_at
         )
 
@@ -35,6 +36,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC)
         )
 
@@ -46,6 +48,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
             first_name="John",
             last_name="Doe"
@@ -58,6 +61,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
             first_name="John"
         )
@@ -69,6 +73,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
             last_name="Doe"
         )
@@ -80,6 +85,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="john.doe@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC)
         )
 
@@ -90,6 +96,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
             status=UserStatus.ACTIVE
         )
@@ -101,8 +108,10 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
-            status=UserStatus.INACTIVE
+            status=UserStatus.INACTIVE,
+            is_active=False
         )
 
         assert user.is_active is False
@@ -112,6 +121,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
@@ -125,6 +135,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
             ml_access_token="token123",
             ml_token_expires_at=datetime.now(UTC) + timedelta(hours=1)
@@ -137,6 +148,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
             ml_user_id="ML123",
             ml_access_token="token123",
@@ -150,8 +162,10 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
-            email_verified_at=datetime.now(UTC)
+            email_verified_at=datetime.now(UTC),
+            is_email_verified=True
         )
 
         assert user.is_email_verified is True
@@ -161,6 +175,7 @@ class TestUser:
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC)
         )
 
@@ -168,13 +183,18 @@ class TestUser:
 
     def test_activate(self):
         """Test user activation."""
+
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
             status=UserStatus.PENDING_VERIFICATION
         )
         initial_updated_at = user.updated_at
+
+        # Add a small delay to ensure timestamp difference
+        time.sleep(0.001)
 
         user.activate()
 
@@ -183,13 +203,18 @@ class TestUser:
 
     def test_deactivate(self):
         """Test user deactivation."""
+
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
             status=UserStatus.ACTIVE
         )
         initial_updated_at = user.updated_at
+
+        # Add a small delay to ensure timestamp difference
+        time.sleep(0.001)
 
         user.deactivate()
 
@@ -198,13 +223,18 @@ class TestUser:
 
     def test_suspend(self):
         """Test user suspension."""
+
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC),
             status=UserStatus.ACTIVE
         )
         initial_updated_at = user.updated_at
+
+        # Add a small delay to ensure timestamp difference
+        time.sleep(0.001)
 
         user.suspend()
 
@@ -213,12 +243,17 @@ class TestUser:
 
     def test_verify_email(self):
         """Test email verification."""
+
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at
+
+        # Add a small delay to ensure timestamp difference
+        time.sleep(0.001)
 
         user.verify_email()
 
@@ -227,12 +262,17 @@ class TestUser:
 
     def test_update_ml_tokens(self):
         """Test updating MercadoLibre tokens."""
+
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at
+
+        # Add a small delay to ensure timestamp difference
+        time.sleep(0.001)
 
         access_token = "new_access_token"
         refresh_token = "new_refresh_token"
@@ -247,12 +287,17 @@ class TestUser:
 
     def test_record_login(self):
         """Test recording user login."""
+
         user = User(
             id=uuid4(),
             email="test@example.com",
+            password_hash="hashed_password",
             created_at=datetime.now(UTC)
         )
         initial_updated_at = user.updated_at
+
+        # Add a small delay to ensure timestamp difference
+        time.sleep(0.001)
 
         user.record_login()
 

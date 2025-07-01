@@ -2,8 +2,8 @@
 
 import pytest
 
-from backend.modules.product.domain.confidence_score import ConfidenceScore
-from backend.modules.product.domain.exceptions import InvalidConfidenceScoreError
+from modules.product_management.domain.confidence_score import ConfidenceScore
+from modules.product_management.domain.exceptions import InvalidConfidenceScoreError
 
 
 class TestConfidenceScore:

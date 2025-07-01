@@ -134,14 +134,11 @@ services:
       - "4000:3000"
     stop_grace_period: 1s
     stop_signal: SIGTERM
-    depends_on:
-      - backend
     volumes:
       - ./frontend:/app
       - /app/node_modules  # Don't mount node_modules
     networks:
       - intellipost-network
-    command: npm run dev -- --host 0.0.0.0 --port 3000
 
 volumes:
   postgres_dev_data:
