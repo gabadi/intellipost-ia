@@ -57,20 +57,20 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
     # Include routers
     app.include_router(health.router)
 
-    # Add request logging middleware
-    app.add_middleware(StructuredRequestLoggingMiddleware)
-
-    # Configure CORS using settings
+    # Configure CORS middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
-        allow_credentials=True,
+        allow_credentials=False,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
 
+    # Add request logging middleware
+    app.add_middleware(StructuredRequestLoggingMiddleware)
+
     @app.get("/")
-    async def root() -> dict[str, str]:
+    async def root() -> dict[str, str]:  # type: ignore[reportUnusedFunction]
         """
         Root endpoint providing basic API information.
 
