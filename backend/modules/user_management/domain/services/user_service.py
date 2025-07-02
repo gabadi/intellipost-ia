@@ -9,6 +9,7 @@ from typing import Any
 from uuid import UUID
 
 from modules.user_management.domain.entities.user import User
+from modules.user_management.domain.exceptions import OperationNotAllowedError
 from modules.user_management.domain.ports.user_repository_protocol import (
     UserRepositoryProtocol,
 )
@@ -95,7 +96,9 @@ class UserService:
 
         # Business rule: Only allow deletion of inactive users
         if user.is_active:
-            raise ValueError("Cannot delete active user account")
+            raise OperationNotAllowedError(
+                "delete_user", "Cannot delete active user account"
+            )
 
         return await self._user_repository.delete(user_id)
 

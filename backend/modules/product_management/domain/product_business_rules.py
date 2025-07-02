@@ -4,8 +4,8 @@ Product business rules and validation logic.
 This module contains the business validation methods for product entities.
 """
 
+from .entities.product_status import ProductStatus
 from .product_core import ProductCore
-from .product_status import ProductStatus
 
 
 class ProductBusinessRules:

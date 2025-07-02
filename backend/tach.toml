@@ -1,5 +1,5 @@
 interfaces = []
-exclude = []
+exclude = ["migrations"]
 source_roots = [
     ".",
 ]
@@ -8,22 +8,22 @@ root_module = "allow"
 # Dependency Injection module - orchestrates all modules
 [[modules]]
 path = "di"
-depends_on = ["modules.content_generation", "modules.notifications", "modules.marketplace_integration", "modules.product_management", "modules.user_management", "infrastructure"]
+depends_on = ["api", "modules.content_generation", "modules.notifications", "modules.marketplace_integration", "modules.product_management", "modules.user_management", "infrastructure"]
 
 # Infrastructure layer - shared utilities only
 [[modules]]
 path = "infrastructure"
 depends_on = []
 
-# Root application - needs API and infrastructure (main.py proves it)
+# Root application - only depends on DI container (clean orchestrator)
 [[modules]]
 path = "<root>"
-depends_on = ["api", "infrastructure"]
+depends_on = ["di"]
 
-# Global API layer - clean
+# Global API layer - can depend on infrastructure for configuration
 [[modules]]
 path = "api"
-depends_on = []
+depends_on = ["infrastructure"]
 
 
 # User Management module - TRUE INDEPENDENCE with protocols

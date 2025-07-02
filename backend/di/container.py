@@ -2,9 +2,10 @@
 
 from typing import Annotated, Any
 
-from fastapi import Depends
+from fastapi import Depends, FastAPI
 
-from infrastructure.config.logging import get_logger
+from api.app_factory import create_fastapi_app
+from infrastructure.config.logging import get_logger, setup_logging
 from infrastructure.config.settings import Settings
 from modules.content_generation.domain.ports.ai_service_protocols import (
     AIContentServiceProtocol,
@@ -151,3 +152,32 @@ MercadoLibreServiceDep = Annotated[
     MercadoLibreServiceProtocol, Depends(get_mercadolibre_service)
 ]
 EmailServiceDep = Annotated[EmailServiceProtocol, Depends(get_email_service)]
+
+
+def create_application() -> FastAPI:
+    """
+    Create and configure the complete FastAPI application with all dependencies.
+
+    This function serves as the main application factory that:
+    1. Initializes settings
+    2. Sets up logging
+    3. Configures the DI container (when implementations are available)
+    4. Creates the FastAPI app with all dependencies wired
+
+    Returns:
+        Fully configured FastAPI application ready to run
+    """
+    # Initialize settings
+    settings = Settings()
+
+    # Setup logging
+    setup_logging(settings)
+
+    # Note: In a real application, you would register actual implementations here
+    # For now, the container is available for when implementations are added
+    # Example:
+    # container.register_user_repository(SQLUserRepository(db))
+    # container.register_ai_content_service(OpenAIContentService(settings))
+
+    # Create and return the FastAPI app
+    return create_fastapi_app(settings)

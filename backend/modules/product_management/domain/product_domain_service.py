@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from uuid import UUID
 
-from .product import Product
+from .entities.product import Product
 
 
 class ProductDomainService(ABC):

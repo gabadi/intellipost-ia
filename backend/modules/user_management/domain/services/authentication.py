@@ -9,6 +9,12 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 from modules.user_management.domain.entities.user import User, UserStatus
+from modules.user_management.domain.exceptions import (
+    AccountInactiveError,
+    AccountLockedError,
+    UserAlreadyExistsError,
+    WeakPasswordError,
+)
 from modules.user_management.domain.ports.password_service_protocol import (
     PasswordServiceProtocol,
 )
@@ -43,14 +49,11 @@ class AuthenticationService:
         # Check if user already exists
         existing_user = await self._user_repository.get_by_email(email)
         if existing_user is not None:
-            raise ValueError("User with this email already exists")
+            raise UserAlreadyExistsError(email)
 
         # Validate password strength
         if not self._is_password_strong(password):
-            raise ValueError(
-                "Password must be at least 8 characters long and contain "
-                "uppercase, lowercase, number and special character"
-            )
+            raise WeakPasswordError()
 
         # Hash password
         password_hash = await self._password_service.hash_password(password)
@@ -88,13 +91,13 @@ class AuthenticationService:
 
         # Check if account is locked
         if user.is_account_locked(self._max_login_attempts):
-            raise ValueError(
-                f"Account locked due to {self._max_login_attempts} failed login attempts"
+            raise AccountLockedError(
+                user.failed_login_attempts, self._max_login_attempts
             )
 
         # Check if account is active
         if not user.is_active or user.status == UserStatus.SUSPENDED:
-            raise ValueError("Account is not active")
+            raise AccountInactiveError()
 
         # Verify password
         password_valid = await self._password_service.verify_password(
@@ -169,10 +172,7 @@ class AuthenticationService:
 
         # Validate new password
         if not self._is_password_strong(new_password):
-            raise ValueError(
-                "Password must be at least 8 characters long and contain "
-                "uppercase, lowercase, number and special character"
-            )
+            raise WeakPasswordError()
 
         # Hash new password
         user.password_hash = await self._password_service.hash_password(new_password)
@@ -203,10 +203,7 @@ class AuthenticationService:
 
         # Validate new password
         if not self._is_password_strong(new_password):
-            raise ValueError(
-                "Password must be at least 8 characters long and contain "
-                "uppercase, lowercase, number and special character"
-            )
+            raise WeakPasswordError()
 
         # Hash new password
         user.password_hash = await self._password_service.hash_password(new_password)

@@ -8,8 +8,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
 
-from .confidence_score import ConfidenceScore
-from .product_status import ProductStatus
+from .entities.confidence_score import ConfidenceScore
+from .entities.product_status import ProductStatus
 
 
 @dataclass

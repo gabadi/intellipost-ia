@@ -6,9 +6,9 @@ This module contains methods for managing product status changes.
 
 from datetime import UTC, datetime
 
-from .confidence_score import ConfidenceScore
+from .entities.confidence_score import ConfidenceScore
+from .entities.product_status import ProductStatus
 from .product_core import ProductCore
-from .product_status import ProductStatus
 
 
 class ProductStatusManager:

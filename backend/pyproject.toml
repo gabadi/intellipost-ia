@@ -154,7 +154,7 @@ addopts = [
     "--strict-markers",
     "--strict-config",
 ]
-testpaths = ["../tests"]
+testpaths = ["../tests", "modules"]
 filterwarnings = [
     "error",
     "ignore::UserWarning",
@@ -171,6 +171,7 @@ markers = [
 source = ["."]
 omit = [
     "*/tests/*",
+    "*/test_*.py",
     "*/migrations/*",
     "*/venv/*",
     "*/__pycache__/*",
