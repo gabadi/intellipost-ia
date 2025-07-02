@@ -25,10 +25,6 @@ depends_on = ["api", "infrastructure"]
 path = "api"
 depends_on = []
 
-# Global application orchestration
-[[modules]]
-path = "application"
-depends_on = []
 
 # User Management module - TRUE INDEPENDENCE with protocols
 [[modules]]
