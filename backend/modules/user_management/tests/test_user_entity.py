@@ -1,5 +1,6 @@
 """Unit tests for unified User domain entity."""
 
+import time
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
@@ -457,6 +458,8 @@ class TestUser:
         )
         initial_updated_at = user.updated_at
 
+        # Add small delay to ensure timestamp difference
+        time.sleep(0.001)
         user.update_profile()
 
         assert user.first_name == "John"

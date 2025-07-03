@@ -1,6 +1,7 @@
 /* Components Index - IntelliPost AI */
 /* Imports all component styles */
 
+@import './layout.css';
 @import './button.css';
 @import './input.css';
 @import './modal.css';

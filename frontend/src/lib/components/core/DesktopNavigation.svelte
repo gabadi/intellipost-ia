@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import type { NavItem } from '$types/navigation.js';
+  import ThemeToggle from '$components/ui/ThemeToggle.svelte';
 
   const navItems: NavItem[] = [
     { path: '/', label: 'Dashboard', icon: '🏠' },
@@ -14,7 +15,18 @@
     if (path === '/') {
       return currentPath === '/';
     }
-    return currentPath.startsWith(path);
+    // Exact match for specific paths to avoid conflicts
+    if (path === '/products/new') {
+      return currentPath === '/products/new';
+    }
+    if (path === '/products') {
+      return (
+        currentPath === '/products' ||
+        (currentPath.startsWith('/products/') && currentPath !== '/products/new')
+      );
+    }
+    // For other paths, use startsWith but exclude more specific matches
+    return currentPath.startsWith(path) && currentPath !== '/products/new';
   }
 </script>
 
@@ -46,6 +58,10 @@
   </div>
 
   <div class="nav-footer">
+    <div class="theme-section">
+      <ThemeToggle />
+    </div>
+
     <div class="user-section">
       <div class="user-avatar" aria-hidden="true">👤</div>
       <div class="user-info">
@@ -64,8 +80,8 @@
     left: 0;
     width: 280px;
     height: 100vh;
-    background: white;
-    border-right: 1px solid var(--color-gray-200);
+    background: var(--color-background);
+    border-right: 1px solid var(--color-border);
     flex-direction: column;
     z-index: 1000;
     overflow-y: auto;
@@ -79,7 +95,7 @@
 
   .nav-header {
     padding: var(--space-6) var(--space-4);
-    border-bottom: 1px solid var(--color-gray-100);
+    border-bottom: 1px solid var(--color-border-muted);
   }
 
   .logo {
@@ -95,7 +111,7 @@
   .logo-text {
     font-size: var(--text-lg);
     font-weight: 600;
-    color: var(--color-gray-900);
+    color: var(--color-text-primary);
   }
 
   .nav-content {
@@ -120,7 +136,7 @@
     padding: var(--space-3) var(--space-4);
     margin: 0 var(--space-2);
     text-decoration: none;
-    color: var(--color-gray-700);
+    color: var(--color-text-secondary);
     border-radius: var(--radius-md);
     transition: all 0.2s ease;
     min-height: var(--touch-target-min);
@@ -128,8 +144,8 @@
   }
 
   .nav-item:hover {
-    background: var(--color-gray-50);
-    color: var(--color-gray-900);
+    background: var(--color-background-secondary);
+    color: var(--color-text-primary);
   }
 
   .nav-item:focus {
@@ -168,7 +184,15 @@
 
   .nav-footer {
     padding: var(--space-4);
-    border-top: 1px solid var(--color-gray-100);
+    border-top: 1px solid var(--color-border-muted);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .theme-section {
+    display: flex;
+    justify-content: center;
   }
 
   .user-section {
@@ -176,7 +200,7 @@
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-3);
-    background: var(--color-gray-50);
+    background: var(--color-background-secondary);
     border-radius: var(--radius-md);
   }
 
@@ -199,60 +223,14 @@
   .user-name {
     font-size: var(--text-sm);
     font-weight: 500;
-    color: var(--color-gray-900);
+    color: var(--color-text-primary);
     line-height: var(--leading-tight);
   }
 
   .user-status {
     font-size: var(--text-xs);
-    color: var(--color-gray-500);
+    color: var(--color-text-muted);
     line-height: var(--leading-tight);
-  }
-
-  /* Dark mode preparation */
-  @media (prefers-color-scheme: dark) {
-    .desktop-nav {
-      background: var(--color-gray-900);
-      border-right-color: var(--color-gray-700);
-    }
-
-    .nav-header {
-      border-bottom-color: var(--color-gray-700);
-    }
-
-    .logo-text {
-      color: white;
-    }
-
-    .nav-item {
-      color: var(--color-gray-300);
-    }
-
-    .nav-item:hover {
-      background: var(--color-gray-800);
-      color: white;
-    }
-
-    .nav-item.active {
-      background: rgba(30, 64, 175, 0.2);
-      color: var(--color-primary-light);
-    }
-
-    .nav-footer {
-      border-top-color: var(--color-gray-700);
-    }
-
-    .user-section {
-      background: var(--color-gray-800);
-    }
-
-    .user-name {
-      color: white;
-    }
-
-    .user-status {
-      color: var(--color-gray-400);
-    }
   }
 
   /* Reduced motion support */

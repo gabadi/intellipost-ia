@@ -13,6 +13,26 @@ class Settings(BaseSettings):
     )
     debug: bool = Field(default=True, description="Debug mode flag")
 
+    @property
+    def is_development(self) -> bool:
+        """Check if running in development mode."""
+        return self.environment.lower() == "development"
+
+    @property
+    def is_production(self) -> bool:
+        """Check if running in production mode."""
+        return self.environment.lower() == "production"
+
+    @property
+    def is_testing(self) -> bool:
+        """Check if running in testing mode."""
+        return self.environment.lower() == "testing"
+
+    @property
+    def is_staging(self) -> bool:
+        """Check if running in staging mode."""
+        return self.environment.lower() == "staging"
+
     # Database configuration
     database_url: str = Field(
         default="postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5443/intellipost_dev",
@@ -50,7 +70,7 @@ class Settings(BaseSettings):
 
     # CORS configuration
     cors_origins: list[str] = Field(
-        default=["http://localhost:3000", "http://127.0.0.1:3000"],
+        default=["http://localhost:4000", "http://127.0.0.1:4000"],
         description="Allowed CORS origins",
     )
 
@@ -193,8 +213,13 @@ class Settings(BaseSettings):
         return v
 
     model_config = SettingsConfigDict(
-        # Look for .env file in project root (one level up from backend)
-        env_file="../.env",
+        # Load environment files in order (later files override earlier ones)
+        env_file=[
+            "../.env",  # Base development config
+            "../.env.local",  # Local overrides (gitignored)
+            "../.env.testing",  # Testing overrides (when INTELLIPOST_ENVIRONMENT=testing)
+            "../.env.staging",  # Staging overrides (when INTELLIPOST_ENVIRONMENT=staging)
+        ],
         env_file_encoding="utf-8",
         case_sensitive=False,
         # Allow environment variables to override defaults
@@ -203,26 +228,32 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    @property
-    def is_development(self) -> bool:
-        """Check if running in development mode."""
-        return self.environment.lower() == "development"
-
-    @property
-    def is_production(self) -> bool:
-        """Check if running in production mode."""
-        return self.environment.lower() == "production"
-
-    @property
-    def is_testing(self) -> bool:
-        """Check if running in testing mode."""
-        return self.environment.lower() == "testing"
-
     def get_database_url(self) -> str:
         """Get the appropriate database URL based on environment."""
         if self.is_testing:
             return self.database_test_url
         return self.database_url
+
+    def get_api_url(self) -> str:
+        """Get the full API URL for the current environment."""
+        protocol = "https" if self.is_production else "http"
+        if self.is_development or self.is_testing:
+            return f"{protocol}://{self.api_host}:{self.api_port}"
+        return f"{protocol}://{self.api_host}"  # Production uses standard ports
+
+    def validate_configuration(self) -> dict[str, bool]:
+        """Validate current configuration and return status."""
+        validations = {
+            "environment_set": bool(self.environment),
+            "database_url_valid": bool(self.get_database_url()),
+            "api_port_valid": 1000 <= self.api_port <= 65535,
+            "secret_key_secure": (
+                self.secret_key != "dev-secret-key-change-in-production"  # nosec B105
+                if self.is_production
+                else True
+            ),
+        }
+        return validations
 
 
 # Global settings instance

@@ -13,15 +13,11 @@ function createNetworkStore() {
       if (!browser) return true;
 
       try {
-        // Use a lightweight request to check connectivity
-
-        const response = await fetch('/health', {
-          method: 'HEAD',
-          cache: 'no-cache',
-        });
-        const isOnline = response.ok;
-        set(isOnline);
-        return isOnline;
+        // Check backend connectivity via proper API client
+        const { checkBackendHealth } = await import('$lib/api/client');
+        await checkBackendHealth();
+        set(true);
+        return true;
       } catch {
         set(false);
         return false;

@@ -1,8 +1,22 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import MobileNavigation from '$components/core/MobileNavigation.svelte';
   import DesktopNavigation from '$components/core/DesktopNavigation.svelte';
   import OfflineBanner from '$components/ui/OfflineBanner.svelte';
+  import { theme } from '$lib/stores/theme.js';
   import '../app.css';
+
+  // Initialize theme on mount
+  onMount(() => {
+    // Theme store automatically initializes itself
+    // This subscription ensures the store is active
+    const unsubscribe = theme.subscribe(() => {});
+
+    return () => {
+      unsubscribe();
+      theme.destroy();
+    };
+  });
 </script>
 
 <svelte:head>
