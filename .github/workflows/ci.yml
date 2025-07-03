@@ -86,7 +86,7 @@ jobs:
           INTELLIPOST_LOG_LEVEL: INFO
           INTELLIPOST_SECRET_KEY: test-secret-key-for-ci-only
         run: |
-          uv run pytest -v ../tests/modules/ --disable-warnings --tb=short
+          uv run pytest -v modules/ infrastructure/tests/ --disable-warnings --tb=short
 
       - name: Run backend integration tests
         working-directory: ./backend
