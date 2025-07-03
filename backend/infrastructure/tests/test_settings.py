@@ -60,8 +60,7 @@ class TestSettings:
     def test_secret_key_validation_development(self):
         """Test secret key validation allows default in development."""
         settings = Settings(
-            environment="development",
-            secret_key="dev-secret-key-change-in-production"
+            environment="development", secret_key="dev-secret-key-change-in-production"
         )
         assert settings.secret_key == "dev-secret-key-change-in-production"
 
@@ -70,7 +69,7 @@ class TestSettings:
         with pytest.raises(ValidationError) as exc_info:
             Settings(
                 environment="production",
-                secret_key="dev-secret-key-change-in-production"
+                secret_key="dev-secret-key-change-in-production",
             )
 
         assert "Secret key must be changed" in str(exc_info.value)
@@ -78,8 +77,7 @@ class TestSettings:
     def test_secret_key_validation_production_passes(self):
         """Test secret key validation passes in production with custom key."""
         settings = Settings(
-            environment="production",
-            secret_key="custom-production-secret-key"
+            environment="production", secret_key="custom-production-secret-key"
         )
         assert settings.secret_key == "custom-production-secret-key"
 
@@ -148,7 +146,9 @@ class TestSettings:
         settings = Settings(environment="development")
 
         # These values reflect CI environment
-        assert settings.user_jwt_secret_key == "test-jwt-secret-for-ci-only"  # CI override
+        assert (
+            settings.user_jwt_secret_key == "test-jwt-secret-for-ci-only"
+        )  # CI override
         assert settings.user_jwt_expire_minutes == 5  # CI environment override
         assert settings.user_session_expire_hours == 1  # CI environment override
         assert settings.user_max_login_attempts == 3  # CI environment override
@@ -160,7 +160,9 @@ class TestSettings:
 
         assert settings.product_max_image_size_mb == 1  # CI environment override
         assert settings.product_ai_analysis_enabled is False  # CI environment override
-        assert settings.product_ai_confidence_threshold == 0.5  # CI environment override
+        assert (
+            settings.product_ai_confidence_threshold == 0.5
+        )  # CI environment override
         assert settings.product_cache_product_data is False  # CI environment override
         assert settings.product_cache_ttl_seconds == 10  # CI environment override
 
@@ -168,9 +170,13 @@ class TestSettings:
         """Test MercadoLibre integration configuration."""
         settings = Settings(environment="development")
 
-        assert settings.mercadolibre_requests_per_minute == 10  # CI environment override
+        assert (
+            settings.mercadolibre_requests_per_minute == 10
+        )  # CI environment override
         assert settings.mercadolibre_default_country == "AR"
-        assert settings.mercadolibre_sync_interval_minutes == 1  # CI environment override
+        assert (
+            settings.mercadolibre_sync_interval_minutes == 1
+        )  # CI environment override
 
     def test_ai_content_configuration(self):
         """Test AI content generation configuration."""
@@ -179,8 +185,12 @@ class TestSettings:
         assert settings.ai_content_primary_provider == "mock"  # CI environment override
         assert settings.ai_content_gemini_model == "gemini-1.5-flash"
         assert settings.ai_content_max_title_length == 30  # CI environment override
-        assert settings.ai_content_max_description_length == 100  # CI environment override
-        assert settings.ai_content_quality_score_threshold == 0.5  # CI environment override
+        assert (
+            settings.ai_content_max_description_length == 100
+        )  # CI environment override
+        assert (
+            settings.ai_content_quality_score_threshold == 0.5
+        )  # CI environment override
         assert settings.ai_content_default_language == "en"  # CI environment override
 
     def test_s3_configuration(self):
@@ -190,7 +200,9 @@ class TestSettings:
         assert settings.s3_endpoint_url == ""  # CI environment override - empty string
         assert settings.s3_access_key == "test_access_key"  # CI environment override
         assert settings.s3_secret_key == "test_secret_key"  # CI environment override
-        assert settings.s3_bucket_name == "test-intellipost-storage"  # CI environment override
+        assert (
+            settings.s3_bucket_name == "test-intellipost-storage"
+        )  # CI environment override
         assert settings.s3_region == "us-east-1"
 
     def test_custom_settings_override(self):
@@ -200,7 +212,7 @@ class TestSettings:
             debug=False,
             api_port=9000,
             log_level="DEBUG",
-            database_pool_size=50
+            database_pool_size=50,
         )
 
         assert custom_settings.environment == "staging"
@@ -215,8 +227,12 @@ class TestSettings:
 
         # These values reflect CI environment
         assert settings.mercadolibre_client_id == "test_client_id"  # CI override
-        assert settings.mercadolibre_client_secret == "test_client_secret"  # CI override
-        assert settings.ai_content_gemini_api_key == "your-gemini-api-key"  # CI environment value
+        assert (
+            settings.mercadolibre_client_secret == "test_client_secret"
+        )  # CI override
+        assert (
+            settings.ai_content_gemini_api_key == "your-gemini-api-key"
+        )  # CI environment value
         assert settings.google_gemini_api_key is None  # CI environment has None
         assert settings.openai_api_key is None  # CI environment has None
         assert settings.photoroom_api_key is None  # CI environment has None

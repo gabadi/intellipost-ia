@@ -127,6 +127,13 @@ docker exec -it intellipost-ia-postgres-1 psql -U intellipost_user -d intellipos
 - `backend/infrastructure/config/settings.py`: Application configuration
 - `.pre-commit-config.yaml`: Quality gates and hooks
 
+### Environment Configuration
+
+The application uses hierarchical environment configuration:
+- **Development**: Backend runs on port 8000, exposed via Docker on 8080
+- **Frontend**: Connects to backend via `VITE_API_BASE_URL` (defaults to localhost:8000)
+- **Testing**: Uses `.env.testing` with consistent port configuration for CI/CD
+
 ## 🎯 Key Features for LLMs
 
 - **Modular hexagonal architecture**: Clear separation of concerns

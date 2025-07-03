@@ -121,7 +121,7 @@ known-first-party = ["intellipost"]
 # Pyright configuration
 [tool.pyright]
 include = ["."]
-exclude = ["**/__pycache__", ".venv", "../tests", "tests"]
+exclude = ["**/__pycache__", ".venv", "../tests", "tests", "*/tests"]
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.13"
@@ -154,7 +154,7 @@ addopts = [
     "--strict-markers",
     "--strict-config",
 ]
-testpaths = ["../tests", "modules"]
+testpaths = ["../tests", "modules", "infrastructure/tests"]
 filterwarnings = [
     "error",
     "ignore::UserWarning",
