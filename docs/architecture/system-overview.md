@@ -396,10 +396,15 @@ Frontend (TypeScript):
   - Testing: Jest + Testing Library
 
 CI/CD Pipeline:
-  1. Code Quality: Linting, type checking, security scan
-  2. Testing: Unit, integration, API tests
+  1. Code Quality: Linting, type checking, security scan (Bandit)
+  2. Testing: Unit, integration, API tests with consistent environment config
   3. Build: Docker images for both services
   4. Deploy: Automated to staging, manual to production
+
+Environment Configuration:
+  - Port standardization: Backend internal port 8000, Docker exposes on 8080
+  - Frontend API URL configured via VITE_API_BASE_URL environment variable
+  - CI/CD uses .env.testing for consistent test environment setup
 ```
 
 ### Testing Strategy

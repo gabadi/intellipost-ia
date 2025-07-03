@@ -134,18 +134,158 @@ if image.has_complex_bg(): processor.remove_background()
 **WHY:** Centralized business logic, consistent decisions, improved testability
 
 ### Error Handling Standards
+
+#### Domain-Specific Exception Hierarchy
+
+**Core Principle:** Every module MUST define its own exception hierarchy. Generic exceptions (ValueError, RuntimeError) are FORBIDDEN in domain and application layers.
+
 ```python
-class AIGenerationError(Exception):
-    pass
+# ✅ Required: Module-specific exception hierarchy
+class UserManagementError(Exception):
+    """Base exception for all user management domain errors."""
 
-class MLPublishingError(Exception):
-    pass
+    def __init__(self, message: str, error_code: str | None = None):
+        self.message = message
+        self.error_code = error_code
+        super().__init__(message)
 
+class UserAlreadyExistsError(UserManagementError):
+    """Raised when attempting to register a user with an email that already exists."""
+
+    def __init__(self, email: str):
+        super().__init__(
+            f"User with email '{email}' already exists",
+            error_code="USER_ALREADY_EXISTS"
+        )
+        self.email = email
+
+class AccountLockedError(UserManagementError):
+    """Raised when attempting to authenticate with a locked account."""
+
+    def __init__(self, failed_attempts: int, max_attempts: int):
+        super().__init__(
+            f"Account locked due to {failed_attempts} failed login attempts. "
+            f"Maximum allowed attempts: {max_attempts}",
+            error_code="ACCOUNT_LOCKED"
+        )
+        self.failed_attempts = failed_attempts
+        self.max_attempts = max_attempts
+```
+
+#### Exception Design Patterns
+
+**Pattern 1: Base Domain Exception**
+```python
+# modules/{module}/domain/exceptions.py
+class {Module}Error(Exception):
+    """Base exception for {module} domain errors."""
+
+    def __init__(self, message: str, error_code: str | None = None):
+        self.message = message
+        self.error_code = error_code
+        super().__init__(message)
+```
+
+**Pattern 2: Specific Business Rule Violations**
+```python
+class WeakPasswordError(UserManagementError):
+    """Raised when a password does not meet strength requirements."""
+
+    def __init__(self, requirements: str | None = None):
+        message = (
+            requirements or
+            "Password must be at least 8 characters long and contain "
+            "uppercase, lowercase, number and special character"
+        )
+        super().__init__(message, error_code="WEAK_PASSWORD")
+
+class InvalidConfidenceScoreError(ProductManagementError):
+    """Raised when confidence score is invalid or out of range."""
+
+    def __init__(self, score: float, product_id: str | None = None):
+        message = f"Invalid confidence score: {score}. Must be between 0.0 and 1.0"
+        super().__init__(message, product_id)
+        self.score = score
+```
+
+**Pattern 3: Operation Not Allowed**
+```python
+class OperationNotAllowedError(UserManagementError):
+    """Raised when an operation is not allowed due to business rules."""
+
+    def __init__(self, operation: str, reason: str):
+        super().__init__(
+            f"Operation '{operation}' not allowed: {reason}",
+            error_code="OPERATION_NOT_ALLOWED"
+        )
+        self.operation = operation
+        self.reason = reason
+```
+
+#### Exception Usage Rules
+
+**FORBIDDEN: Generic Exceptions in Domain/Application**
+```python
+# ❌ NEVER use generic exceptions
+raise ValueError("User already exists")
+raise RuntimeError("Account is locked")
+raise Exception("Password too weak")
+```
+
+**REQUIRED: Domain-Specific Exceptions**
+```python
+# ✅ Always use domain-specific exceptions
+raise UserAlreadyExistsError(email)
+raise AccountLockedError(failed_attempts, max_attempts)
+raise WeakPasswordError()
+```
+
+**Exception Location Requirements:**
+- **Domain Layer:** `modules/{module}/domain/exceptions.py`
+- **Cross-Module:** Each module defines its own exceptions (NO sharing)
+- **Infrastructure:** Can raise domain exceptions via protocol interfaces
+- **API Layer:** Convert domain exceptions to HTTP responses
+
+#### Testing Exception Patterns
+
+```python
+# ✅ Test specific exception types and properties
+def test_user_already_exists_error():
+    email = "test@example.com"
+    with pytest.raises(UserAlreadyExistsError) as exc_info:
+        await authentication_service.register_user(email, password)
+
+    assert exc_info.value.email == email
+    assert exc_info.value.error_code == "USER_ALREADY_EXISTS"
+
+# ✅ Test exception message content for business clarity
+def test_account_locked_error_message():
+    with pytest.raises(AccountLockedError) as exc_info:
+        await authentication_service.authenticate_user(email, password)
+
+    error = exc_info.value
+    assert str(error.failed_attempts) in str(error)
+    assert str(error.max_attempts) in str(error)
+```
+
+#### Error Response Standardization
+
+```python
 @dataclass
 class ErrorResponse:
     error_code: str
     message: str
     details: Optional[Dict[str, Any]] = None
+
+# API layer converts domain exceptions
+def convert_domain_exception(exc: Exception) -> ErrorResponse:
+    if isinstance(exc, UserManagementError):
+        return ErrorResponse(
+            error_code=exc.error_code or "USER_MANAGEMENT_ERROR",
+            message=exc.message,
+            details={"module": "user_management"}
+        )
+    # Handle other domain exceptions...
 ```
 
 ---
@@ -249,6 +389,64 @@ Consistent Terms:
 - **External Services:** httpx-mock + respx for Gemini API, PhotoRoom API, MercadoLibre API
 - **Internal Services:** Real database, real application logic, real infrastructure
 - **Focus:** Critical user journeys only
+
+### Test Organization Architecture
+
+**Core Principle:** Tests are co-located with implementation for better maintainability and module independence.
+
+#### Test Location Strategy
+
+**Co-located Unit Tests:** `modules/{module}/domain/entities/test_*.py`
+```
+modules/user_management/
+├── domain/
+│   ├── entities/
+│   │   ├── user.py
+│   │   └── test_user.py           # ✅ Co-located with entity
+│   └── services/
+│       ├── authentication.py
+│       └── test_authentication.py  # ✅ Co-located with service
+└── tests/                         # ✅ Module-level integration tests
+    ├── test_user_integration.py
+    └── conftest.py
+```
+
+**Centralized Integration/E2E Tests:** `/tests/`
+```
+tests/
+├── integration/
+│   └── api/
+│       └── test_health.py          # ✅ Cross-module integration tests
+├── infrastructure/
+│   └── test_settings.py           # ✅ Infrastructure tests
+└── modules/
+    └── shared/                     # ✅ Shared/common functionality tests
+        ├── test_health.py
+        └── test_main.py
+```
+
+#### Test Discovery Configuration
+
+**pytest Configuration Updates:**
+```toml
+[tool.pytest.ini_options]
+testpaths = ["../tests", "modules"]    # Discovers both locations
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+]
+```
+
+**Coverage Configuration:**
+```toml
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",          # Excludes co-located tests
+    "*/migrations/*",
+    "*/__pycache__/*",
+]
+```
 
 ### Coverage Requirements
 - **Minimum Coverage:** 80% for domain logic

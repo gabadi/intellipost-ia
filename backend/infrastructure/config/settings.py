@@ -13,6 +13,26 @@ class Settings(BaseSettings):
     )
     debug: bool = Field(default=True, description="Debug mode flag")
 
+    @property
+    def is_development(self) -> bool:
+        """Check if running in development mode."""
+        return self.environment.lower() == "development"
+
+    @property
+    def is_production(self) -> bool:
+        """Check if running in production mode."""
+        return self.environment.lower() == "production"
+
+    @property
+    def is_testing(self) -> bool:
+        """Check if running in testing mode."""
+        return self.environment.lower() == "testing"
+
+    @property
+    def is_staging(self) -> bool:
+        """Check if running in staging mode."""
+        return self.environment.lower() == "staging"
+
     # Database configuration
     database_url: str = Field(
         default="postgresql+asyncpg://intellipost_user:intellipost_password@localhost:5443/intellipost_dev",
@@ -50,7 +70,7 @@ class Settings(BaseSettings):
 
     # CORS configuration
     cors_origins: list[str] = Field(
-        default=["http://localhost:3000", "http://127.0.0.1:3000"],
+        default=["http://localhost:4000", "http://127.0.0.1:4000"],
         description="Allowed CORS origins",
     )
 
@@ -77,6 +97,82 @@ class Settings(BaseSettings):
     mercadolibre_client_secret: str | None = Field(
         default=None, description="MercadoLibre API client secret"
     )
+
+    # User Management Module Configuration
+    user_jwt_secret_key: str = Field(
+        default="dev-jwt-secret-change-in-production",
+        description="JWT secret key for user authentication",
+    )
+    user_jwt_expire_minutes: int = Field(
+        default=30, description="JWT token expiry time in minutes"
+    )
+    user_session_expire_hours: int = Field(
+        default=24, description="User session expiry time in hours"
+    )
+    user_max_login_attempts: int = Field(
+        default=5, description="Maximum login attempts before lockout"
+    )
+    user_password_min_length: int = Field(
+        default=8, description="Minimum password length"
+    )
+
+    # Product Management Module Configuration
+    product_max_image_size_mb: int = Field(
+        default=10, description="Maximum image size in MB"
+    )
+    product_ai_analysis_enabled: bool = Field(
+        default=True, description="Enable AI analysis for products"
+    )
+    product_ai_confidence_threshold: float = Field(
+        default=0.8, description="AI confidence threshold for auto-publishing"
+    )
+    product_cache_product_data: bool = Field(
+        default=True, description="Enable product data caching"
+    )
+    product_cache_ttl_seconds: int = Field(
+        default=300, description="Product cache TTL in seconds"
+    )
+
+    # MercadoLibre Integration Module Configuration
+    mercadolibre_requests_per_minute: int = Field(
+        default=200, description="MercadoLibre API requests per minute limit"
+    )
+    mercadolibre_default_country: str = Field(
+        default="AR", description="Default MercadoLibre country code"
+    )
+    mercadolibre_sync_interval_minutes: int = Field(
+        default=15, description="MercadoLibre sync interval in minutes"
+    )
+
+    # AI Content Generation Module Configuration
+    ai_content_primary_provider: str = Field(
+        default="gemini", description="Primary AI content provider"
+    )
+    ai_content_gemini_api_key: str | None = Field(
+        default=None, description="Gemini API key"
+    )
+    ai_content_gemini_model: str = Field(
+        default="gemini-1.5-flash", description="Gemini model name"
+    )
+    ai_content_max_title_length: int = Field(
+        default=60, description="Maximum title length for generated content"
+    )
+    ai_content_max_description_length: int = Field(
+        default=500, description="Maximum description length for generated content"
+    )
+    ai_content_quality_score_threshold: float = Field(
+        default=0.7, description="Quality score threshold for content acceptance"
+    )
+    ai_content_default_language: str = Field(
+        default="es", description="Default language for content generation"
+    )
+
+    # External API Keys
+    google_gemini_api_key: str | None = Field(
+        default=None, description="Google Gemini API key"
+    )
+    openai_api_key: str | None = Field(default=None, description="OpenAI API key")
+    photoroom_api_key: str | None = Field(default=None, description="PhotoRoom API key")
 
     @model_validator(mode="after")
     def validate_secret_key_for_production(self):
@@ -108,35 +204,56 @@ class Settings(BaseSettings):
             raise ValueError(f"Log format must be one of: {allowed_formats}")
         return v.lower()
 
+    @field_validator("api_host")
+    @classmethod
+    def validate_api_host(cls, v: str) -> str:
+        """Validate api_host and handle empty strings by returning default."""
+        if not v or v.strip() == "":
+            return "127.0.0.1"  # Return default if empty
+        return v
+
     model_config = SettingsConfigDict(
-        # Look for .env file in project root (one level up from backend)
-        env_file="../.env",
+        # Load environment files in order (later files override earlier ones)
+        env_file=[
+            "../.env",  # Base development config
+            "../.env.local",  # Local overrides (gitignored)
+            "../.env.testing",  # Testing overrides (when INTELLIPOST_ENVIRONMENT=testing)
+            "../.env.staging",  # Staging overrides (when INTELLIPOST_ENVIRONMENT=staging)
+        ],
         env_file_encoding="utf-8",
         case_sensitive=False,
         # Allow environment variables to override defaults
         env_prefix="INTELLIPOST_",
+        # Allow extra variables during migration - we'll clean this up later
+        extra="ignore",
     )
-
-    @property
-    def is_development(self) -> bool:
-        """Check if running in development mode."""
-        return self.environment.lower() == "development"
-
-    @property
-    def is_production(self) -> bool:
-        """Check if running in production mode."""
-        return self.environment.lower() == "production"
-
-    @property
-    def is_testing(self) -> bool:
-        """Check if running in testing mode."""
-        return self.environment.lower() == "testing"
 
     def get_database_url(self) -> str:
         """Get the appropriate database URL based on environment."""
         if self.is_testing:
             return self.database_test_url
         return self.database_url
+
+    def get_api_url(self) -> str:
+        """Get the full API URL for the current environment."""
+        protocol = "https" if self.is_production else "http"
+        if self.is_development or self.is_testing:
+            return f"{protocol}://{self.api_host}:{self.api_port}"
+        return f"{protocol}://{self.api_host}"  # Production uses standard ports
+
+    def validate_configuration(self) -> dict[str, bool]:
+        """Validate current configuration and return status."""
+        validations = {
+            "environment_set": bool(self.environment),
+            "database_url_valid": bool(self.get_database_url()),
+            "api_port_valid": 1000 <= self.api_port <= 65535,
+            "secret_key_secure": (
+                self.secret_key != "dev-secret-key-change-in-production"  # nosec B105
+                if self.is_production
+                else True
+            ),
+        }
+        return validations
 
 
 # Global settings instance

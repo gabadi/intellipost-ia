@@ -127,6 +127,13 @@ docker exec -it intellipost-ia-postgres-1 psql -U intellipost_user -d intellipos
 - `backend/infrastructure/config/settings.py`: Application configuration
 - `.pre-commit-config.yaml`: Quality gates and hooks
 
+### Environment Configuration
+
+The application uses hierarchical environment configuration:
+- **Development**: Backend runs on port 8000, exposed via Docker on 8080
+- **Frontend**: Connects to backend via `VITE_API_BASE_URL` (defaults to localhost:8000)
+- **Testing**: Uses `.env.testing` with consistent port configuration for CI/CD
+
 ## 🎯 Key Features for LLMs
 
 - **Modular hexagonal architecture**: Clear separation of concerns
@@ -137,12 +144,22 @@ docker exec -it intellipost-ia-postgres-1 psql -U intellipost_user -d intellipos
 - **API documentation**: Auto-generated OpenAPI/Swagger docs
 - **Structured logging**: JSON-formatted logs with correlation IDs
 
-## 🚨 Common Issues
+## 🚨 Common Issues & Solutions
 
-- **Port conflicts**: All services use non-default ports (8080, 4000, 5443, 9002, 9091)
-- **Database connection**: Ensure PostgreSQL is running on port 5443
+### Port Configuration
+- **Development**: Backend runs on port 8000, accessible at `http://localhost:8000`
+- **Docker**: Backend exposed on port 8080, internally running on 8000
+- **Frontend**: Always configure to point to `http://localhost:8080` for Docker or `http://localhost:8000` for direct development
+
+### Environment Issues
+- **CI/CD Testing**: Uses `.env.testing` file for consistent test configuration
+- **Database connection**: Ensure PostgreSQL is running on port 5443 (development) or 5432 (CI)
+- **API connectivity**: Check that `INTELLIPOST_API_PORT` matches your environment
+
+### Docker Issues
 - **Alembic in Docker**: Use the fixed Dockerfile with proper PATH configuration
-- **Frontend API calls**: Configure to point to `http://localhost:8080`
+- **Port conflicts**: All services use non-default ports (8080, 4000, 5443, 9002, 9091)
+- **Environment variables**: Ensure Docker Compose loads the correct environment settings
 
 ---
 *Version 0.1.0 | LLM-optimized documentation for IntelliPost AI development*

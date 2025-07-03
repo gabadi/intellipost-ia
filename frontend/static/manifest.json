@@ -1,0 +1,20 @@
+{
+  "name": "IntelliPost AI",
+  "short_name": "IntelliPost",
+  "description": "Intelligent Social Media Posting Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1d4ed8",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "social", "business"],
+  "lang": "en-US"
+}

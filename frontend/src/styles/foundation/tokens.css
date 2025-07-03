@@ -96,6 +96,30 @@
   --color-info-800: #1e40af;
   --color-info-900: #1e3a8a;
 
+  /* Yellow Colors (for theme toggle) */
+  --color-yellow-50: #fefce8;
+  --color-yellow-100: #fef9c3;
+  --color-yellow-200: #fef08a;
+  --color-yellow-300: #fde047;
+  --color-yellow-400: #facc15;
+  --color-yellow-500: #eab308;
+  --color-yellow-600: #ca8a04;
+  --color-yellow-700: #a16207;
+  --color-yellow-800: #854d0e;
+  --color-yellow-900: #713f12;
+
+  /* Blue Colors (additional shades for theme toggle) */
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-300: #93c5fd;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+  --color-blue-800: #1e40af;
+  --color-blue-900: #1e3a8a;
+
   /* Status Semantic Aliases */
   --color-success: var(--color-success-600);
   --color-warning: var(--color-warning-500);
@@ -122,6 +146,7 @@
 
   /* Text System */
   --color-text: var(--color-gray-900);
+  --color-text-primary: var(--color-gray-900);
   --color-text-secondary: var(--color-gray-700);
   --color-text-tertiary: var(--color-gray-600);
   --color-text-muted: var(--color-gray-500);
@@ -133,6 +158,12 @@
   --color-border-secondary: var(--color-gray-300);
   --color-border-muted: var(--color-gray-100);
   --color-border-strong: var(--color-gray-400);
+
+  /* Card System */
+  --color-card-background: #ffffff;
+  --color-card-background-secondary: var(--color-gray-50);
+  --color-card-border: var(--color-gray-200);
+  --color-card-shadow: var(--shadow-sm);
 
   /* Typography System */
   --font-family-sans:
@@ -172,6 +203,26 @@
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.625;
   --line-height-loose: 2;
+
+  /* Text size aliases for consistency */
+  --text-xs: var(--font-size-xs);
+  --text-sm: var(--font-size-sm);
+  --text-base: var(--font-size-base);
+  --text-lg: var(--font-size-lg);
+  --text-xl: var(--font-size-xl);
+  --text-2xl: var(--font-size-2xl);
+  --text-3xl: var(--font-size-3xl);
+  --text-4xl: var(--font-size-4xl);
+  --text-5xl: var(--font-size-5xl);
+  --text-6xl: var(--font-size-6xl);
+
+  /* Leading aliases */
+  --leading-none: var(--line-height-none);
+  --leading-tight: var(--line-height-tight);
+  --leading-snug: var(--line-height-snug);
+  --leading-normal: var(--line-height-normal);
+  --leading-relaxed: var(--line-height-relaxed);
+  --leading-loose: var(--line-height-loose);
 
   /* Letter Spacing */
   --letter-spacing-tighter: -0.05em;
@@ -289,8 +340,15 @@
   --card-border-width: 1px;
 }
 
+/* Light Mode Theme (explicit) */
+.theme-light {
+  --color-scheme: light;
+  /* Light theme tokens are already defined in :root above */
+}
+
 /* Dark Mode Theme */
-:root[data-theme='dark'] {
+:root[data-theme='dark'],
+.theme-dark {
   --color-scheme: dark;
 
   /* Background System - Dark */
@@ -301,6 +359,7 @@
 
   /* Text System - Dark */
   --color-text: var(--color-secondary-50);
+  --color-text-primary: var(--color-secondary-50);
   --color-text-secondary: var(--color-secondary-200);
   --color-text-tertiary: var(--color-secondary-300);
   --color-text-muted: var(--color-secondary-400);
@@ -330,6 +389,12 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+
+  /* Card System - Dark Mode */
+  --color-card-background: #1a1a1a; /* Much darker to match sidebar */
+  --color-card-background-secondary: var(--color-secondary-900);
+  --color-card-border: var(--color-secondary-700); /* #334155 */
+  --color-card-shadow: var(--shadow-md);
 }
 
 /* Auto Dark Mode Detection */
@@ -345,6 +410,7 @@
 
     /* Text System - Dark */
     --color-text: var(--color-secondary-50);
+    --color-text-primary: var(--color-secondary-50);
     --color-text-secondary: var(--color-secondary-200);
     --color-text-tertiary: var(--color-secondary-300);
     --color-text-muted: var(--color-secondary-400);
@@ -374,5 +440,11 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+
+    /* Card System - Dark Mode */
+    --color-card-background: #1a1a1a; /* Much darker to match sidebar */
+    --color-card-background-secondary: var(--color-secondary-900);
+    --color-card-border: var(--color-secondary-700); /* #334155 */
+    --color-card-shadow: var(--shadow-md);
   }
 }

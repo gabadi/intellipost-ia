@@ -16,7 +16,7 @@ intellipost-ia/                    # Root monorepo
 ├── .ai/                           # AI development artifacts
 ├── backend/                       # Python/FastAPI backend
 ├── frontend/                      # TypeScript/SvelteKit frontend
-├── tests/                         # Cross-project integration tests (SOLID + KISS + DRY + YAGNI)
+├── tests/                         # System-level integration and e2e tests only (module tests are co-located)
 ├── docs/                          # Project documentation
 ├── docker-compose.yml             # Local development environment
 ├── pyproject.toml                 # Python project configuration
@@ -29,7 +29,16 @@ intellipost-ia/                    # Root monorepo
 
 ## Backend Structure (Python/FastAPI)
 
-### Module-Based Architecture Layout
+### Hexagonal Architecture with Independent Modules
+
+**Architecture Pattern**: Each module implements Hexagonal Architecture (Ports & Adapters) while maintaining complete independence from other modules through Protocol-based communication.
+
+**Key Principles**:
+- **Hexagonal per Module**: Each module has domain/application/infrastructure/api layers
+- **Protocol-Based Communication**: Zero cross-module imports, communication via Protocol interfaces
+- **Module Independence**: Each module can be developed, tested, and deployed independently
+- **Static Duck Typing**: Pyright validates Protocol compliance at compile-time
+
 ```
 backend/
 ├── __init__.py
@@ -279,30 +288,35 @@ docs/
 
 ## Test Structure
 
-### Backend Tests
+### Backend Test Organization
+
+**Module Tests (Co-located)**: Each module contains its own tests in `modules/{module}/tests/`
+```
+modules/user_management/tests/
+├── __init__.py
+├── conftest.py                    # Module-specific fixtures
+├── test_user_entity.py            # Domain entity tests (fast, isolated)
+├── test_authentication.py         # Domain service tests
+├── test_use_cases.py              # Application layer tests (mock external services)
+├── test_repositories.py           # Infrastructure tests with test containers
+└── test_integration.py            # Module integration tests
+```
+
+**System Tests (Global)**: Cross-module integration and end-to-end tests
 ```
 tests/
 ├── __init__.py
-├── conftest.py                    # pytest configuration & fixtures
-├── unit/                          # Fast, isolated tests (SOLID: single responsibility)
-│   ├── domain/
-│   │   ├── test_product.py        # Product entity tests (pure functions, no mocks)
-│   │   └── test_confidence.py     # Confidence scoring tests (pure logic)
-│   ├── application/
-│   │   └── test_use_cases.py      # Use case tests (mock external services only)
-│   └── infrastructure/
-│       └── test_services.py       # Service implementation tests (behavior, not implementation)
-├── integration/                   # Test containers & real internal services
-│   ├── test_database.py           # Real database (test containers), no mocking
-│   ├── test_ai_services.py        # httpx-mock for external AI APIs (Gemini, PhotoRoom)
-│   └── test_ml_api.py             # httpx-mock for MercadoLibre API
-├── api/                          # API endpoint tests (real application layer)
-│   ├── test_auth.py               # Authentication endpoints (real JWT, real database)
-│   ├── test_products.py           # Product endpoints (real use cases, httpx-mock for external APIs)
-│   └── test_websocket.py          # WebSocket connections (real infrastructure)
-└── e2e/                          # End-to-end user journeys (KISS: critical paths only)
-    ├── test_product_creation.py   # Complete workflow (real internal services, httpx-mock for external APIs)
-    └── test_publishing_flow.py    # Full publishing (real application, httpx-mock for ML API)
+├── conftest.py                    # Global pytest configuration & fixtures
+├── integration/                   # Cross-module integration tests
+│   ├── test_cross_module_workflows.py  # Multi-module workflows
+│   ├── test_database_integration.py    # Full database integration
+│   └── test_external_services.py       # Third-party service integration
+├── api/                          # Full API endpoint tests
+│   ├── test_api_integration.py    # Cross-module API flows
+│   └── test_websocket.py          # Real-time communication tests
+└── e2e/                          # End-to-end user journeys
+    ├── test_product_creation_flow.py   # Complete product creation workflow
+    └── test_publishing_workflow.py     # Full publishing process
 ```
 
 ### Frontend Tests
@@ -478,10 +492,11 @@ modules/{module_name}/domain/ports/
 4. **Utils** → Performance-focused helpers
 
 ### Quality Standards
-1. **Testing** → Co-located with source code where possible
-2. **Configuration** → Centralized at appropriate levels
+1. **Testing** → Co-located within modules for isolation, global tests for cross-module workflows
+2. **Configuration** → Centralized at appropriate levels (global/infrastructure, module-specific)
 3. **Documentation** → Maintained alongside code changes
-4. **Types** → Shared between frontend and backend where applicable
+4. **Types** → Protocol interfaces for module communication, shared DTOs where applicable
+5. **Architecture Compliance** → Tach validates module boundaries, Pyright validates Protocol compliance
 
 ---
 

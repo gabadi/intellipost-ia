@@ -103,6 +103,34 @@ def test_settings(database_url: str) -> Settings:
     return Settings()
 
 
+@pytest.fixture(scope="function")
+def unit_test_settings() -> Settings:
+    """
+    Create lightweight test settings for unit tests.
+
+    This provides a lightweight settings instance for unit tests
+    that don't require database connections or containers.
+    """
+    # Set minimal environment variables for testing
+    original_env = os.environ.copy()
+
+    # Set test environment variables
+    os.environ.update({
+        "INTELLIPOST_ENVIRONMENT": "testing",
+        "INTELLIPOST_DEBUG": "false",
+        "INTELLIPOST_LOG_LEVEL": "INFO",
+        "INTELLIPOST_SECRET_KEY": "test-secret-key-for-testing-only",
+    })
+
+    try:
+        settings = Settings()
+        yield settings
+    finally:
+        # Restore original environment
+        os.environ.clear()
+        os.environ.update(original_env)
+
+
 @pytest.fixture(scope="session")
 def event_loop():
     """
