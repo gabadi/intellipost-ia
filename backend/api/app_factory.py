@@ -17,6 +17,8 @@ from infrastructure.config.logging import (
     get_logger,
 )
 from infrastructure.config.settings import Settings
+from infrastructure.middleware.security_middleware import create_security_middleware
+from modules.user_management.api.routers.auth_router import router as auth_router
 
 
 def create_fastapi_app(settings: Settings) -> FastAPI:
@@ -56,6 +58,7 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
 
     # Include routers
     app.include_router(health.router)
+    app.include_router(auth_router)
 
     # Configure CORS middleware
     app.add_middleware(
@@ -66,8 +69,21 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Add security middleware (HTTPS, security headers)
+    security_middleware = create_security_middleware(settings)
+    for middleware_class, middleware_kwargs in security_middleware:
+        app.add_middleware(middleware_class, **middleware_kwargs)
+
     # Add request logging middleware
     app.add_middleware(StructuredRequestLoggingMiddleware)
+
+    # Add rate limiting middleware for auth endpoints
+    # TODO: Temporarily disabled for debugging
+    # app.add_middleware(
+    #     AuthRateLimitMiddleware,
+    #     max_requests=5,  # 5 requests per minute as per requirements
+    #     window_minutes=1
+    # )
 
     @app.get("/")
     async def root() -> dict[str, str]:  # type: ignore[reportUnusedFunction]
@@ -81,6 +97,22 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
             "message": "IntelliPost AI Backend API",
             "version": "1.0.0",
             "docs": "/docs",
+        }
+
+    @app.get("/security-status")
+    async def security_status() -> dict[str, bool | str]:  # type: ignore[reportUnusedFunction]
+        """
+        Security configuration status endpoint.
+
+        Returns:
+            Dict containing security configuration status.
+        """
+        return {
+            "environment": settings.environment,
+            "https_only": settings.https_only,
+            "secure_cookies": settings.secure_cookies,
+            "hsts_enabled": settings.https_only,
+            "security_headers_enabled": True,
         }
 
     return app

@@ -19,8 +19,20 @@ from modules.notifications.domain.ports.email_service_protocol import (
 from modules.product_management.domain.ports.product_repository_protocol import (
     ProductRepositoryProtocol,
 )
+from modules.user_management.domain.ports.jwt_service_protocol import (
+    JWTServiceProtocol,
+)
+from modules.user_management.domain.ports.password_service_protocol import (
+    PasswordServiceProtocol,
+)
 from modules.user_management.domain.ports.user_repository_protocol import (
     UserRepositoryProtocol,
+)
+
+# Import authentication service implementations
+from modules.user_management.infrastructure.services.jwt_service import JWTService
+from modules.user_management.infrastructure.services.password_service import (
+    PasswordService,
 )
 
 
@@ -52,6 +64,8 @@ class DependencyContainer:
         self._ai_content_service: AIContentServiceProtocol | None = None
         self._mercadolibre_service: MercadoLibreServiceProtocol | None = None
         self._email_service: EmailServiceProtocol | None = None
+        self._jwt_service: JWTServiceProtocol | None = None
+        self._password_service: PasswordServiceProtocol | None = None
 
     # Repository registrations
     def register_user_repository(self, repository: UserRepositoryProtocol) -> None:
@@ -77,6 +91,14 @@ class DependencyContainer:
     def register_email_service(self, service: EmailServiceProtocol) -> None:
         """Register email service implementation."""
         self._email_service = service
+
+    def register_jwt_service(self, service: JWTServiceProtocol) -> None:
+        """Register JWT service implementation."""
+        self._jwt_service = service
+
+    def register_password_service(self, service: PasswordServiceProtocol) -> None:
+        """Register password service implementation."""
+        self._password_service = service
 
     # Dependency providers
     def get_user_repository(self) -> UserRepositoryProtocol:
@@ -109,6 +131,18 @@ class DependencyContainer:
             raise RuntimeError("Email service not registered")
         return self._email_service
 
+    def get_jwt_service(self) -> JWTServiceProtocol:
+        """Get JWT service dependency."""
+        if self._jwt_service is None:
+            raise RuntimeError("JWT service not registered")
+        return self._jwt_service
+
+    def get_password_service(self) -> PasswordServiceProtocol:
+        """Get password service dependency."""
+        if self._password_service is None:
+            raise RuntimeError("Password service not registered")
+        return self._password_service
+
 
 # Global dependency container instance
 container = DependencyContainer()
@@ -140,6 +174,16 @@ def get_email_service() -> EmailServiceProtocol:
     return container.get_email_service()
 
 
+def get_jwt_service() -> JWTServiceProtocol:
+    """FastAPI dependency for JWT service."""
+    return container.get_jwt_service()
+
+
+def get_password_service() -> PasswordServiceProtocol:
+    """FastAPI dependency for password service."""
+    return container.get_password_service()
+
+
 # Dependency type annotations for FastAPI routes
 UserRepositoryDep = Annotated[UserRepositoryProtocol, Depends(get_user_repository)]
 ProductRepositoryDep = Annotated[
@@ -152,6 +196,8 @@ MercadoLibreServiceDep = Annotated[
     MercadoLibreServiceProtocol, Depends(get_mercadolibre_service)
 ]
 EmailServiceDep = Annotated[EmailServiceProtocol, Depends(get_email_service)]
+JWTServiceDep = Annotated[JWTServiceProtocol, Depends(get_jwt_service)]
+PasswordServiceDep = Annotated[PasswordServiceProtocol, Depends(get_password_service)]
 
 
 def create_application() -> FastAPI:
@@ -173,11 +219,12 @@ def create_application() -> FastAPI:
     # Setup logging
     setup_logging(settings)
 
-    # Note: In a real application, you would register actual implementations here
-    # For now, the container is available for when implementations are added
-    # Example:
-    # container.register_user_repository(SQLUserRepository(db))
-    # container.register_ai_content_service(OpenAIContentService(settings))
+    # Register authentication services
+    container.register_jwt_service(JWTService())
+    container.register_password_service(PasswordService())
+
+    # Note: User repository requires database session, will be registered when needed
+    # Other services will be registered as implementations become available
 
     # Create and return the FastAPI app
     return create_fastapi_app(settings)

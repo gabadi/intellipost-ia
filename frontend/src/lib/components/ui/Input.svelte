@@ -15,7 +15,16 @@
   export let maxlength: number | undefined = undefined;
   export let minlength: number | undefined = undefined;
   export let pattern: string = '';
+  export let autocomplete: string | undefined = undefined;
   export let size: 'sm' | 'md' | 'lg' = 'md';
+
+  // ARIA attributes for accessibility
+  export let ariaDescribedby: string | undefined = undefined;
+  export let ariaInvalid: boolean | undefined = undefined;
+
+  // Additional classes
+  let className: string = '';
+  export { className as class };
 
   // Real-time validation props
   export let validateOnInput: boolean = true;
@@ -151,9 +160,10 @@
       {maxlength}
       {minlength}
       {pattern}
+      autocomplete={autocomplete as string}
       id={inputId}
       name={name || inputId}
-      class="input input--{size}"
+      class="input input--{size} {className}"
       class:input--valid={hasSuccess}
       class:input--error={displayError}
       class:input--search={type === 'search'}
@@ -165,14 +175,15 @@
       on:change
       on:keydown
       on:keyup
-      aria-invalid={!!displayError}
-      aria-describedby={displayError
-        ? `${inputId}-error`
-        : hasSuccess
-          ? `${inputId}-success`
-          : help
-            ? `${inputId}-help`
-            : undefined}
+      aria-invalid={ariaInvalid !== undefined ? ariaInvalid : !!displayError}
+      aria-describedby={ariaDescribedby ||
+        (displayError
+          ? `${inputId}-error`
+          : hasSuccess
+            ? `${inputId}-success`
+            : help
+              ? `${inputId}-help`
+              : undefined)}
     />
 
     {#if hasSuccess}

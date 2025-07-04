@@ -8,6 +8,10 @@
   export let href: string | undefined = undefined;
   export let fullWidth: boolean = false;
 
+  // Additional classes
+  let className: string = '';
+  export { className as class };
+
   // Event handlers
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined;
 
@@ -26,7 +30,7 @@
 {#if isLink}
   <a
     {href}
-    class="btn btn--{variant} btn--{size} hover-lift active-press smooth-state focus-ring-enhanced"
+    class="btn btn--{variant} btn--{size} hover-lift active-press smooth-state focus-ring-enhanced {className}"
     class:btn--full-width={fullWidth}
     class:btn--loading={loading}
     class:loading-state={loading}
@@ -38,7 +42,7 @@
 {:else}
   <button
     {type}
-    class="btn btn--{variant} btn--{size} hover-lift active-press smooth-state focus-ring-enhanced"
+    class="btn btn--{variant} btn--{size} hover-lift active-press smooth-state focus-ring-enhanced {className}"
     class:btn--full-width={fullWidth}
     class:btn--loading={loading}
     class:loading-state={loading}
