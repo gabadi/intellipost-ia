@@ -8,6 +8,7 @@ import time
 from collections import defaultdict, deque
 from collections.abc import Callable
 from functools import wraps
+from typing import Any
 
 from fastapi import HTTPException, Request, status
 
@@ -93,7 +94,7 @@ class SimpleRateLimiter:
 auth_rate_limiter = SimpleRateLimiter(max_requests=5, window_seconds=60)
 
 
-def rate_limit_auth(func: Callable) -> Callable:
+def rate_limit_auth(func: Callable[..., Any]) -> Callable[..., Any]:
     """
     Decorator to apply rate limiting to authentication endpoints.
 
@@ -105,7 +106,7 @@ def rate_limit_auth(func: Callable) -> Callable:
     """
 
     @wraps(func)
-    async def wrapper(*args, **kwargs):
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:
         # Extract the Request object from kwargs (FastAPI dependency injection)
         request = kwargs.get("http_request")
 

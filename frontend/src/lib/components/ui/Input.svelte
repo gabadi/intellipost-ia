@@ -160,7 +160,7 @@
       {maxlength}
       {minlength}
       {pattern}
-      autocomplete={autocomplete as string}
+      {autocomplete}
       id={inputId}
       name={name || inputId}
       class="input input--{size} {className}"
