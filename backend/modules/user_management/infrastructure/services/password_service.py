@@ -66,7 +66,8 @@ class PasswordService:
         """
         try:
             # Try to identify the hash scheme
-            return self._pwd_context.identify(password_hash) == "bcrypt"
+            # Using type ignore due to passlib's incomplete type annotations
+            return self._pwd_context.identify(password_hash) == "bcrypt"  # type: ignore[misc]
         except Exception:
             return False
 

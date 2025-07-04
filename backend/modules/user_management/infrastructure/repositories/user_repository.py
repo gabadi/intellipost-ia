@@ -37,7 +37,7 @@ class UserRepository:
             User domain entity
         """
         return User(
-            id=UUID(str(model.id)),
+            id=model.id,
             email=model.email,
             password_hash=model.password_hash,
             created_at=model.created_at,

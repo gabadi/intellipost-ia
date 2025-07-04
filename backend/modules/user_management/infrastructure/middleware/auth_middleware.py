@@ -59,7 +59,7 @@ class AuthenticationMiddleware:
 
             # Check token type (should be access token)
             token_type = payload.get("type")
-            if token_type != "access":
+            if token_type != "access":  # nosec B105 - Standard JWT claim value, not a password
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid token type",

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { AutoFill } from 'svelte/elements';
   export let type: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'file' =
     'text';
   export let value: string = '';
@@ -16,7 +15,7 @@
   export let maxlength: number | undefined = undefined;
   export let minlength: number | undefined = undefined;
   export let pattern: string = '';
-  export let autocomplete: AutoFill | undefined = undefined;
+  export let autocomplete: HTMLInputElement['autocomplete'] | undefined = undefined;
   export let size: 'sm' | 'md' | 'lg' = 'md';
 
   // ARIA attributes for accessibility

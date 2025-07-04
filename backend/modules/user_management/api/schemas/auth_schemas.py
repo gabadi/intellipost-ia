@@ -171,7 +171,7 @@ def create_token_response(user: "User", tokens: "TokenPair") -> TokenResponse:
     return TokenResponse(
         access_token=tokens.access_token,
         refresh_token=tokens.refresh_token,
-        token_type="bearer",
+        token_type="bearer",  # nosec B106 - Standard OAuth2 token type, not a password
         expires_in=tokens.expires_in,
         user=user_entity_to_response(user),
     )

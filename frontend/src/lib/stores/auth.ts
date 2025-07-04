@@ -259,7 +259,7 @@ class AuthManager {
    */
   private emitAuthEvent(event: AuthEvent): void {
     if (browser) {
-      window.dispatchEvent(new CustomEvent(`auth:${  event}`));
+      window.dispatchEvent(new CustomEvent(`auth:${event}`));
     }
   }
 }

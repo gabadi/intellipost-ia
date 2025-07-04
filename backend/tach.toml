@@ -23,13 +23,13 @@ depends_on = ["di"]
 # Global API layer - can depend on infrastructure for configuration
 [[modules]]
 path = "api"
-depends_on = ["infrastructure"]
+depends_on = ["infrastructure", "modules.user_management"]
 
 
 # User Management module - TRUE INDEPENDENCE with protocols
 [[modules]]
 path = "modules.user_management"
-depends_on = []
+depends_on = ["infrastructure"]
 
 # Product Management module - TRUE INDEPENDENCE
 [[modules]]

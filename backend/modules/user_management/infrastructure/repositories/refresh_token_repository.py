@@ -37,8 +37,8 @@ class RefreshTokenRepository:
             RefreshToken domain entity
         """
         return RefreshToken(
-            id=UUID(str(model.id)),
-            user_id=UUID(str(model.user_id)),
+            id=model.id,
+            user_id=model.user_id,
             token_hash=model.token_hash,
             expires_at=model.expires_at,
             created_at=model.created_at,
