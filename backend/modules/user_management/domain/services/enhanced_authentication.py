@@ -85,7 +85,10 @@ class TokenPair:
     """JWT token pair."""
 
     def __init__(
-        self, access_token: str, refresh_token: str, token_type: str = "bearer"
+        self,
+        access_token: str,
+        refresh_token: str,
+        token_type: str = "bearer",  # nosec B107 - OAuth2 standard token type, not a password
     ):
         self.access_token = access_token
         self.refresh_token = refresh_token
@@ -303,7 +306,7 @@ class EnhancedAuthenticationService:
 
             # Check token type
             token_type = payload.get("type")
-            if token_type != "refresh":
+            if token_type != "refresh":  # nosec B105 - JWT token type identifier, not a password
                 return None
 
             # Extract user ID
@@ -373,7 +376,7 @@ class EnhancedAuthenticationService:
 
             # Check token type
             token_type = payload.get("type")
-            if token_type != "access":
+            if token_type != "access":  # nosec B105 - JWT token type identifier, not a password
                 return None
 
             # Extract user ID
@@ -423,7 +426,9 @@ class EnhancedAuthenticationService:
         await self._refresh_token_repository.create(refresh_token_entity)
 
         return TokenPair(
-            access_token=access_token, refresh_token=refresh_token, token_type="bearer"
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="bearer",  # nosec B106 - OAuth2 standard token type, not a password
         )
 
     def _user_to_authenticated_user(self, user: User) -> AuthenticatedUser:
