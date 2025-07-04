@@ -32,7 +32,7 @@ class SimpleRateLimiter:
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         # Store request timestamps by IP
-        self._request_history: dict[str, deque] = defaultdict(lambda: deque())
+        self._request_history: dict[str, deque[float]] = defaultdict(lambda: deque())
 
     def is_allowed(self, identifier: str) -> bool:
         """

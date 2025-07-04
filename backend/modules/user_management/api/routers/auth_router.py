@@ -36,6 +36,7 @@ from modules.user_management.application.use_cases.refresh_token import (
 from modules.user_management.application.use_cases.register_user import (
     RegisterUserUseCase,
 )
+from modules.user_management.domain.entities.user import User
 from modules.user_management.domain.exceptions import (
     AccountInactiveError,
     AccountLockedError,
@@ -487,7 +488,7 @@ async def logout(
     },
 )
 async def get_me(
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UserResponse:
     """Get current user profile."""
     return user_entity_to_response(current_user)

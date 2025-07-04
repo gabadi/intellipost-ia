@@ -5,9 +5,14 @@ This module contains Pydantic models for authentication API request/response sch
 """
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
+
+if TYPE_CHECKING:
+    from modules.user_management.application.use_cases.generate_tokens import TokenPair
+    from modules.user_management.domain.entities.user import User
 
 
 # Request schemas
@@ -147,7 +152,7 @@ class LogoutResponse(BaseModel):
 
 
 # Helper functions for schema conversion
-def user_entity_to_response(user) -> UserResponse:
+def user_entity_to_response(user: "User") -> UserResponse:
     """Convert User entity to UserResponse schema."""
     return UserResponse(
         id=user.id,
@@ -161,7 +166,7 @@ def user_entity_to_response(user) -> UserResponse:
     )
 
 
-def create_token_response(user, tokens) -> TokenResponse:
+def create_token_response(user: "User", tokens: "TokenPair") -> TokenResponse:
     """Create TokenResponse from user entity and token pair."""
     return TokenResponse(
         access_token=tokens.access_token,

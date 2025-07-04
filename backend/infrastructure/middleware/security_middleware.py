@@ -5,8 +5,9 @@ This module provides security middleware for HTTPS enforcement and security head
 """
 
 from collections.abc import Awaitable, Callable
+from typing import Any
 
-from fastapi import Request, Response
+from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import RedirectResponse
 
@@ -27,7 +28,7 @@ class HTTPSSecurityMiddleware(BaseHTTPMiddleware):
     - Security headers for authentication
     """
 
-    def __init__(self, app, settings: Settings):
+    def __init__(self, app: FastAPI, settings: Settings):
         """
         Initialize HTTPS security middleware.
 
@@ -203,7 +204,7 @@ class SecureCookieMiddleware(BaseHTTPMiddleware):
     Middleware to enforce secure cookie settings in production.
     """
 
-    def __init__(self, app, settings: Settings):
+    def __init__(self, app: FastAPI, settings: Settings):
         """
         Initialize secure cookie middleware.
 
@@ -248,15 +249,17 @@ class SecureCookieMiddleware(BaseHTTPMiddleware):
 
         # Note: FastAPI handles most cookie security through its cookie settings
         # This middleware is here for additional cookie security enforcement
-        set_cookie_headers = response.headers.get_list("set-cookie")
+        set_cookie_headers = response.headers.get("set-cookie")
         if set_cookie_headers:
             logger.debug(
                 "Secure cookie enforcement applied",
-                cookie_count=len(set_cookie_headers),
+                cookie_count=1,
             )
 
 
-def create_security_middleware(settings: Settings) -> list:
+def create_security_middleware(
+    settings: Settings,
+) -> list[tuple[type[BaseHTTPMiddleware], dict[str, Any]]]:
     """
     Create list of security middleware based on settings.
 
@@ -266,7 +269,7 @@ def create_security_middleware(settings: Settings) -> list:
     Returns:
         List of middleware classes to add to FastAPI
     """
-    middleware = []
+    middleware: list[tuple[type[BaseHTTPMiddleware], dict[str, Any]]] = []
 
     # HTTPS Security Middleware
     if settings.https_only or settings.is_production:

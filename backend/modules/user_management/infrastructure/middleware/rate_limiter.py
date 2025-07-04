@@ -7,9 +7,11 @@ For production, consider using Redis-based rate limiting for distributed systems
 
 import time
 from collections import defaultdict, deque
+from collections.abc import Callable
 from datetime import UTC, datetime
+from typing import Any
 
-from fastapi import HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from infrastructure.config.logging import get_structured_logger
@@ -38,7 +40,7 @@ class InMemoryRateLimiter:
         # Store tuples of (request_count, window_start_time) by IP
         self._buckets: dict[str, tuple[int, float]] = {}
         # Store request timestamps for detailed tracking
-        self._request_history: dict[str, deque] = defaultdict(lambda: deque())
+        self._request_history: dict[str, deque[float]] = defaultdict(lambda: deque())
 
     def is_allowed(self, identifier: str) -> bool:
         """
@@ -149,7 +151,7 @@ class AuthRateLimitMiddleware(BaseHTTPMiddleware):
     to prevent brute force attacks while not affecting other endpoints.
     """
 
-    def __init__(self, app, max_requests: int = 5, window_minutes: int = 1):
+    def __init__(self, app: FastAPI, max_requests: int = 5, window_minutes: int = 1):
         """
         Initialize auth rate limit middleware.
 
@@ -174,7 +176,9 @@ class AuthRateLimitMiddleware(BaseHTTPMiddleware):
             protected_paths=list(self.auth_paths),
         )
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Any]
+    ) -> Response:
         """
         Process request with rate limiting for auth endpoints.
 
@@ -298,10 +302,4 @@ class AuthRateLimitMiddleware(BaseHTTPMiddleware):
         return "unknown"
 
 
-# Global rate limiter instance for auth endpoints
-# 5 requests per minute as specified in requirements
-auth_rate_limiter = AuthRateLimitMiddleware(
-    app=None,  # Will be set when middleware is added to app
-    max_requests=5,
-    window_minutes=1,
-)
+# Global rate limiter instance for auth endpoints will be created by DI container
