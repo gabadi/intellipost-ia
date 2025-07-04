@@ -11,8 +11,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.user_management.domain.entities.refresh_token import RefreshToken
-
-from ..models.user_model import RefreshTokenModel
+from modules.user_management.infrastructure.models.user_model import RefreshTokenModel
 
 
 class RefreshTokenRepository:

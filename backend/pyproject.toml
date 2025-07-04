@@ -108,7 +108,6 @@ ignore = [
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
     "SIM102", # Use a single if-statement instead of nested if-statements
-    "TID252", # Allow relative imports for CI compatibility
 ]
 
 [tool.ruff.format]

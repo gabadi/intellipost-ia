@@ -62,6 +62,8 @@ jobs:
 
       - name: Run backend type checking
         working-directory: ./backend
+        env:
+          PYTHONPATH: .
         run: |
           uv run pyright
 
