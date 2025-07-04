@@ -39,6 +39,7 @@
       // Redirect to products page on successful login
       goto('/products');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Login failed:', error);
 
       if (error && typeof error === 'object' && 'details' in error) {

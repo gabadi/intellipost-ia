@@ -1,10 +1,11 @@
 """Dependency injection configuration for FastAPI."""
 
+from contextlib import asynccontextmanager
 from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI
 
-from api.app_factory import create_fastapi_app
+from di.module_discovery import module_discovery
 from infrastructure.config.logging import get_logger, setup_logging
 from infrastructure.config.settings import Settings
 from modules.content_generation.domain.ports.ai_service_protocols import (
@@ -216,9 +217,6 @@ def create_application() -> FastAPI:
     # Initialize settings
     settings = Settings()
 
-    # Setup logging
-    setup_logging(settings)
-
     # Register authentication services
     container.register_jwt_service(JWTService())
     container.register_password_service(PasswordService())
@@ -226,5 +224,48 @@ def create_application() -> FastAPI:
     # Note: User repository requires database session, will be registered when needed
     # Other services will be registered as implementations become available
 
-    # Create and return the FastAPI app
-    return create_fastapi_app(settings)
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI):
+        """
+        Handle application lifespan events.
+
+        Args:
+            _app: FastAPI application instance
+        """
+        # Startup
+        setup_logging(settings)
+        await module_discovery.discover_and_register_providers()
+        yield
+        # Shutdown (add cleanup logic here if needed)
+
+    # Create the FastAPI app with our enhanced lifespan
+    app = FastAPI(
+        title="IntelliPost AI Backend",
+        description="AI-powered content generation and marketplace integration platform",
+        version="1.0.0",
+        docs_url="/docs",
+        redoc_url="/redoc",
+        lifespan=lifespan,
+    )
+
+    # Add CORS middleware
+    from fastapi.middleware.cors import CORSMiddleware
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # Configure appropriately for production
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Include routers
+    from api.routers import auth_router, health, root
+
+    app.include_router(root.router)  # Root endpoint at "/"
+    app.include_router(health.router)  # Health endpoint at "/health"
+    app.include_router(
+        auth_router.router, prefix="/api/v1"
+    )  # Auth endpoints at "/api/v1"
+
+    return app

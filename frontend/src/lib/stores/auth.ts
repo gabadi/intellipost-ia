@@ -72,6 +72,7 @@ class AuthManager {
         this.scheduleTokenRefresh();
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to initialize auth state:', error);
       this.clearTokens();
     }
@@ -134,6 +135,7 @@ class AuthManager {
       try {
         await authApi.logout(currentState.accessToken);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Logout API call failed:', error);
       }
     }

@@ -67,6 +67,7 @@
       // Redirect to products page on successful registration
       goto('/products');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Registration failed:', error);
 
       if (error && typeof error === 'object' && 'details' in error) {

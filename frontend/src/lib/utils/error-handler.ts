@@ -207,9 +207,9 @@ export class ErrorHandler {
     } else if (typeof error === 'string') {
       errorMessage = error;
     } else if (error && typeof error === 'object') {
-      const errorObj = error as any;
-      errorMessage = errorObj.detail || errorObj.message || errorMessage;
-      statusCode = errorObj.status || 0;
+      const errorObj = error as Record<string, unknown>;
+      errorMessage = String(errorObj.detail || errorObj.message || errorMessage);
+      statusCode = Number(errorObj.status || 0);
     }
 
     // Look for matching error pattern
@@ -391,10 +391,13 @@ export class ErrorHandler {
     };
 
     if (error.details.severity === ErrorSeverity.CRITICAL) {
+      // eslint-disable-next-line no-console
       console.error('Critical authentication error:', logData);
     } else if (error.details.severity === ErrorSeverity.HIGH) {
+      // eslint-disable-next-line no-console
       console.error('High severity authentication error:', logData);
     } else {
+      // eslint-disable-next-line no-console
       console.warn('Authentication error:', logData);
     }
 
