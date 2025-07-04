@@ -32,9 +32,15 @@
   "reportIncompatibleMethodOverride": true,
   "reportIncompatibleVariableOverride": true,
   "reportOverlappingOverload": true,
+  "pythonPath": [
+    "."
+  ],
   "executionEnvironments": [
     {
-      "root": "."
+      "root": ".",
+      "pythonPath": [
+        "."
+      ]
     }
   ]
 }
