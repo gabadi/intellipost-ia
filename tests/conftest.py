@@ -88,17 +88,19 @@ def test_settings(database_url: str) -> Settings:
     instead of the default development database.
     """
     # Override environment variables for testing
-    os.environ.update({
-        "INTELLIPOST_ENVIRONMENT": "testing",
-        "INTELLIPOST_DATABASE_URL": database_url,
-        "INTELLIPOST_DATABASE_TEST_URL": database_url,
-        "INTELLIPOST_DEBUG": "false",
-        "INTELLIPOST_SECRET_KEY": "test-secret-key-for-testing-only",
-        "INTELLIPOST_S3_ENDPOINT_URL": "http://localhost:9001",
-        "INTELLIPOST_S3_ACCESS_KEY": "test_access_key",
-        "INTELLIPOST_S3_SECRET_KEY": "test_secret_key",
-        "INTELLIPOST_S3_BUCKET_NAME": "test-bucket",
-    })
+    os.environ.update(
+        {
+            "INTELLIPOST_ENVIRONMENT": "testing",
+            "INTELLIPOST_DATABASE_URL": database_url,
+            "INTELLIPOST_DATABASE_TEST_URL": database_url,
+            "INTELLIPOST_DEBUG": "false",
+            "INTELLIPOST_SECRET_KEY": "test-secret-key-for-testing-only",
+            "INTELLIPOST_S3_ENDPOINT_URL": "http://localhost:9001",
+            "INTELLIPOST_S3_ACCESS_KEY": "test_access_key",
+            "INTELLIPOST_S3_SECRET_KEY": "test_secret_key",
+            "INTELLIPOST_S3_BUCKET_NAME": "test-bucket",
+        }
+    )
 
     return Settings()
 
@@ -115,12 +117,14 @@ def unit_test_settings() -> Settings:
     original_env = os.environ.copy()
 
     # Set test environment variables
-    os.environ.update({
-        "INTELLIPOST_ENVIRONMENT": "testing",
-        "INTELLIPOST_DEBUG": "false",
-        "INTELLIPOST_LOG_LEVEL": "INFO",
-        "INTELLIPOST_SECRET_KEY": "test-secret-key-for-testing-only",
-    })
+    os.environ.update(
+        {
+            "INTELLIPOST_ENVIRONMENT": "testing",
+            "INTELLIPOST_DEBUG": "false",
+            "INTELLIPOST_LOG_LEVEL": "INFO",
+            "INTELLIPOST_SECRET_KEY": "test-secret-key-for-testing-only",
+        }
+    )
 
     try:
         settings = Settings()

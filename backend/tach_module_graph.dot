@@ -1,0 +1,22 @@
+strict digraph {
+di;
+api;
+"modules.content_generation";
+"modules.notifications";
+"modules.marketplace_integration";
+"modules.product_management";
+"modules.user_management";
+infrastructure;
+<root>;
+di -> api;
+di -> "modules.content_generation";
+di -> "modules.notifications";
+di -> "modules.marketplace_integration";
+di -> "modules.product_management";
+di -> "modules.user_management";
+di -> infrastructure;
+api -> infrastructure;
+api -> "modules.user_management";
+"modules.user_management" -> infrastructure;
+<root> -> di;
+}

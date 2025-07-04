@@ -68,6 +68,18 @@ class Settings(BaseSettings):
     api_host: str = Field(default="127.0.0.1", description="API host")  # nosec B104
     api_port: int = Field(default=8000, description="API port")
 
+    # HTTPS configuration
+    https_only: bool = Field(
+        default=False, description="Enforce HTTPS-only in production"
+    )
+    https_redirect: bool = Field(default=False, description="Redirect HTTP to HTTPS")
+    hsts_max_age: int = Field(
+        default=31536000, description="HSTS max age in seconds (1 year)"
+    )
+    secure_cookies: bool = Field(
+        default=False, description="Force secure cookies in production"
+    )
+
     # CORS configuration
     cors_origins: list[str] = Field(
         default=["http://localhost:4000", "http://127.0.0.1:4000"],
@@ -104,10 +116,15 @@ class Settings(BaseSettings):
         description="JWT secret key for user authentication",
     )
     user_jwt_expire_minutes: int = Field(
-        default=30, description="JWT token expiry time in minutes"
+        default=15,
+        description="JWT access token expiry time in minutes (mobile-optimized)",
+    )
+    user_jwt_refresh_expire_days: int = Field(
+        default=7,
+        description="JWT refresh token expiry time in days (mobile-optimized)",
     )
     user_session_expire_hours: int = Field(
-        default=24, description="User session expiry time in hours"
+        default=168, description="User session expiry time in hours (7 days)"
     )
     user_max_login_attempts: int = Field(
         default=5, description="Maximum login attempts before lockout"
@@ -175,15 +192,24 @@ class Settings(BaseSettings):
     photoroom_api_key: str | None = Field(default=None, description="PhotoRoom API key")
 
     @model_validator(mode="after")
-    def validate_secret_key_for_production(self):
-        """Validate that secret key is properly set for production."""
-        if (
-            self.environment.lower() == "production"
-            and self.secret_key == "dev-secret-key-change-in-production"  # nosec B105
-        ):
-            raise ValueError(
-                "Secret key must be changed from default value in production"
-            )
+    def validate_production_security(self):
+        """Validate security settings for production environment."""
+        if self.environment.lower() == "production":
+            # Validate secret key
+            if self.secret_key == "dev-secret-key-change-in-production":  # nosec B105
+                raise ValueError(
+                    "Secret key must be changed from default value in production"
+                )
+
+            # Enforce HTTPS settings in production
+            if not self.https_only:
+                # Auto-enable HTTPS in production
+                self.https_only = True
+
+            if not self.secure_cookies:
+                # Auto-enable secure cookies in production
+                self.secure_cookies = True
+
         return self
 
     @field_validator("log_level")

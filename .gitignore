@@ -314,3 +314,9 @@ local_settings.py
 frontend/playwright-report/
 frontend/test-results/
 test-results/
+
+# Story implementation temporary files
+.story-implementation/
+*.story-implementation/
+*-implementation-*/
+consolidation-*/
