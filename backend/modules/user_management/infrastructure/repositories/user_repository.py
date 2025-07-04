@@ -11,7 +11,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.user_management.domain.entities.user import User, UserStatus
-from modules.user_management.infrastructure.models.user_model import UserModel
+
+from ..models.user_model import UserModel
 
 
 class UserRepository:
