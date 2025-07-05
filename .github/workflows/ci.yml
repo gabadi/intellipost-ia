@@ -54,7 +54,12 @@ jobs:
         run: |
           uv sync --all-groups
           # Install package in editable mode to ensure proper module imports
+          echo "Installing package in editable mode..."
           uv pip install -e .
+          echo "Package installation completed. Checking pip list..."
+          uv pip list | grep intellipost
+          echo "Checking if package is in site-packages..."
+          uv run python -c "import sys; import site; print('Site packages:', site.getsitepackages())"
           # Verify installation was successful
           uv run python -c "import sys; print('Python path setup:'); [print(f'  {p}') for p in sys.path]"
 
@@ -63,14 +68,22 @@ jobs:
         run: |
           # Test critical imports to ensure package structure is correct
           echo "Testing critical module imports..."
+          echo "Current directory: $(pwd)"
+          echo "Package structure:"
+          ls -la modules/user_management/infrastructure/models/
+          echo "Python path during import test:"
           uv run python -c "
           import sys
+          import os
+          print('Python path:', sys.path)
+          print('Current working directory:', os.getcwd())
           print('Testing imports...')
           try:
               import modules.user_management.infrastructure.models.user_model
               print('✓ modules.user_management.infrastructure.models.user_model imported successfully')
           except ImportError as e:
               print(f'✗ Failed to import modules.user_management.infrastructure.models.user_model: {e}')
+              print('Available packages in sys.modules:', [m for m in sys.modules.keys() if m.startswith('modules')])
               sys.exit(1)
 
           try:
