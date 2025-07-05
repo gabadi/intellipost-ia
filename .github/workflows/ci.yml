@@ -53,8 +53,6 @@ jobs:
         working-directory: ./backend
         run: |
           uv sync --all-groups
-          # Install package in editable mode to make modules importable
-          uv pip install -e .
           # Verify installation was successful
           uv run python -c "import sys; print('Python path setup:'); [print(f'  {p}') for p in sys.path]"
 
