@@ -53,6 +53,8 @@ jobs:
         working-directory: ./backend
         run: |
           uv sync --all-groups
+          # Install the backend package in editable mode for proper import resolution
+          uv pip install -e .
 
       - name: Run backend linting and formatting
         working-directory: ./backend
@@ -62,13 +64,9 @@ jobs:
 
       - name: Run backend type checking
         working-directory: ./backend
-        env:
-          PYTHONPATH: .:$PYTHONPATH
-        continue-on-error: true
         run: |
-          # Ensure the current directory is in Python path for module resolution
-          export PYTHONPATH=".:$PYTHONPATH"
-          uv run pyright --project . || echo "Type checking failed - will be addressed in Story 6.1.1"
+          # Type checking with proper package installation for import resolution
+          uv run pyright
 
       - name: Run backend architectural checks
         working-directory: ./backend
