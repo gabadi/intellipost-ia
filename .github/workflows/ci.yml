@@ -65,6 +65,13 @@ jobs:
         env:
           PYTHONPATH: /home/runner/work/intellipost-ia/intellipost-ia/backend
         run: |
+          # Debug: Check directory structure
+          echo "Current directory structure:"
+          ls -la
+          echo "Modules directory:"
+          ls -la modules/
+          echo "User management structure:"
+          find modules/user_management -name "*.py" | head -10
           # Verify PYTHONPATH setup works for imports
           uv run python -c "import sys; print('Python path:'); [print(f'  {p}') for p in sys.path]; import modules.user_management.infrastructure.models.user_model; print('Import test successful')"
           # Type checking with proper PYTHONPATH configuration
