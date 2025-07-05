@@ -195,7 +195,6 @@ exclude_lines = [
 # Setuptools configuration
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["modules*", "api*", "infrastructure*"]
 
 # Tach configuration moved to separate tach.toml file
 
