@@ -63,9 +63,11 @@ jobs:
       - name: Run backend type checking
         working-directory: ./backend
         env:
-          PYTHONPATH: .
+          PYTHONPATH: .:$PYTHONPATH
         run: |
-          uv run pyright
+          # Ensure the current directory is in Python path for module resolution
+          export PYTHONPATH=".:$PYTHONPATH"
+          uv run pyright --project .
 
       - name: Run backend architectural checks
         working-directory: ./backend
