@@ -195,6 +195,8 @@ exclude_lines = [
 # Setuptools configuration
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["*"]
+exclude = ["tests*", "*.tests*", "test_*"]
 
 # Tach configuration moved to separate tach.toml file
 

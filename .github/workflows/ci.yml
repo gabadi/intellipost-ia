@@ -53,6 +53,42 @@ jobs:
         working-directory: ./backend
         run: |
           uv sync --all-groups
+          # Install package in editable mode to make modules importable
+          uv pip install -e .
+          # Verify installation was successful
+          uv run python -c "import sys; print('Python path setup:'); [print(f'  {p}') for p in sys.path]"
+
+      - name: Validate package imports
+        working-directory: ./backend
+        run: |
+          # Test critical imports to ensure package structure is correct
+          echo "Testing critical module imports..."
+          uv run python -c "
+          import sys
+          print('Testing imports...')
+          try:
+              import modules.user_management.infrastructure.models.user_model
+              print('✓ modules.user_management.infrastructure.models.user_model imported successfully')
+          except ImportError as e:
+              print(f'✗ Failed to import modules.user_management.infrastructure.models.user_model: {e}')
+              sys.exit(1)
+
+          try:
+              import modules.user_management.infrastructure.middleware
+              print('✓ modules.user_management.infrastructure.middleware imported successfully')
+          except ImportError as e:
+              print(f'✗ Failed to import modules.user_management.infrastructure.middleware: {e}')
+              sys.exit(1)
+
+          try:
+              import modules.user_management.domain.entities.user
+              print('✓ modules.user_management.domain.entities.user imported successfully')
+          except ImportError as e:
+              print(f'✗ Failed to import modules.user_management.domain.entities.user: {e}')
+              sys.exit(1)
+
+          print('All critical imports passed!')
+          "
 
       - name: Run backend linting and formatting
         working-directory: ./backend
@@ -62,8 +98,6 @@ jobs:
 
       - name: Run backend type checking
         working-directory: ./backend
-        env:
-          PYTHONPATH: /home/runner/work/intellipost-ia/intellipost-ia/backend
         run: |
           # Debug: Check directory structure
           echo "Current directory structure:"
@@ -72,9 +106,7 @@ jobs:
           ls -la modules/
           echo "User management structure:"
           find modules/user_management -name "*.py" | head -10
-          # Verify PYTHONPATH setup works for imports
-          uv run python -c "import sys; print('Python path:'); [print(f'  {p}') for p in sys.path]; import modules.user_management.infrastructure.models.user_model; print('Import test successful')"
-          # Type checking with proper PYTHONPATH configuration
+          # Type checking - should work with editable install
           uv run pyright
 
       - name: Run backend architectural checks
