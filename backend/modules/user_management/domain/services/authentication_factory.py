@@ -32,9 +32,9 @@ async def create_enhanced_authentication_service() -> EnhancedAuthenticationServ
     Returns:
         EnhancedAuthenticationService instance ready to use
     """
-    # Create database session using the async generator
+    # Create database session using the async generator properly
     session_generator = get_database_session()
-    session = await session_generator.__anext__()
+    session = await anext(session_generator)
 
     # Create repositories
     user_repository = UserRepository(session)

@@ -224,7 +224,7 @@ def setup_logging(settings: Settings) -> None:
                 "level": settings.log_level,
                 "formatter": "structured" if settings.log_format == "json" else "text",
                 "filters": [
-                    "sensitive_filter",
+                    # "sensitive_filter",  # Temporarily disabled for debugging
                     "performance_filter",
                     "security_filter",
                 ],
