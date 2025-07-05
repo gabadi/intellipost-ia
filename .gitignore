@@ -285,6 +285,7 @@ secrets.json
 
 # AI/ML specific
 models/
+!backend/modules/*/infrastructure/models/
 *.pkl
 *.joblib
 data/raw/
