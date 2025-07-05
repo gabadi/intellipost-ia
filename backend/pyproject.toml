@@ -42,6 +42,7 @@ dependencies = [
     "greenlet>=3.2.3",
 ]
 
+
 # Dev dependencies now managed by uvx and package.json
 # [project.optional-dependencies]
 # dev = [
@@ -194,7 +195,7 @@ exclude_lines = [
 # Setuptools configuration
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["*"]
+include = ["modules*", "api*", "infrastructure*"]
 
 # Tach configuration moved to separate tach.toml file
 
