@@ -52,10 +52,7 @@ jobs:
       - name: Install backend dependencies
         working-directory: ./backend
         run: |
-          # Sync dependencies first
           uv sync --all-groups
-          # Install package in editable mode with explicit setuptools configuration
-          uv pip install -e . --force-reinstall
 
       - name: Run backend linting and formatting
         working-directory: ./backend
@@ -65,10 +62,12 @@ jobs:
 
       - name: Run backend type checking
         working-directory: ./backend
+        env:
+          PYTHONPATH: /home/runner/work/intellipost-ia/intellipost-ia/backend
         run: |
-          # Verify the editable installation worked
-          uv run python -c "import modules.user_management.infrastructure.models.user_model; print('Import test successful')"
-          # Type checking with proper package installation for import resolution
+          # Verify PYTHONPATH setup works for imports
+          uv run python -c "import sys; print('Python path:'); [print(f'  {p}') for p in sys.path]; import modules.user_management.infrastructure.models.user_model; print('Import test successful')"
+          # Type checking with proper PYTHONPATH configuration
           uv run pyright
 
       - name: Run backend architectural checks

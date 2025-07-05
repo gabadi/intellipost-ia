@@ -40,6 +40,9 @@
       "root": ".",
       "pythonPath": [
         "."
+      ],
+      "extraPaths": [
+        "."
       ]
     }
   ]
