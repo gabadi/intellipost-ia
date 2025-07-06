@@ -26,13 +26,15 @@ from modules.user_management.domain.ports.user_repository_protocol import (
     UserRepositoryProtocol,
 )
 
+# Import current user dependency directly
+from api.dependencies import get_current_user
+
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 def create_user_router(
     user_repository: UserRepositoryProtocol,
     password_service: PasswordServiceProtocol,
-    get_current_user_dependency,
 ) -> APIRouter:
     """Create user router with dependency injection."""
 
@@ -44,7 +46,7 @@ def create_user_router(
         },
     )
     async def get_current_user_profile(
-        current_user: Annotated[User, Depends(get_current_user_dependency)],
+        current_user: Annotated[User, Depends(get_current_user)],
     ) -> UserDetailResponse:
         """Get current user profile."""
         return UserDetailResponse(
@@ -76,7 +78,7 @@ def create_user_router(
     )
     async def update_user_profile(
         request: UserProfileUpdateRequest,
-        current_user: Annotated[User, Depends(get_current_user_dependency)],
+        current_user: Annotated[User, Depends(get_current_user)],
     ) -> UserDetailResponse:
         """Update current user profile."""
         try:
@@ -125,7 +127,7 @@ def create_user_router(
     )
     async def change_password(
         request: ChangePasswordRequest,
-        current_user: Annotated[User, Depends(get_current_user_dependency)],
+        current_user: Annotated[User, Depends(get_current_user)],
     ) -> dict[str, str]:
         """Change current user password."""
         try:

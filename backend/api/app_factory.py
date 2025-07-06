@@ -11,6 +11,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.dependencies import (
+    get_authenticate_user_use_case,
+    get_current_user,
+    get_password_service,
+    get_refresh_token_use_case,
+    get_register_user_use_case,
+    get_user_repository,
+)
 from api.routers import health
 from api.routers.auth import create_auth_router_with_dependencies
 from api.routers.config import create_config_router
@@ -79,16 +87,7 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
     config_router = create_config_router(settings)
     app.include_router(config_router)
 
-    # Create and include authentication router - import here to avoid circular imports
-    from di.container import (
-        get_authenticate_user_use_case,
-        get_current_user,
-        get_password_service,
-        get_refresh_token_use_case,
-        get_register_user_use_case,
-        get_user_repository,
-    )
-
+    # Create and include authentication router
     auth_router = create_auth_router_with_dependencies(
         register_use_case_factory=get_register_user_use_case,
         authenticate_use_case_factory=get_authenticate_user_use_case,
@@ -104,7 +103,6 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
     user_router = create_user_router(
         user_repository=get_user_repository,
         password_service=get_password_service,
-        get_current_user_dependency=get_current_user,
     )
     app.include_router(user_router)
 
