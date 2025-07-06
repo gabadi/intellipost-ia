@@ -322,3 +322,16 @@ local_settings.py
 frontend/playwright-report/
 frontend/test-results/
 test-results/
+
+# Documentation and design artifacts
+# UX review screenshots and user journey documentation
+ux-review-*.png
+ux-final-*.png
+user-journey-*.png
+# Design mockups and wireframes
+mockup-*.png
+wireframe-*.png
+design-*.png
+# Screenshots and visual documentation
+screenshot-*.png
+demo-*.png
