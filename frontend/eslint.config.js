@@ -30,7 +30,7 @@ export default [
     },
     rules: {
       ...ts.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
@@ -59,30 +59,26 @@ export default [
     rules: {
       ...svelte.configs.recommended.rules,
       ...ts.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      'svelte/valid-compile': 'warn', // Make accessibility warnings non-blocking
-      // Allow any for autocomplete attribute workaround
-      '@typescript-eslint/no-explicit-any': ['warn', { ignoreRestArgs: true }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
   {
     files: ['**/*.{js,ts,svelte}'],
     rules: {
-      // General code quality rules - more permissive for development
+      // General code quality rules
       'no-console': 'warn',
-      'no-debugger': 'warn',
-      'no-alert': 'warn',
-      'prefer-const': 'warn',
+      'no-debugger': 'error',
+      'no-alert': 'error',
+      'prefer-const': 'error',
       'no-var': 'error',
-      'object-shorthand': 'warn',
-      'prefer-arrow-callback': 'warn',
-      'prefer-template': 'warn',
-      'template-curly-spacing': 'warn',
-      quotes: ['warn', 'double', { avoidEscape: true }],
-      semi: ['warn', 'always'],
-      indent: ['warn', 2],
-      'max-len': ['warn', { code: 120, ignoreUrls: true }],
-      'no-useless-escape': 'warn',
+      'object-shorthand': 'error',
+      'prefer-arrow-callback': 'error',
+      'prefer-template': 'error',
+      'template-curly-spacing': 'error',
+      quotes: ['error', 'double', { avoidEscape: true }],
+      semi: ['error', 'always'],
+      indent: ['error', 2],
+      'max-len': ['warn', { code: 100, ignoreUrls: true }],
     },
   },
   {
@@ -102,7 +98,7 @@ export default [
     },
     rules: {
       'no-console': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
