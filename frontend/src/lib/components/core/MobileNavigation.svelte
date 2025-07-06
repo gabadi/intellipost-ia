@@ -2,18 +2,20 @@
   import { page } from '$app/stores';
   import type { NavItem } from '$types/navigation.js';
   import { theme, type Theme } from '$stores/theme.js';
+  import { authStore } from '$lib/stores/auth';
 
   const navItems: NavItem[] = [
-    { path: '/', label: 'Dashboard', icon: '🏠' },
+    { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
     { path: '/products/new', label: 'New Product', icon: '➕' },
     { path: '/products', label: 'Products', icon: '📦' },
+    { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 
   $: currentPath = $page.url.pathname;
 
   function isActive(path: string): boolean {
-    if (path === '/') {
-      return currentPath === '/';
+    if (path === '/dashboard') {
+      return currentPath === '/dashboard' || currentPath === '/';
     }
     // Exact match for specific paths to avoid conflicts
     if (path === '/products/new') {
@@ -27,6 +29,10 @@
     }
     // For other paths, use startsWith but exclude more specific matches
     return currentPath.startsWith(path) && currentPath !== '/products/new';
+  }
+
+  async function handleLogout() {
+    await authStore.logout();
   }
 
   // Theme management
@@ -77,6 +83,17 @@
     <span class="icon" aria-hidden="true">{currentThemeInfo.icon}</span>
     <span class="label">{currentThemeInfo.label}</span>
   </button>
+
+  <!-- Logout button -->
+  <button
+    class="nav-item logout-btn"
+    on:click={handleLogout}
+    aria-label="Logout"
+    type="button"
+  >
+    <span class="icon" aria-hidden="true">🚪</span>
+    <span class="label">Logout</span>
+  </button>
 </nav>
 
 <style>
@@ -120,7 +137,8 @@
     background-color: var(--color-primary-light);
   }
 
-  .nav-item.theme-toggle {
+  .nav-item.theme-toggle,
+  .nav-item.logout-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -128,7 +146,9 @@
   }
 
   .nav-item.theme-toggle:hover,
-  .nav-item.theme-toggle:focus {
+  .nav-item.theme-toggle:focus,
+  .nav-item.logout-btn:hover,
+  .nav-item.logout-btn:focus {
     background-color: var(--color-background-secondary);
     outline: none;
   }

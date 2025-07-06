@@ -45,7 +45,7 @@
     if (inputValue) {
       switch (type) {
         case 'email': {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
           if (!emailRegex.test(inputValue)) {
             return 'Please enter a valid email address';
           }
@@ -75,8 +75,8 @@
         return `Must be no more than ${maxlength} characters long`;
       }
 
-      // Pattern validation
-      if (pattern && !new RegExp(pattern).test(inputValue)) {
+      // Pattern validation (only if pattern is provided and not empty)
+      if (pattern && pattern.trim() && !new RegExp(pattern).test(inputValue)) {
         return 'Please match the required format';
       }
     }
@@ -150,7 +150,7 @@
       {readonly}
       {maxlength}
       {minlength}
-      {pattern}
+      pattern={pattern && pattern.trim() ? pattern : undefined}
       id={inputId}
       name={name || inputId}
       class="input input--{size}"

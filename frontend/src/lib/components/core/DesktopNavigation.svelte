@@ -2,18 +2,21 @@
   import { page } from '$app/stores';
   import type { NavItem } from '$types/navigation.js';
   import ThemeToggle from '$components/ui/ThemeToggle.svelte';
+  import { authStore } from '$lib/stores/auth';
 
   const navItems: NavItem[] = [
-    { path: '/', label: 'Dashboard', icon: '🏠' },
+    { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
     { path: '/products/new', label: 'Create Product', icon: '➕' },
     { path: '/products', label: 'Products', icon: '📦' },
+    { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 
   $: currentPath = $page.url.pathname;
+  $: authState = $authStore;
 
   function isActive(path: string): boolean {
-    if (path === '/') {
-      return currentPath === '/';
+    if (path === '/dashboard') {
+      return currentPath === '/dashboard' || currentPath === '/';
     }
     // Exact match for specific paths to avoid conflicts
     if (path === '/products/new') {
@@ -27,6 +30,10 @@
     }
     // For other paths, use startsWith but exclude more specific matches
     return currentPath.startsWith(path) && currentPath !== '/products/new';
+  }
+
+  async function handleLogout() {
+    await authStore.logout();
   }
 </script>
 
@@ -65,9 +72,20 @@
     <div class="user-section">
       <div class="user-avatar" aria-hidden="true">👤</div>
       <div class="user-info">
-        <div class="user-name">User</div>
-        <div class="user-status">Online</div>
+        <div class="user-name">
+          {authState.user?.first_name || 'User'} {authState.user?.last_name || ''}
+        </div>
+        <div class="user-email">{authState.user?.email || ''}</div>
       </div>
+      <button 
+        type="button"
+        class="logout-btn"
+        on:click={handleLogout}
+        aria-label="Logout"
+        title="Logout"
+      >
+        🚪
+      </button>
     </div>
   </div>
 </nav>
@@ -225,12 +243,44 @@
     font-weight: 500;
     color: var(--color-text-primary);
     line-height: var(--leading-tight);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .user-status {
+  .user-email {
     font-size: var(--text-xs);
     color: var(--color-text-muted);
     line-height: var(--leading-tight);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .logout-btn {
+    background: none;
+    border: none;
+    font-size: var(--text-lg);
+    padding: var(--space-2);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    transition: all 0.2s ease;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logout-btn:hover {
+    background: var(--color-background-tertiary);
+    color: var(--color-text-secondary);
+  }
+
+  .logout-btn:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   /* Reduced motion support */
