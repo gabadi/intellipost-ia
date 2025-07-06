@@ -196,7 +196,16 @@ exclude_lines = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["modules*", "infrastructure*", "api*", "di*", "intellipost*"]
-exclude = ["tests*", "*.tests*", "test_*"]
+exclude = [
+    "tests*",
+    "*.tests*",
+    "test_*",
+    "*test*",
+    "migrations*",
+    "*.migrations*",
+    "docs*",
+    "*.egg-info*"
+]
 
 # Tach configuration moved to separate tach.toml file
 
