@@ -27,43 +27,9 @@ from modules.user_management.infrastructure.services.ml_oauth_service import (
 )
 
 
-class SettingsAdapter:
-    """Adapter for global settings to module settings protocol."""
-
-    @property
-    def ml_encryption_key(self) -> str | None:
-        """Get MercadoLibre encryption key."""
-        return settings.ml_encryption_key
-
-    @property
-    def ml_app_id(self) -> str | None:
-        """Get MercadoLibre application ID."""
-        return settings.ml_app_id
-
-    @property
-    def ml_app_secret(self) -> str | None:
-        """Get MercadoLibre application secret."""
-        return settings.ml_app_secret
-
-    @property
-    def is_production(self) -> bool:
-        """Check if running in production environment."""
-        return settings.is_production
-
-    @property
-    def environment(self) -> str:
-        """Get current environment name."""
-        return settings.environment
-
-    @property
-    def database_url(self) -> str:
-        """Get database URL."""
-        return settings.get_database_url()
-
-
 def get_settings() -> SettingsProtocol:
-    """Get settings adapter."""
-    return SettingsAdapter()
+    """Get settings instance."""
+    return settings
 
 
 async def get_oauth_service(

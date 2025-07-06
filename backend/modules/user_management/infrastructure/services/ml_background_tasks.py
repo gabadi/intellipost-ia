@@ -56,7 +56,7 @@ class MLBackgroundTasksService:
         """
         # Get configuration from settings provider or use provided values
         if settings:
-            self._database_url = database_url or settings.database_url
+            self._database_url = database_url or settings.get_database_url()
             self._ml_app_id = ml_app_id or settings.ml_app_id or ""
             self._ml_app_secret = ml_app_secret or settings.ml_app_secret or ""
             is_production = settings.is_production

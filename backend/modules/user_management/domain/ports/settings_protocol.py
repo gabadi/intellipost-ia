@@ -36,7 +36,6 @@ class SettingsProtocol(Protocol):
         """Get current environment name."""
         ...
 
-    @property
-    def database_url(self) -> str:
+    def get_database_url(self) -> str:
         """Get database URL."""
         ...
