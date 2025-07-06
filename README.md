@@ -41,6 +41,14 @@ cd frontend && npx vite dev --port 4000
 - Health Check: `http://localhost:8080/health`
 - API Root: `http://localhost:8080/`
 
+### Default Admin Credentials
+After running database migrations, a default admin user is created:
+- **Email**: `admin@intellipost.ai`
+- **Password**: `admin123`
+- **Access**: Full system administration
+
+⚠️ **Security Note**: Change these credentials immediately in production environments!
+
 ## 📁 Project Structure
 
 ```
