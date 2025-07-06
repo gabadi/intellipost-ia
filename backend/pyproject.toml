@@ -129,7 +129,7 @@ exclude = ["**/__pycache__", ".venv", "../tests", "tests", "*/tests"]
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.13"
-typeCheckingMode = "basic"
+typeCheckingMode = "strict"
 useLibraryCodeForTypes = true
 reportMissingImports = true
 reportMissingTypeStubs = false
@@ -150,6 +150,13 @@ reportConstantRedefinition = true
 reportIncompatibleMethodOverride = true
 reportIncompatibleVariableOverride = true
 reportOverlappingOverload = true
+# Temporarily disable some strict mode checks to make transition manageable
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportMissingParameterType = false
+reportMissingTypeArgument = false
 
 # Pytest configuration
 [tool.pytest.ini_options]

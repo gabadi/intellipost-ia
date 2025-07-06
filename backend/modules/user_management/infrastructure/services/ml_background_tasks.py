@@ -6,6 +6,7 @@ token refresh and connection health monitoring.
 """
 
 import logging
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -174,7 +175,7 @@ class MLBackgroundTasksService:
             logger.error(f"Failed to initialize ML services: {e}")
             raise
 
-    async def get_status(self) -> dict:
+    async def get_status(self) -> dict[str, Any]:
         """
         Get status of all background tasks.
 
@@ -182,7 +183,7 @@ class MLBackgroundTasksService:
             Status information dictionary
         """
         try:
-            status = {
+            status: dict[str, Any] = {
                 "service_running": self._running,
                 "database_connected": False,
                 "token_refresh_scheduler": None,

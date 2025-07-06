@@ -139,16 +139,8 @@ class CSRFProtection:
         state = None
 
         # Try to get from request body if it's JSON
-        if (
-            hasattr(request, "json")
-            and request.headers.get("content-type") == "application/json"
-        ):
-            try:
-                body = request.json()
-                if isinstance(body, dict):
-                    state = body.get("state")
-            except Exception:
-                pass
+        # Note: request.json() returns a coroutine, so we'll skip body parsing for now
+        # and only use query parameters for state validation
 
         # Try to get from query parameters
         if not state:

@@ -6,7 +6,7 @@ This module contains Pydantic schemas for ML OAuth API requests and responses.
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class MLOAuthInitiateRequest(BaseModel):
@@ -25,8 +25,9 @@ class MLOAuthInitiateRequest(BaseModel):
         pattern=r"^(MLA|MLM|MBL|MLC|MCO)$",
     )
 
-    @validator("redirect_uri")
-    def validate_redirect_uri(cls, v):
+    @field_validator("redirect_uri")
+    @classmethod
+    def validate_redirect_uri(cls, v: str) -> str:
         """Validate redirect URI format."""
         if not v.startswith(("http://", "https://")):
             raise ValueError("redirect_uri must start with http:// or https://")
@@ -215,7 +216,7 @@ class MLHealthCheckResponse(BaseModel):
     status: str = Field(..., description="Service status")
     version: str = Field(..., description="Service version")
     timestamp: datetime = Field(..., description="Health check timestamp")
-    checks: dict = Field(..., description="Individual health checks")
+    checks: dict[str, str] = Field(..., description="Individual health checks")
 
     class Config:
         """Pydantic config."""
