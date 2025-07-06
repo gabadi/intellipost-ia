@@ -83,7 +83,7 @@ jobs:
           INTELLIPOST_API_PORT: 8000
           INTELLIPOST_API_HOST: 127.0.0.1
           # Using INTELLIPOST_DATABASE_TEST_URL since get_database_url() returns database_test_url when environment=testing
-          INTELLIPOST_DATABASE_TEST_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_db
+          INTELLIPOST_DATABASE_TEST_URL: "postgresql+asyncpg://test_user:test_password@localhost:5432/test_db"
           INTELLIPOST_LOG_LEVEL: INFO
           INTELLIPOST_SECRET_KEY: test-secret-key-for-ci-only
         run: |
@@ -97,7 +97,7 @@ jobs:
           INTELLIPOST_API_PORT: 8000
           INTELLIPOST_API_HOST: 127.0.0.1
           # Using INTELLIPOST_DATABASE_TEST_URL since get_database_url() returns database_test_url when environment=testing
-          INTELLIPOST_DATABASE_TEST_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_db
+          INTELLIPOST_DATABASE_TEST_URL: "postgresql+asyncpg://test_user:test_password@localhost:5432/test_db"
           INTELLIPOST_LOG_LEVEL: INFO
           INTELLIPOST_SECRET_KEY: test-secret-key-for-ci-only
         run: |
@@ -111,7 +111,7 @@ jobs:
           INTELLIPOST_API_PORT: 8000
           INTELLIPOST_API_HOST: 127.0.0.1
           # Using INTELLIPOST_DATABASE_TEST_URL since get_database_url() returns database_test_url when environment=testing
-          INTELLIPOST_DATABASE_TEST_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_db
+          INTELLIPOST_DATABASE_TEST_URL: "postgresql+asyncpg://test_user:test_password@localhost:5432/test_db"
           INTELLIPOST_LOG_LEVEL: INFO
           INTELLIPOST_SECRET_KEY: test-secret-key-for-ci-only
         run: |
