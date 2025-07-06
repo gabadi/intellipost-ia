@@ -174,7 +174,7 @@ describe('Auth Store', () => {
       vi.mocked(AuthAPI.login).mockResolvedValue({
         success: false,
         error: 'Login failed',
-        data: null as any,
+        data: null as never,
       });
 
       vi.mocked(extractAuthError).mockReturnValue(mockError);
@@ -309,7 +309,7 @@ describe('Auth Store', () => {
       vi.mocked(AuthAPI.refreshToken).mockResolvedValue({
         success: false,
         error: 'Invalid refresh token',
-        data: null as any,
+        data: null as never,
       });
 
       const result = await authStore.refreshToken();

@@ -83,12 +83,13 @@ export class AuthAPI {
  */
 export function extractAuthError(error: unknown): AuthError {
   if (typeof error === 'object' && error !== null && 'detail' in error) {
-    const detail = (error as any).detail;
+    const detail = (error as Record<string, unknown>).detail;
     if (typeof detail === 'object' && detail !== null) {
+      const detailObj = detail as Record<string, unknown>;
       return {
-        error_code: detail.error_code || 'UNKNOWN_ERROR',
-        message: detail.message || 'An unknown error occurred',
-        details: detail.details,
+        error_code: String(detailObj.error_code || 'UNKNOWN_ERROR'),
+        message: String(detailObj.message || 'An unknown error occurred'),
+        details: detailObj.details as Record<string, unknown> | undefined,
       };
     }
   }

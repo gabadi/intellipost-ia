@@ -286,7 +286,7 @@ test.describe('Docker Authentication System', () => {
     await page.goto(`${FRONTEND_URL}/auth/login`);
 
     // Monitor network requests
-    const responses: any[] = [];
+    const responses: Array<{ url: string; status: number; headers: Record<string, string> }> = [];
     page.on('response', response => {
       if (response.url().includes(BACKEND_URL)) {
         responses.push({
@@ -308,7 +308,7 @@ test.describe('Docker Authentication System', () => {
     // Should have CORS headers
     const loginResponse = responses.find(r => r.url.includes('/auth/login'));
     expect(loginResponse).toBeTruthy();
-    expect(loginResponse.headers['access-control-allow-origin']).toBeTruthy();
+    expect(loginResponse?.headers['access-control-allow-origin']).toBeTruthy();
   });
 
   test('Performance - Auth operations complete quickly in Docker', async ({ page }) => {

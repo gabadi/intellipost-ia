@@ -5,7 +5,7 @@
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  // onMount import removed as it's not being used
   import { authStore } from '$lib/stores/auth';
   import { AuthAPI } from '$lib/api/auth';
   import Button from '$lib/components/ui/Button.svelte';
@@ -41,7 +41,7 @@
       uppercase: /[A-Z]/.test(value),
       lowercase: /[a-z]/.test(value),
       number: /\d/.test(value),
-      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(value),
+      special: /[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(value),
     };
 
     const missingRequirements = [];
@@ -104,7 +104,10 @@
         currentPasswordError = '';
       }
     } catch (error) {
-      console.error('Password change error:', error);
+      // Handle password change errors properly
+      if (import.meta.env.DEV) {
+        console.error('Password change error:', error);
+      }
       if (error && typeof error === 'object' && 'detail' in error) {
         const detail = (error as Record<string, unknown>).detail;
         if (

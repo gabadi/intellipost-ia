@@ -46,7 +46,10 @@ function createAuthStore() {
       localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
     } catch (error) {
-      console.warn('Failed to save auth data to localStorage:', error);
+      // Silently handle localStorage errors in production
+      if (import.meta.env.DEV) {
+        console.warn('Failed to save auth data to localStorage:', error);
+      }
     }
   };
 
@@ -66,7 +69,10 @@ function createAuthStore() {
 
       return { accessToken, refreshToken, user };
     } catch (error) {
-      console.warn('Failed to load auth data from localStorage:', error);
+      // Silently handle localStorage errors in production
+      if (import.meta.env.DEV) {
+        console.warn('Failed to load auth data from localStorage:', error);
+      }
       return { accessToken: null, refreshToken: null, user: null };
     }
   };
@@ -80,7 +86,10 @@ function createAuthStore() {
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER);
     } catch (error) {
-      console.warn('Failed to clear auth data from localStorage:', error);
+      // Silently handle localStorage errors in production
+      if (import.meta.env.DEV) {
+        console.warn('Failed to clear auth data from localStorage:', error);
+      }
     }
   };
 
@@ -195,7 +204,10 @@ function createAuthStore() {
         // Call logout endpoint for any server-side cleanup
         await AuthAPI.logout();
       } catch (error) {
-        console.warn('Logout API call failed:', error);
+        // Silently handle logout API failures in production
+        if (import.meta.env.DEV) {
+          console.warn('Logout API call failed:', error);
+        }
         // Continue with client-side cleanup even if API call fails
       }
 
@@ -228,7 +240,8 @@ function createAuthStore() {
           set(createInitialAuthState());
           return false;
         }
-      } catch (error) {
+      } catch {
+        // Remove unused 'error' variable
         clearStorage();
         set(createInitialAuthState());
         return false;
@@ -280,7 +293,10 @@ function createAuthStore() {
             try {
               localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
             } catch (error) {
-              console.warn('Failed to update user in localStorage:', error);
+              // Silently handle localStorage errors in production
+              if (import.meta.env.DEV) {
+                console.warn('Failed to update user in localStorage:', error);
+              }
             }
           }
 

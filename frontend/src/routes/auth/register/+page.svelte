@@ -65,7 +65,7 @@
       uppercase: /[A-Z]/.test(value),
       lowercase: /[a-z]/.test(value),
       number: /\d/.test(value),
-      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(value),
+      special: /[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(value),
     };
 
     const missingRequirements = [];
@@ -90,7 +90,7 @@
       uppercase: /[A-Z]/.test(value),
       lowercase: /[a-z]/.test(value),
       number: /\d/.test(value),
-      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(value),
+      special: /[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(value),
     };
 
     const score = Object.values(requirements).filter(Boolean).length;
@@ -118,7 +118,10 @@
         last_name: lastName || undefined,
       });
     } catch (error) {
-      console.error('Registration error:', error);
+      // Handle registration error properly
+      if (import.meta.env.DEV) {
+        console.error('Registration error:', error);
+      }
       // Check if registration is disabled
       if (error && typeof error === 'object' && 'detail' in error) {
         const detail = (error as Record<string, unknown>).detail;

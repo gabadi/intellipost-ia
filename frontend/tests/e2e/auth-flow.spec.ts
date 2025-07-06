@@ -1,10 +1,10 @@
 import { test, expect, type Page } from '@playwright/test';
 
-// Test configuration
-const TEST_USER_EMAIL = 'test@intellipost.ai';
-const TEST_USER_PASSWORD = 'SecurePass123!';
-const TEST_USER_FIRST_NAME = 'Test';
-const TEST_USER_LAST_NAME = 'User';
+// Test configuration - constants available if needed in future
+// const TEST_USER_EMAIL = 'test@intellipost.ai';
+// const TEST_USER_PASSWORD = 'SecurePass123!';
+// const TEST_USER_FIRST_NAME = 'Test';
+// const TEST_USER_LAST_NAME = 'User';
 
 // Helper to clear auth state
 async function clearAuthState(page: Page) {
@@ -16,11 +16,11 @@ async function clearAuthState(page: Page) {
   });
 }
 
-// Helper to check if user is authenticated
-async function isAuthenticated(page: Page): Promise<boolean> {
-  const token = await page.evaluate(() => localStorage.getItem('intellipost_access_token'));
-  return !!token;
-}
+// Helper to check if user is authenticated - available if needed in future
+// async function isAuthenticated(page: Page): Promise<boolean> {
+//   const token = await page.evaluate(() => localStorage.getItem('intellipost_access_token'));
+//   return !!token;
+// }
 
 test.describe('Authentication Flow E2E Tests', () => {
   test.beforeEach(async ({ page }) => {

@@ -41,7 +41,10 @@
         registrationEnabled = response.data.registration_enabled;
       }
     } catch (error) {
-      console.error('Failed to fetch feature flags:', error);
+      // Silently handle feature flags error, keep default value
+      if (import.meta.env.DEV) {
+        console.error('Failed to fetch feature flags:', error);
+      }
       // Keep default value of true on error
     }
   });
@@ -88,7 +91,10 @@
     try {
       await authStore.login({ email, password });
     } catch (error) {
-      console.error('Login error:', error);
+      // Handle login error - already handled by authStore
+      if (import.meta.env.DEV) {
+        console.error('Login error:', error);
+      }
     } finally {
       isSubmitting = false;
     }

@@ -16,7 +16,7 @@
   export let minlength: number | undefined = undefined;
   export let pattern: string = '';
   export let size: 'sm' | 'md' | 'lg' = 'md';
-  export let autocomplete: string = '';
+  export let autocomplete = '';
 
   // Real-time validation props
   export let validateOnInput: boolean = true;
@@ -152,7 +152,7 @@
       {maxlength}
       {minlength}
       pattern={pattern && pattern.trim() ? pattern : undefined}
-      autocomplete={autocomplete as any}
+      {autocomplete}
       id={inputId}
       name={name || inputId}
       class="input input--{size}"
