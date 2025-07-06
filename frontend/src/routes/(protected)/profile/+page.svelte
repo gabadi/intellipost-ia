@@ -41,7 +41,7 @@
       uppercase: /[A-Z]/.test(value),
       lowercase: /[a-z]/.test(value),
       number: /\d/.test(value),
-      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(value)
+      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(value),
     };
 
     const missingRequirements = [];
@@ -92,7 +92,7 @@
     try {
       const response = await AuthAPI.changePassword({
         current_password: currentPassword,
-        new_password: newPassword
+        new_password: newPassword,
       });
 
       if (response.success) {
@@ -106,11 +106,20 @@
     } catch (error) {
       console.error('Password change error:', error);
       if (error && typeof error === 'object' && 'detail' in error) {
-        const detail = (error as any).detail;
-        if (detail && detail.error_code === 'INVALID_CURRENT_PASSWORD') {
+        const detail = (error as Record<string, unknown>).detail;
+        if (
+          detail &&
+          typeof detail === 'object' &&
+          'error_code' in detail &&
+          detail.error_code === 'INVALID_CURRENT_PASSWORD'
+        ) {
           currentPasswordError = 'Current password is incorrect';
         } else {
-          authStore.setError(detail?.message || 'Failed to change password');
+          const message =
+            detail && typeof detail === 'object' && 'message' in detail
+              ? String(detail.message)
+              : 'Failed to change password';
+          authStore.setError(message);
         }
       } else {
         authStore.setError('Failed to change password');
@@ -159,7 +168,8 @@
         <div class="info-item">
           <label>Name</label>
           <div class="info-value">
-            {authState.user?.first_name || ''} {authState.user?.last_name || ''}
+            {authState.user?.first_name || ''}
+            {authState.user?.last_name || ''}
           </div>
         </div>
         <div class="info-item">
@@ -266,7 +276,12 @@
           type="submit"
           variant="primary"
           size="lg"
-          disabled={isSubmitting || !!newPasswordError || !!confirmPasswordError || !currentPassword || !newPassword || !confirmPassword}
+          disabled={isSubmitting ||
+            !!newPasswordError ||
+            !!confirmPasswordError ||
+            !currentPassword ||
+            !newPassword ||
+            !confirmPassword}
           class="change-password-button"
         >
           {#if isSubmitting}

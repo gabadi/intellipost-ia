@@ -62,7 +62,7 @@ def create_auth_router(
             409: {"model": ErrorResponse, "description": "User already exists"},
         },
     )
-    async def register(
+    async def register(  # pyright: ignore[reportUnusedFunction]
         request: RegisterRequest,
         register_use_case: RegisterUserUseCase = Depends(register_use_case_factory),
         authenticate_use_case: AuthenticateUserUseCase = Depends(
@@ -135,7 +135,7 @@ def create_auth_router(
             423: {"model": ErrorResponse, "description": "Account locked"},
         },
     )
-    async def login(
+    async def login(  # pyright: ignore[reportUnusedFunction]
         request: LoginRequest,
         authenticate_use_case: AuthenticateUserUseCase = Depends(
             authenticate_use_case_factory
@@ -201,7 +201,7 @@ def create_auth_router(
             401: {"model": ErrorResponse, "description": "Invalid refresh token"},
         },
     )
-    async def refresh_token(
+    async def refresh_token(  # pyright: ignore[reportUnusedFunction]
         request: RefreshTokenRequest,
         refresh_token_use_case: RefreshTokenUseCase = Depends(
             refresh_token_use_case_factory
@@ -250,7 +250,7 @@ def create_auth_router(
             401: {"model": ErrorResponse, "description": "Invalid token"},
         },
     )
-    async def logout() -> LogoutResponse:
+    async def logout() -> LogoutResponse:  # pyright: ignore[reportUnusedFunction]
         """
         Logout user and invalidate tokens.
 

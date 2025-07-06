@@ -15,7 +15,7 @@ import type {
   UserDetail,
   UserProfileUpdateRequest,
   ChangePasswordRequest,
-  AuthError
+  AuthError,
 } from '../types/auth';
 
 export class AuthAPI {
@@ -64,7 +64,9 @@ export class AuthAPI {
   /**
    * Change current user password
    */
-  static async changePassword(request: ChangePasswordRequest): Promise<APIResponse<{ message: string }>> {
+  static async changePassword(
+    request: ChangePasswordRequest
+  ): Promise<APIResponse<{ message: string }>> {
     return apiClient.post<{ message: string }>('/users/me/change-password', request);
   }
 
@@ -86,13 +88,13 @@ export function extractAuthError(error: unknown): AuthError {
       return {
         error_code: detail.error_code || 'UNKNOWN_ERROR',
         message: detail.message || 'An unknown error occurred',
-        details: detail.details
+        details: detail.details,
       };
     }
   }
 
   return {
     error_code: 'UNKNOWN_ERROR',
-    message: 'An unexpected error occurred'
+    message: 'An unexpected error occurred',
   };
 }

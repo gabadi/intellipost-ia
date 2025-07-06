@@ -75,7 +75,9 @@ test.describe('Authentication Flow E2E Tests', () => {
       await page.goto('/auth/register');
 
       // Check that form elements are present
-      await expect(page.getByRole('heading', { name: /register|sign up|create account/i })).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: /register|sign up|create account/i })
+      ).toBeVisible();
       await expect(page.getByLabel('First Name')).toBeVisible();
       await expect(page.getByLabel('Last Name')).toBeVisible();
       await expect(page.getByLabel('Email')).toBeVisible();
@@ -125,7 +127,9 @@ test.describe('Authentication Flow E2E Tests', () => {
     test('should have proper navigation links on auth pages', async ({ page }) => {
       // Check login page links
       await page.goto('/auth/login');
-      await expect(page.getByRole('link', { name: /register|sign up|create account/i })).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: /register|sign up|create account/i })
+      ).toBeVisible();
 
       // Check register page links
       await page.goto('/auth/register');
@@ -141,5 +145,4 @@ test.describe('Authentication Flow E2E Tests', () => {
       await expect(page.getByRole('heading', { name: 'IntelliPost AI' })).toBeVisible();
     });
   });
-
 });

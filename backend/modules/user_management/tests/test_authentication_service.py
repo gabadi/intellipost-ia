@@ -1,10 +1,18 @@
 """Unit tests for authentication service."""
+# pyright: reportMissingImports=false
+# pyright: reportUnknownMemberType=false
+# pyright: reportUnknownParameterType=false
+# pyright: reportMissingParameterType=false
+# pyright: reportUnknownVariableType=false
+# pyright: reportUnknownArgumentType=false
+# pyright: reportUntypedFunctionDecorator=false
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
-import pytest
+import pytest  # type: ignore[import-untyped]
 
 from modules.user_management.domain.entities.user import User, UserStatus
 from modules.user_management.domain.exceptions import (
@@ -19,18 +27,20 @@ from modules.user_management.domain.services.authentication import Authenticatio
 class TestAuthenticationService:
     """Test cases for AuthenticationService."""
 
-    @pytest.fixture
-    def mock_user_repository(self):
+    @pytest.fixture  # type: ignore[misc]
+    def mock_user_repository(self) -> AsyncMock:
         """Mock user repository."""
         return AsyncMock()
 
-    @pytest.fixture
-    def mock_password_service(self):
+    @pytest.fixture  # type: ignore[misc]
+    def mock_password_service(self) -> AsyncMock:
         """Mock password service."""
         return AsyncMock()
 
-    @pytest.fixture
-    def auth_service(self, mock_user_repository, mock_password_service):
+    @pytest.fixture  # type: ignore[misc]
+    def auth_service(
+        self, mock_user_repository: AsyncMock, mock_password_service: AsyncMock
+    ) -> Any:
         """Create authentication service with mocked dependencies."""
         return AuthenticationService(
             user_repository=mock_user_repository,

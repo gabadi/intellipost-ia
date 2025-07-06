@@ -16,7 +16,7 @@ def create_config_router(settings: Settings) -> APIRouter:
     """Create configuration router with dependency injection."""
 
     @router.get("/features")
-    async def get_feature_flags() -> dict[str, bool]:
+    async def get_feature_flags() -> dict[str, bool]:  # pyright: ignore[reportUnusedFunction]
         """Get feature flags for frontend configuration."""
         return {
             "registration_enabled": settings.user_registration_enabled,

@@ -14,7 +14,7 @@ const TEST_USER = {
   email: 'docker-test@example.com',
   password: 'TestPassword123!',
   firstName: 'Docker',
-  lastName: 'Test'
+  lastName: 'Test',
 };
 
 test.describe('Docker Authentication System', () => {
@@ -89,7 +89,7 @@ test.describe('Docker Authentication System', () => {
         return {
           accessToken: localStorage.getItem('intellipost_access_token'),
           refreshToken: localStorage.getItem('intellipost_refresh_token'),
-          user: localStorage.getItem('intellipost_user')
+          user: localStorage.getItem('intellipost_user'),
         };
       });
 
@@ -123,8 +123,8 @@ test.describe('Docker Authentication System', () => {
     // Test API call with token
     const response = await page.request.get(`${BACKEND_URL}/auth/profile`, {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     expect(response.ok()).toBeTruthy();
@@ -168,7 +168,7 @@ test.describe('Docker Authentication System', () => {
       return {
         accessToken: localStorage.getItem('intellipost_access_token'),
         refreshToken: localStorage.getItem('intellipost_refresh_token'),
-        user: localStorage.getItem('intellipost_user')
+        user: localStorage.getItem('intellipost_user'),
       };
     });
 
@@ -190,15 +190,15 @@ test.describe('Docker Authentication System', () => {
     const initialTokens = await page.evaluate(() => {
       return {
         accessToken: localStorage.getItem('intellipost_access_token'),
-        refreshToken: localStorage.getItem('intellipost_refresh_token')
+        refreshToken: localStorage.getItem('intellipost_refresh_token'),
       };
     });
 
     // Test refresh token endpoint
     const refreshResponse = await page.request.post(`${BACKEND_URL}/auth/refresh`, {
       headers: {
-        'Authorization': `Bearer ${initialTokens.refreshToken}`
-      }
+        Authorization: `Bearer ${initialTokens.refreshToken}`,
+      },
     });
 
     expect(refreshResponse.ok()).toBeTruthy();
@@ -274,8 +274,8 @@ test.describe('Docker Authentication System', () => {
     const response = await page.request.post(`${BACKEND_URL}/auth/login`, {
       data: {
         email: TEST_USER.email,
-        password: TEST_USER.password
-      }
+        password: TEST_USER.password,
+      },
     });
 
     // Should get a response (even if auth fails, DB connection should work)
@@ -292,7 +292,7 @@ test.describe('Docker Authentication System', () => {
         responses.push({
           url: response.url(),
           status: response.status(),
-          headers: response.headers()
+          headers: response.headers(),
         });
       }
     });

@@ -70,7 +70,7 @@ test.describe('Docker Basic Authentication', () => {
   test('Backend authentication endpoints exist', async ({ page }) => {
     // Test login endpoint exists (even if it fails)
     const loginResponse = await page.request.post(`${BACKEND_URL}/auth/login`, {
-      data: { email: 'test@test.com', password: 'test' }
+      data: { email: 'test@test.com', password: 'test' },
     });
 
     // Should not be 404 - endpoint exists
@@ -82,8 +82,8 @@ test.describe('Docker Basic Authentication', () => {
         email: 'test@test.com',
         password: 'test',
         first_name: 'Test',
-        last_name: 'User'
-      }
+        last_name: 'User',
+      },
     });
 
     // Should not be 404 - endpoint exists

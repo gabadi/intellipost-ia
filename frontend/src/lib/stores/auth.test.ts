@@ -118,6 +118,8 @@ describe('Auth Store', () => {
         data: {
           access_token: 'new_access_token',
           refresh_token: 'new_refresh_token',
+          token_type: 'Bearer',
+          expires_in: 3600,
           user: {
             id: '123',
             email: 'test@example.com',
@@ -157,8 +159,8 @@ describe('Auth Store', () => {
         'new_refresh_token'
       );
 
-      // Should redirect to products
-      expect(goto).toHaveBeenCalledWith('/products');
+      // Should redirect to dashboard
+      expect(goto).toHaveBeenCalledWith('/dashboard');
     });
 
     it('should handle login failure', async () => {
@@ -199,6 +201,8 @@ describe('Auth Store', () => {
         data: {
           access_token: 'new_access_token',
           refresh_token: 'new_refresh_token',
+          token_type: 'Bearer',
+          expires_in: 3600,
           user: {
             id: '123',
             email: 'new@example.com',
@@ -225,7 +229,7 @@ describe('Auth Store', () => {
       const state = get(authStore);
       expect(state.isAuthenticated).toBe(true);
       expect(state.user).toEqual(mockResponse.data.user);
-      expect(goto).toHaveBeenCalledWith('/products');
+      expect(goto).toHaveBeenCalledWith('/dashboard');
     });
   });
 
@@ -271,6 +275,8 @@ describe('Auth Store', () => {
         data: {
           access_token: 'new_access_token',
           refresh_token: 'new_refresh_token',
+          token_type: 'Bearer',
+          expires_in: 3600,
           user: {
             id: '123',
             email: 'test@example.com',

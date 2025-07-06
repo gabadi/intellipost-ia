@@ -14,13 +14,13 @@ import type {
   RegisterRequest,
   User,
   UserProfileUpdateRequest,
-  ChangePasswordRequest
+  ChangePasswordRequest,
 } from '../types/auth';
 
 const STORAGE_KEYS = {
   ACCESS_TOKEN: 'intellipost_access_token',
   REFRESH_TOKEN: 'intellipost_refresh_token',
-  USER: 'intellipost_user'
+  USER: 'intellipost_user',
 };
 
 // Create initial auth state
@@ -30,7 +30,7 @@ const createInitialAuthState = (): AuthState => ({
   refreshToken: null,
   isAuthenticated: false,
   isLoading: false,
-  error: null
+  error: null,
 });
 
 // Create the auth store
@@ -53,7 +53,11 @@ function createAuthStore() {
   /**
    * Load tokens and user data from storage
    */
-  const loadFromStorage = (): { accessToken: string | null; refreshToken: string | null; user: User | null } => {
+  const loadFromStorage = (): {
+    accessToken: string | null;
+    refreshToken: string | null;
+    user: User | null;
+  } => {
     try {
       const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
@@ -91,7 +95,7 @@ function createAuthStore() {
       refreshToken,
       isAuthenticated: true,
       isLoading: false,
-      error: null
+      error: null,
     });
   };
 
@@ -102,7 +106,7 @@ function createAuthStore() {
     update(state => ({
       ...state,
       error,
-      isLoading: false
+      isLoading: false,
     }));
   };
 
@@ -113,7 +117,7 @@ function createAuthStore() {
     update(state => ({
       ...state,
       isLoading,
-      error: null
+      error: null,
     }));
   };
 
@@ -132,7 +136,7 @@ function createAuthStore() {
           refreshToken,
           isAuthenticated: true,
           isLoading: false,
-          error: null
+          error: null,
         });
       }
     },
@@ -243,19 +247,21 @@ function createAuthStore() {
         if (response.success && response.data) {
           update(state => ({
             ...state,
-            user: response.data ? {
-              id: response.data.id,
-              email: response.data.email,
-              first_name: response.data.first_name,
-              last_name: response.data.last_name,
-              is_active: response.data.is_active,
-              is_email_verified: response.data.is_email_verified,
-              status: response.data.status,
-              created_at: response.data.created_at,
-              last_login_at: response.data.last_login_at
-            } : state.user,
+            user: response.data
+              ? {
+                  id: response.data.id,
+                  email: response.data.email,
+                  first_name: response.data.first_name,
+                  last_name: response.data.last_name,
+                  is_active: response.data.is_active,
+                  is_email_verified: response.data.is_email_verified,
+                  status: response.data.status,
+                  created_at: response.data.created_at,
+                  last_login_at: response.data.last_login_at,
+                }
+              : state.user,
             isLoading: false,
-            error: null
+            error: null,
           }));
 
           // Update user in localStorage
@@ -269,7 +275,7 @@ function createAuthStore() {
               is_email_verified: response.data.is_email_verified,
               status: response.data.status,
               created_at: response.data.created_at,
-              last_login_at: response.data.last_login_at
+              last_login_at: response.data.last_login_at,
             };
             try {
               localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
@@ -304,7 +310,7 @@ function createAuthStore() {
           update(state => ({
             ...state,
             isLoading: false,
-            error: null
+            error: null,
           }));
           return true;
         } else {
@@ -320,14 +326,25 @@ function createAuthStore() {
     },
 
     /**
+     * Set error state
+     */
+    setError: (error: string) => {
+      update(state => ({
+        ...state,
+        error,
+        isLoading: false,
+      }));
+    },
+
+    /**
      * Clear error state
      */
     clearError: () => {
       update(state => ({
         ...state,
-        error: null
+        error: null,
       }));
-    }
+    },
   };
 }
 

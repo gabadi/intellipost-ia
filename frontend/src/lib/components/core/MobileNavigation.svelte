@@ -85,12 +85,7 @@
   </button>
 
   <!-- Logout button -->
-  <button
-    class="nav-item logout-btn"
-    on:click={handleLogout}
-    aria-label="Logout"
-    type="button"
-  >
+  <button class="nav-item logout-btn" on:click={handleLogout} aria-label="Logout" type="button">
     <span class="icon" aria-hidden="true">🚪</span>
     <span class="label">Logout</span>
   </button>

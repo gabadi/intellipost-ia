@@ -57,7 +57,7 @@ def create_user_router(
             401: {"model": ErrorResponse, "description": "Unauthorized"},
         },
     )
-    async def get_current_user_profile(
+    async def get_current_user_profile(  # pyright: ignore[reportUnusedFunction]
         current_user: Annotated[User, current_user_dep],
     ) -> UserDetailResponse:
         """Get current user profile."""
@@ -88,7 +88,7 @@ def create_user_router(
             401: {"model": ErrorResponse, "description": "Unauthorized"},
         },
     )
-    async def update_user_profile(
+    async def update_user_profile(  # pyright: ignore[reportUnusedFunction]
         request: UserProfileUpdateRequest,
         current_user: Annotated[User, current_user_dep],
         user_repo: Annotated[UserRepositoryProtocol, Depends(user_repository)],
@@ -138,7 +138,7 @@ def create_user_router(
             401: {"model": ErrorResponse, "description": "Unauthorized"},
         },
     )
-    async def change_password(
+    async def change_password(  # pyright: ignore[reportUnusedFunction]
         request: ChangePasswordRequest,
         current_user: Annotated[User, current_user_dep],
         user_repo: Annotated[UserRepositoryProtocol, Depends(user_repository)],
@@ -170,7 +170,7 @@ def create_user_router(
                 password_service=password_svc,
             )
 
-            if not auth_service._is_password_strong(request.new_password):
+            if not auth_service._is_password_strong(request.new_password):  # pyright: ignore[reportPrivateUsage]
                 raise WeakPasswordError()
 
             # Hash new password

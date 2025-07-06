@@ -6,7 +6,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 // Storage keys for tokens
 const STORAGE_KEYS = {
   ACCESS_TOKEN: 'intellipost_access_token',
-  REFRESH_TOKEN: 'intellipost_refresh_token'
+  REFRESH_TOKEN: 'intellipost_refresh_token',
 };
 
 // Generic API client with error handling and JWT authentication

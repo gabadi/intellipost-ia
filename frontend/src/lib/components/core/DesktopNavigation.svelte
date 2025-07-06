@@ -73,7 +73,8 @@
       <div class="user-avatar" aria-hidden="true">👤</div>
       <div class="user-info">
         <div class="user-name">
-          {authState.user?.first_name || 'User'} {authState.user?.last_name || ''}
+          {authState.user?.first_name || 'User'}
+          {authState.user?.last_name || ''}
         </div>
         <div class="user-email">{authState.user?.email || ''}</div>
       </div>

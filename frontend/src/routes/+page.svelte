@@ -10,7 +10,7 @@
     authStore.init();
 
     // Check if user is already authenticated
-    const unsubscribe = authStore.subscribe((state) => {
+    const unsubscribe = authStore.subscribe(state => {
       if (state.isAuthenticated) {
         // Redirect to dashboard if already logged in
         goto('/dashboard');
@@ -39,17 +39,14 @@
         <h1 class="landing-title">IntelliPost AI</h1>
         <p class="landing-subtitle">Intelligent Social Media Posting Platform</p>
         <p class="landing-description">
-          Create compelling product listings with AI-powered content generation and seamless MercadoLibre integration.
+          Create compelling product listings with AI-powered content generation and seamless
+          MercadoLibre integration.
         </p>
       </header>
 
       <div class="landing-actions">
-        <a href="/auth/login" class="btn btn--primary btn--lg">
-          Get Started
-        </a>
-        <a href="/auth/register" class="btn btn--secondary btn--lg">
-          Create Account
-        </a>
+        <a href="/auth/login" class="btn btn--primary btn--lg"> Get Started </a>
+        <a href="/auth/register" class="btn btn--secondary btn--lg"> Create Account </a>
       </div>
 
       <div class="landing-features">

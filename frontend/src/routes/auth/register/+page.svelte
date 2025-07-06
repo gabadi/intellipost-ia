@@ -65,7 +65,7 @@
       uppercase: /[A-Z]/.test(value),
       lowercase: /[a-z]/.test(value),
       number: /\d/.test(value),
-      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(value)
+      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(value),
     };
 
     const missingRequirements = [];
@@ -90,7 +90,7 @@
       uppercase: /[A-Z]/.test(value),
       lowercase: /[a-z]/.test(value),
       number: /\d/.test(value),
-      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(value)
+      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(value),
     };
 
     const score = Object.values(requirements).filter(Boolean).length;
@@ -115,14 +115,19 @@
         email,
         password,
         first_name: firstName || undefined,
-        last_name: lastName || undefined
+        last_name: lastName || undefined,
       });
     } catch (error) {
       console.error('Registration error:', error);
       // Check if registration is disabled
       if (error && typeof error === 'object' && 'detail' in error) {
-        const detail = (error as any).detail;
-        if (detail && detail.error_code === 'REGISTRATION_DISABLED') {
+        const detail = (error as Record<string, unknown>).detail;
+        if (
+          detail &&
+          typeof detail === 'object' &&
+          'error_code' in detail &&
+          detail.error_code === 'REGISTRATION_DISABLED'
+        ) {
           registrationDisabled = true;
         }
       }
@@ -140,7 +145,10 @@
 
 <svelte:head>
   <title>Sign Up - IntelliPost AI</title>
-  <meta name="description" content="Create your IntelliPost AI account to start generating professional MercadoLibre listings with AI-powered content." />
+  <meta
+    name="description"
+    content="Create your IntelliPost AI account to start generating professional MercadoLibre listings with AI-powered content."
+  />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </svelte:head>
 
@@ -157,120 +165,127 @@
       <div class="disabled-message">
         <div class="disabled-icon">🔒</div>
         <h2>Registration Currently Disabled</h2>
-        <p>New user registration is temporarily disabled. Please contact your administrator for access.</p>
+        <p>
+          New user registration is temporarily disabled. Please contact your administrator for
+          access.
+        </p>
         <p>If you already have an account, you can <a href="/auth/login">sign in here</a>.</p>
       </div>
     {:else}
       <!-- Registration Form -->
       <form on:submit|preventDefault={handleSubmit} class="register-form">
-      <!-- Name Fields -->
-      <div class="name-fields">
+        <!-- Name Fields -->
+        <div class="name-fields">
+          <div class="form-field">
+            <Input
+              bind:value={firstName}
+              type="text"
+              placeholder="First name"
+              label="First Name (Optional)"
+              disabled={isSubmitting}
+              autocomplete="given-name"
+            />
+          </div>
+          <div class="form-field">
+            <Input
+              bind:value={lastName}
+              type="text"
+              placeholder="Last name"
+              label="Last Name (Optional)"
+              disabled={isSubmitting}
+              autocomplete="family-name"
+            />
+          </div>
+        </div>
+
+        <!-- Email Field -->
         <div class="form-field">
           <Input
-            bind:value={firstName}
-            type="text"
-            placeholder="First name"
-            label="First Name (Optional)"
+            bind:value={email}
+            type="email"
+            placeholder="Enter your email"
+            label="Email"
+            error={emailError}
             disabled={isSubmitting}
-            autocomplete="given-name"
-          />
-        </div>
-        <div class="form-field">
-          <Input
-            bind:value={lastName}
-            type="text"
-            placeholder="Last name"
-            label="Last Name (Optional)"
-            disabled={isSubmitting}
-            autocomplete="family-name"
-          />
-        </div>
-      </div>
-
-      <!-- Email Field -->
-      <div class="form-field">
-        <Input
-          bind:value={email}
-          type="email"
-          placeholder="Enter your email"
-          label="Email"
-          error={emailError}
-          disabled={isSubmitting}
-          autocomplete="email"
-          pattern={emailPattern}
-          required
-        />
-      </div>
-
-      <!-- Password Field -->
-      <div class="form-field">
-        <div class="password-input-container">
-          <Input
-            bind:value={password}
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Create a strong password"
-            label="Password"
-            error={passwordError}
-            disabled={isSubmitting}
-            autocomplete="new-password"
+            autocomplete="email"
+            pattern={emailPattern}
             required
           />
-          <button
-            type="button"
-            class="password-toggle"
-            on:click={togglePasswordVisibility}
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
-          >
-            {showPassword ? '👁️' : '👁️‍🗨️'}
-          </button>
         </div>
 
-        <!-- Password Strength Indicator -->
-        {#if password}
-          <div class="password-strength">
-            <div class="strength-bar">
-              <div class="strength-fill strength-{passwordStrength}"></div>
+        <!-- Password Field -->
+        <div class="form-field">
+          <div class="password-input-container">
+            <Input
+              bind:value={password}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Create a strong password"
+              label="Password"
+              error={passwordError}
+              disabled={isSubmitting}
+              autocomplete="new-password"
+              required
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              on:click={togglePasswordVisibility}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? '👁️' : '👁️‍🗨️'}
+            </button>
+          </div>
+
+          <!-- Password Strength Indicator -->
+          {#if password}
+            <div class="password-strength">
+              <div class="strength-bar">
+                <div class="strength-fill strength-{passwordStrength}"></div>
+              </div>
+              <span class="strength-text strength-{passwordStrength}">
+                {passwordStrength === 'weak'
+                  ? 'Weak'
+                  : passwordStrength === 'medium'
+                    ? 'Medium'
+                    : 'Strong'} password
+              </span>
             </div>
-            <span class="strength-text strength-{passwordStrength}">
-              {passwordStrength === 'weak' ? 'Weak' : passwordStrength === 'medium' ? 'Medium' : 'Strong'} password
-            </span>
+          {/if}
+        </div>
+
+        <!-- Error Message -->
+        {#if authState.error}
+          <div class="error-message" role="alert">
+            {authState.error}
           </div>
         {/if}
-      </div>
 
-      <!-- Error Message -->
-      {#if authState.error}
-        <div class="error-message" role="alert">
-          {authState.error}
+        <!-- Submit Button -->
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          disabled={isSubmitting || !!emailError || !!passwordError || !email || !password}
+          class="register-button"
+        >
+          {#if isSubmitting}
+            <LoadingSpinner size="sm" />
+            Creating account...
+          {:else}
+            Create Account
+          {/if}
+        </Button>
+
+        <!-- Terms -->
+        <div class="terms">
+          <p>By creating an account, you agree to our Terms of Service and Privacy Policy</p>
         </div>
-      {/if}
+      </form>
 
-      <!-- Submit Button -->
-      <Button
-        type="submit"
-        variant="primary"
-        size="lg"
-        disabled={isSubmitting || !!emailError || !!passwordError || !email || !password}
-        class="register-button"
-      >
-        {#if isSubmitting}
-          <LoadingSpinner size="sm" />
-          Creating account...
-        {:else}
-          Create Account
-        {/if}
-      </Button>
-
-      <!-- Terms -->
-      <div class="terms">
-        <p>By creating an account, you agree to our Terms of Service and Privacy Policy</p>
+      <!-- Footer -->
+      <div class="register-footer">
+        <p>Already have an account? <a href="/auth/login">Sign in</a></p>
       </div>
-    </form>
-
-    <!-- Footer -->
-    <div class="register-footer">
-      <p>Already have an account? <a href="/auth/login">Sign in</a></p>
-    </div>
     {/if}
   </div>
 </div>
@@ -290,7 +305,9 @@
     max-width: 480px;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
     padding: 2rem;
   }
 
@@ -376,7 +393,9 @@
 
   .strength-fill {
     height: 100%;
-    transition: width 0.3s ease, background-color 0.3s ease;
+    transition:
+      width 0.3s ease,
+      background-color 0.3s ease;
   }
 
   .strength-fill.strength-weak {

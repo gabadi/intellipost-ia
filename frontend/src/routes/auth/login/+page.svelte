@@ -101,7 +101,10 @@
 
 <svelte:head>
   <title>Login - IntelliPost AI</title>
-  <meta name="description" content="Login to your IntelliPost AI account to manage your MercadoLibre listings with AI-powered content generation." />
+  <meta
+    name="description"
+    content="Login to your IntelliPost AI account to manage your MercadoLibre listings with AI-powered content generation."
+  />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </svelte:head>
 
@@ -303,7 +306,7 @@
     cursor: pointer;
   }
 
-  .remember-me input[type="checkbox"] {
+  .remember-me input[type='checkbox'] {
     min-width: 16px;
     min-height: 16px;
   }

@@ -1,9 +1,12 @@
 """Pytest configuration for user_management module tests."""
+# pyright: reportMissingImports=false
+# pyright: reportUnknownMemberType=false
+# pyright: reportUntypedFunctionDecorator=false
 
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-import pytest
+import pytest  # type: ignore[import-untyped]
 
 from modules.user_management.domain.entities.user import User, UserStatus
 

@@ -55,8 +55,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.requests_per_minute = requests_per_minute
         self.auth_requests_per_minute = auth_requests_per_minute
-        self.request_times: dict[str, deque] = defaultdict(deque)
-        self.auth_request_times: dict[str, deque] = defaultdict(deque)
+        self.request_times: dict[str, deque[float]] = defaultdict(lambda: deque())
+        self.auth_request_times: dict[str, deque[float]] = defaultdict(lambda: deque())
 
     def _get_client_ip(self, request: Request) -> str:
         """Get client IP address, considering proxy headers."""
