@@ -68,10 +68,15 @@ class Settings(BaseSettings):
     api_host: str = Field(default="127.0.0.1", description="API host")  # nosec B104
     api_port: int = Field(default=8000, description="API port")
 
-    # CORS configuration
+    # CORS configuration - secure by default
     cors_origins: list[str] = Field(
-        default=["http://localhost:4000", "http://127.0.0.1:4000"],
-        description="Allowed CORS origins",
+        default=[
+            "http://localhost:3001",  # SvelteKit dev server
+            "http://127.0.0.1:3001",
+            "http://localhost:4173",  # SvelteKit preview
+            "http://127.0.0.1:4173",
+        ],
+        description="Allowed CORS origins - production should use HTTPS",
     )
 
     # Logging configuration
@@ -98,13 +103,20 @@ class Settings(BaseSettings):
         default=None, description="MercadoLibre API client secret"
     )
 
-    # User Management Module Configuration
+    # User Management Module Configuration - Mobile-Optimized JWT Strategy
     user_jwt_secret_key: str = Field(
         default="dev-jwt-secret-change-in-production",
         description="JWT secret key for user authentication",
     )
-    user_jwt_expire_minutes: int = Field(
-        default=30, description="JWT token expiry time in minutes"
+    user_jwt_algorithm: str = Field(
+        default="HS256", description="JWT algorithm for MVP security requirements"
+    )
+    user_jwt_access_token_expire_minutes: int = Field(
+        default=15,
+        description="Access token expiry time in minutes (battery optimization)",
+    )
+    user_jwt_refresh_token_expire_days: int = Field(
+        default=7, description="Refresh token expiry time in days (user convenience)"
     )
     user_session_expire_hours: int = Field(
         default=24, description="User session expiry time in hours"
@@ -114,6 +126,15 @@ class Settings(BaseSettings):
     )
     user_password_min_length: int = Field(
         default=8, description="Minimum password length"
+    )
+    user_registration_enabled: bool = Field(
+        default=False, description="Enable user registration functionality"
+    )
+    user_default_admin_email: str = Field(
+        default="admin@intellipost.ai", description="Default admin user email"
+    )
+    user_default_admin_password: str = Field(
+        default="admin123", description="Default admin user password"
     )
 
     # Product Management Module Configuration
@@ -176,14 +197,24 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_secret_key_for_production(self):
-        """Validate that secret key is properly set for production."""
-        if (
-            self.environment.lower() == "production"
-            and self.secret_key == "dev-secret-key-change-in-production"  # nosec B105
-        ):
-            raise ValueError(
-                "Secret key must be changed from default value in production"
-            )
+        """Validate that secret keys are properly set for production."""
+        if self.environment.lower() == "production":
+            if self.secret_key == "dev-secret-key-change-in-production":  # nosec B105
+                raise ValueError(
+                    "Secret key must be changed from default value in production"
+                )
+            if self.user_jwt_secret_key == "dev-jwt-secret-change-in-production":  # nosec B105
+                raise ValueError(
+                    "JWT secret key must be changed from default value in production"
+                )
+            # Ensure HTTPS origins in production
+            for origin in self.cors_origins:
+                if not origin.startswith("https://") and not origin.startswith(
+                    "http://localhost"
+                ):
+                    raise ValueError(
+                        f"Production CORS origins must use HTTPS: {origin}"
+                    )
         return self
 
     @field_validator("log_level")
@@ -249,6 +280,20 @@ class Settings(BaseSettings):
             "api_port_valid": 1000 <= self.api_port <= 65535,
             "secret_key_secure": (
                 self.secret_key != "dev-secret-key-change-in-production"  # nosec B105
+                if self.is_production
+                else True
+            ),
+            "jwt_secret_secure": (
+                self.user_jwt_secret_key != "dev-jwt-secret-change-in-production"  # nosec B105
+                if self.is_production
+                else True
+            ),
+            "cors_origins_secure": (
+                all(
+                    origin.startswith("https://")
+                    or origin.startswith("http://localhost")
+                    for origin in self.cors_origins
+                )
                 if self.is_production
                 else True
             ),

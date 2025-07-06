@@ -1,140 +1,193 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { HealthCheckResponse } from '$types';
+  import { goto } from '$app/navigation';
+  import { authStore } from '$lib/stores/auth';
 
-  let healthStatus: HealthCheckResponse | null = null;
-  let healthError: string | null = null;
-  let isLoading = true;
-
-  async function checkBackendHealth() {
-    try {
-      // Import API client dynamically for browser compatibility
-      const { checkBackendHealth: healthCheck } = await import('$lib/api/client');
-      healthStatus = await healthCheck();
-      healthError = null;
-    } catch (error) {
-      healthError = error instanceof Error ? error.message : 'Unknown error occurred';
-      healthStatus = null;
-    } finally {
-      isLoading = false;
-    }
-  }
+  let isChecking = true;
 
   onMount(() => {
-    checkBackendHealth();
+    // Initialize auth store
+    authStore.init();
+
+    // Check if user is already authenticated
+    const unsubscribe = authStore.subscribe(state => {
+      if (state.isAuthenticated) {
+        // Redirect to dashboard if already logged in
+        goto('/dashboard');
+      } else {
+        isChecking = false;
+      }
+    });
+
+    return unsubscribe;
   });
 </script>
 
 <svelte:head>
-  <title>Dashboard - IntelliPost AI</title>
+  <title>IntelliPost AI - Intelligent Social Media Posting</title>
 </svelte:head>
 
-<div class="container">
-  <div class="page-container">
-    <header class="page-header">
-      <h1 class="page-title">Dashboard</h1>
-      <p class="page-subtitle">Welcome to IntelliPost AI Control Panel</p>
-    </header>
+{#if isChecking}
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Checking authentication...</p>
+  </div>
+{:else}
+  <div class="container">
+    <div class="landing-container">
+      <header class="landing-header">
+        <h1 class="landing-title">IntelliPost AI</h1>
+        <p class="landing-subtitle">Intelligent Social Media Posting Platform</p>
+        <p class="landing-description">
+          Create compelling product listings with AI-powered content generation and seamless
+          MercadoLibre integration.
+        </p>
+      </header>
 
-    <div class="section">
-      <div class="section-header">
-        <h2 class="section-title">System Status</h2>
+      <div class="landing-actions">
+        <a href="/auth/login" class="btn btn--primary btn--lg"> Get Started </a>
+        <a href="/auth/register" class="btn btn--secondary btn--lg"> Create Account </a>
       </div>
 
-      <div class="card">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-medium" style="color: var(--color-text-primary)">Backend Connection</h3>
-          {#if isLoading}
-            <div class="flex items-center gap-2">
-              <span class="loading-spinner"></span>
-              <span class="text-sm" style="color: var(--color-text-muted)">Checking...</span>
-            </div>
-          {:else if healthStatus}
-            <div class="flex items-center gap-2">
-              <span class="status-dot success"></span>
-              <span class="text-sm" style="color: var(--color-text-secondary)">Healthy</span>
-            </div>
-          {:else}
-            <div class="flex items-center gap-2">
-              <span class="status-dot error"></span>
-              <span class="text-sm" style="color: var(--color-text-secondary)">Disconnected</span>
-            </div>
-          {/if}
+      <div class="landing-features">
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3 class="feature-title">AI-Powered Content</h3>
+          <p class="feature-description">
+            Generate compelling product descriptions and social media posts automatically
+          </p>
         </div>
 
-        {#if healthStatus}
-          <div
-            class="flex flex-col gap-2 pt-4 border-t"
-            style="border-color: var(--color-border-muted)"
-          >
-            <div class="flex justify-between items-center">
-              <span class="text-sm" style="color: var(--color-text-muted)">Status:</span>
-              <span class="text-sm text-green-600 font-medium">{healthStatus.status}</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm" style="color: var(--color-text-muted)">Version:</span>
-              <span class="text-sm font-medium" style="color: var(--color-text-primary)"
-                >{healthStatus.version}</span
-              >
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm" style="color: var(--color-text-muted)">Last Check:</span>
-              <span class="text-sm font-medium" style="color: var(--color-text-primary)"
-                >{new Date(healthStatus.timestamp).toLocaleString()}</span
-              >
-            </div>
-          </div>
-        {:else if healthError}
-          <div class="pt-4 border-t" style="border-color: var(--color-border-muted)">
-            <p class="text-sm mb-2" style="color: var(--color-text-secondary)">Connection Error:</p>
-            <p class="text-sm text-red-600 mb-3">{healthError}</p>
-            <button
-              class="btn btn--primary btn--sm"
-              on:click={() => {
-                isLoading = true;
-                checkBackendHealth();
-              }}
-            >
-              Retry Connection
-            </button>
-          </div>
-        {/if}
-      </div>
-    </div>
+        <div class="feature-card">
+          <div class="feature-icon">📦</div>
+          <h3 class="feature-title">Product Management</h3>
+          <p class="feature-description">
+            Organize and manage your product listings with intuitive tools
+          </p>
+        </div>
 
-    <div class="section">
-      <div class="section-header">
-        <h2 class="section-title">Quick Actions</h2>
-      </div>
-      <div class="grid-responsive grid-responsive-sm-2">
-        <a href="/products/new" class="card card-action">
-          <div style="font-size: var(--text-2xl); margin-bottom: var(--space-3);">➕</div>
-          <h3 class="card-title">Create Product</h3>
-          <p class="card-subtitle">Start a new AI-powered product listing</p>
-        </a>
-
-        <a href="/products" class="card card-action">
-          <div style="font-size: var(--text-2xl); margin-bottom: var(--space-3);">📦</div>
-          <h3 class="card-title">View Products</h3>
-          <p class="card-subtitle">Manage your existing product listings</p>
-        </a>
+        <div class="feature-card">
+          <div class="feature-icon">🚀</div>
+          <h3 class="feature-title">MercadoLibre Integration</h3>
+          <p class="feature-description">
+            Seamlessly publish to MercadoLibre with automated listing optimization
+          </p>
+        </div>
       </div>
     </div>
   </div>
-</div>
+{/if}
 
 <style>
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 1rem;
   }
 
-  .status-dot.success {
-    background-color: var(--color-success);
+  .loading-container p {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
   }
 
-  .status-dot.error {
-    background-color: var(--color-error);
+  .landing-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: var(--space-8) var(--space-4);
+    text-align: center;
+  }
+
+  .landing-header {
+    max-width: 600px;
+    margin-bottom: var(--space-12);
+  }
+
+  .landing-title {
+    font-size: var(--text-4xl);
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-4);
+  }
+
+  .landing-subtitle {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-6);
+  }
+
+  .landing-description {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  .landing-actions {
+    display: flex;
+    gap: var(--space-4);
+    margin-bottom: var(--space-16);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .landing-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-8);
+    max-width: 1000px;
+  }
+
+  .feature-card {
+    padding: var(--space-6);
+    border: 1px solid var(--color-border-muted);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+  }
+
+  .feature-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-4);
+  }
+
+  .feature-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  .feature-description {
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .landing-title {
+      font-size: var(--text-3xl);
+    }
+
+    .landing-subtitle {
+      font-size: var(--text-lg);
+    }
+
+    .landing-description {
+      font-size: var(--text-base);
+    }
+
+    .landing-actions {
+      flex-direction: column;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .landing-features {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

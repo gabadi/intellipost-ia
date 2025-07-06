@@ -1,27 +1,121 @@
-// Base API client for backend communication
+// Base API client for backend communication with JWT authentication
 import type { APIResponse, HealthCheckResponse } from '$types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-// Generic API client with error handling
+// Storage keys for tokens
+const STORAGE_KEYS = {
+  ACCESS_TOKEN: 'intellipost_access_token',
+  REFRESH_TOKEN: 'intellipost_refresh_token',
+};
+
+// Generic API client with error handling and JWT authentication
 class APIClient {
   private baseURL: string;
+  private isRefreshing = false;
+  private refreshPromise: Promise<boolean> | null = null;
 
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<APIResponse<T>> {
+  private getAccessToken(): string | null {
     try {
-      const url = `${this.baseURL}${endpoint}`;
+      return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    } catch {
+      return null;
+    }
+  }
 
-      const response = await fetch(url, {
+  private getRefreshToken(): string | null {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    } catch {
+      return null;
+    }
+  }
+
+  private async refreshAccessToken(): Promise<boolean> {
+    if (this.isRefreshing && this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = this.performTokenRefresh();
+
+    try {
+      const result = await this.refreshPromise;
+      return result;
+    } finally {
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+    }
+  }
+
+  private async performTokenRefresh(): Promise<boolean> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${this.baseURL}/auth/refresh`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...options.headers,
         },
-        ...options,
+        body: JSON.stringify({ refresh_token: refreshToken }),
       });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const data = await response.json();
+
+      // Store new tokens
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
+      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token);
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<APIResponse<T>> {
+    const attemptRequest = async (includeAuth = true): Promise<Response> => {
+      const url = `${this.baseURL}${endpoint}`;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(options.headers as Record<string, string>),
+      };
+
+      // Add Authorization header if token exists and not auth endpoints
+      if (includeAuth && !endpoint.startsWith('/auth/')) {
+        const accessToken = this.getAccessToken();
+        if (accessToken) {
+          headers.Authorization = `Bearer ${accessToken}`;
+        }
+      }
+
+      return fetch(url, {
+        ...options,
+        headers,
+      });
+    };
+
+    try {
+      let response = await attemptRequest();
+
+      // If unauthorized and not on auth endpoints, try to refresh token
+      if (response.status === 401 && !endpoint.startsWith('/auth/')) {
+        const refreshSuccessful = await this.refreshAccessToken();
+        if (refreshSuccessful) {
+          // Retry request with new token
+          response = await attemptRequest();
+        }
+      }
 
       if (!response.ok) {
         // Create actionable error messages based on status codes

@@ -1,6 +1,8 @@
 """Tests for confidence score value object."""
+# pyright: reportMissingImports=false
+# pyright: reportUnknownMemberType=false
 
-import pytest
+import pytest  # type: ignore[import-untyped]
 
 from modules.product_management.domain.entities.confidence_score import ConfidenceScore
 from modules.product_management.domain.exceptions import InvalidConfidenceScoreError

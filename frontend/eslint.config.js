@@ -60,6 +60,8 @@ export default [
       ...svelte.configs.recommended.rules,
       ...ts.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // Allow 'any' type for HTML attribute compatibility in Svelte components
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {
