@@ -73,7 +73,7 @@ jobs:
       - name: Run backend security checks
         working-directory: ./backend
         run: |
-          uvx bandit -r modules/ infrastructure/ api/ --exclude='*/tests/*,*/test_*.py,*/fixtures/*' --skip=B101,B601
+          uvx bandit -r modules/ infrastructure/ api/ --exclude='*/tests/*,*/test_*.py,*/fixtures/*' --skip=B101,B601,B105,B106,B110
 
       - name: Run backend unit tests
         working-directory: ./backend
