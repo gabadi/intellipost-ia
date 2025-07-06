@@ -1,10 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { HealthCheckResponse } from '$types';
+  import QuickActionCard from '$lib/components/dashboard/QuickActionCard.svelte';
+  import { mlConnectionStore, isMLConnected, mlConnectionHealth } from '$lib/stores/ml-connection';
 
   let healthStatus: HealthCheckResponse | null = null;
   let healthError: string | null = null;
   let isLoading = true;
+
+  // ML Connection reactive values
+  $: connectedToML = $isMLConnected;
+  $: mlHealth = $mlConnectionHealth;
 
   async function checkBackendHealth() {
     try {
@@ -22,7 +28,47 @@
 
   onMount(() => {
     checkBackendHealth();
+    // Initialize ML connection store
+    mlConnectionStore.init();
   });
+
+  /**
+   * Get ML connection status for dashboard display
+   */
+  function getMLConnectionStatus(): 'connected' | 'disconnected' | 'warning' {
+    if (!connectedToML) return 'disconnected';
+    if (mlHealth === 'healthy') return 'connected';
+    if (mlHealth === 'expired' || mlHealth === 'invalid') return 'warning';
+    return 'disconnected';
+  }
+
+  /**
+   * Get ML connection description based on status
+   */
+  function getMLConnectionDescription(): string {
+    if (!connectedToML) {
+      return 'Connect your MercadoLibre account to start publishing AI-generated listings automatically.';
+    }
+    if (mlHealth === 'healthy') {
+      return 'Your MercadoLibre integration is active and ready for automated publishing.';
+    }
+    if (mlHealth === 'expired') {
+      return 'Your MercadoLibre connection has expired. Please reconnect to continue publishing.';
+    }
+    if (mlHealth === 'invalid') {
+      return 'There is an issue with your MercadoLibre connection. Please check the integration settings.';
+    }
+    return 'MercadoLibre integration status is being checked...';
+  }
+
+  /**
+   * Get ML action text based on connection status
+   */
+  function getMLActionText(): string {
+    if (!connectedToML) return 'Connect Account';
+    if (mlHealth === 'healthy') return 'Manage Integration';
+    return 'Fix Connection';
+  }
 </script>
 
 <svelte:head>
@@ -106,18 +152,36 @@
       <div class="section-header">
         <h2 class="section-title">Quick Actions</h2>
       </div>
-      <div class="grid-responsive grid-responsive-sm-2">
-        <a href="/products/new" class="card card-action">
-          <div style="font-size: var(--text-2xl); margin-bottom: var(--space-3);">➕</div>
-          <h3 class="card-title">Create Product</h3>
-          <p class="card-subtitle">Start a new AI-powered product listing</p>
-        </a>
+      <div class="grid-responsive grid-responsive-md-3">
+        <!-- MercadoLibre Integration Card -->
+        <QuickActionCard
+          title="MercadoLibre Integration"
+          description={getMLConnectionDescription()}
+          icon="🛒"
+          href="/ml-setup"
+          status={getMLConnectionStatus()}
+          actionText={getMLActionText()}
+        />
 
-        <a href="/products" class="card card-action">
-          <div style="font-size: var(--text-2xl); margin-bottom: var(--space-3);">📦</div>
-          <h3 class="card-title">View Products</h3>
-          <p class="card-subtitle">Manage your existing product listings</p>
-        </a>
+        <!-- Create Product Card -->
+        <QuickActionCard
+          title="Create Product"
+          description="Start a new AI-powered product listing with smart content generation."
+          icon="➕"
+          href="/products/new"
+          status="info"
+          actionText="Create New"
+        />
+
+        <!-- View Products Card -->
+        <QuickActionCard
+          title="Manage Products"
+          description="View, edit, and organize your existing product listings and inventory."
+          icon="📦"
+          href="/products"
+          status="info"
+          actionText="View All"
+        />
       </div>
     </div>
   </div>

@@ -11,6 +11,8 @@
   import Button from '$lib/components/ui/Button.svelte';
   import Input from '$lib/components/ui/Input.svelte';
   import LoadingSpinner from '$lib/components/ui/LoadingSpinner.svelte';
+  import { mlConnectionStore, isMLConnected, mlConnectionHealth } from '$lib/stores/ml-connection';
+  import { onMount } from 'svelte';
 
   let currentPassword = '';
   let newPassword = '';
@@ -25,6 +27,13 @@
   let successMessage = '';
 
   $: authState = $authStore;
+  $: connectedToML = $isMLConnected;
+  $: mlHealth = $mlConnectionHealth;
+
+  // Initialize ML connection store on mount
+  onMount(() => {
+    mlConnectionStore.init();
+  });
 
   // Reactive validation
   $: validateNewPassword(newPassword);
@@ -106,7 +115,7 @@
     } catch (error) {
       // Handle password change errors properly
       if (import.meta.env.DEV) {
-        console.error('Password change error:', error);
+        // Password change error
       }
       if (error && typeof error === 'object' && 'detail' in error) {
         const detail = (error as Record<string, unknown>).detail;
@@ -145,6 +154,47 @@
         break;
     }
   }
+
+  /**
+   * Get ML connection status for display
+   */
+  function getMLConnectionStatus(): { label: string; class: string; icon: string } {
+    if (!connectedToML) {
+      return { label: 'Not Connected', class: 'disconnected', icon: '⚫' };
+    }
+    if (mlHealth === 'healthy') {
+      return { label: 'Connected', class: 'connected', icon: '✅' };
+    }
+    if (mlHealth === 'expired') {
+      return { label: 'Expired', class: 'warning', icon: '⏰' };
+    }
+    if (mlHealth === 'invalid') {
+      return { label: 'Invalid', class: 'error', icon: '❌' };
+    }
+    return { label: 'Checking...', class: 'checking', icon: '🔄' };
+  }
+
+  /**
+   * Handle ML connection management
+   */
+  function handleMLConnection() {
+    window.location.href = '/ml-setup';
+  }
+
+  /**
+   * Handle ML disconnection
+   */
+  async function handleMLDisconnect() {
+    // Note: In production, replace with a proper modal confirmation
+    // eslint-disable-next-line no-alert
+    if (window.confirm('Are you sure you want to disconnect your MercadoLibre account?')) {
+      try {
+        await mlConnectionStore.disconnect();
+      } catch {
+        // Failed to disconnect ML account
+      }
+    }
+  }
 </script>
 
 <svelte:head>
@@ -179,6 +229,109 @@
           <div class="info-label">Account Status</div>
           <div class="info-value status {authState.user?.status || 'unknown'}">
             {authState.user?.status || 'Unknown'}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connected Accounts -->
+    <div class="section">
+      <h2>Connected Accounts</h2>
+      <p class="section-description">
+        Manage your third-party integrations and connected marketplace accounts.
+      </p>
+
+      <div class="connected-accounts">
+        <!-- MercadoLibre Account -->
+        <div class="account-card">
+          <div class="account-header">
+            <div class="account-info">
+              <div class="account-icon">🛒</div>
+              <div class="account-details">
+                <h3>MercadoLibre</h3>
+                <p>E-commerce marketplace integration</p>
+              </div>
+            </div>
+            <div class="account-status">
+              {#if getMLConnectionStatus()}
+                <span class="status-indicator {getMLConnectionStatus().class}">
+                  <span class="status-icon">{getMLConnectionStatus().icon}</span>
+                  <span class="status-text">{getMLConnectionStatus().label}</span>
+                </span>
+              {/if}
+            </div>
+          </div>
+
+          <div class="account-content">
+            {#if connectedToML}
+              <div class="account-features">
+                <p class="feature-text">
+                  Your MercadoLibre account is connected and ready for automated publishing.
+                </p>
+                <ul class="feature-list">
+                  <li>✅ Automated product publishing</li>
+                  <li>✅ Real-time inventory sync</li>
+                  <li>✅ AI-optimized listings</li>
+                </ul>
+              </div>
+            {:else}
+              <div class="account-features">
+                <p class="feature-text">
+                  Connect your MercadoLibre account to enable automated publishing and inventory
+                  management.
+                </p>
+                <ul class="feature-list">
+                  <li>🚀 Automated product publishing</li>
+                  <li>⚡ Real-time inventory sync</li>
+                  <li>🎯 AI-optimized listings</li>
+                </ul>
+              </div>
+            {/if}
+          </div>
+
+          <div class="account-actions">
+            {#if connectedToML}
+              <Button variant="secondary" size="sm" on:click={handleMLConnection}>
+                Manage Integration
+              </Button>
+              <Button variant="danger" size="sm" on:click={handleMLDisconnect}>Disconnect</Button>
+            {:else}
+              <Button variant="primary" size="sm" on:click={handleMLConnection}>
+                Connect Account
+              </Button>
+            {/if}
+          </div>
+        </div>
+
+        <!-- Future Integrations Placeholder -->
+        <div class="account-card coming-soon">
+          <div class="account-header">
+            <div class="account-info">
+              <div class="account-icon">🔮</div>
+              <div class="account-details">
+                <h3>More Integrations</h3>
+                <p>Additional marketplaces coming soon</p>
+              </div>
+            </div>
+            <div class="account-status">
+              <span class="status-indicator coming-soon">
+                <span class="status-icon">⭐</span>
+                <span class="status-text">Coming Soon</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="account-content">
+            <div class="account-features">
+              <p class="feature-text">
+                We're working on integrations with more marketplaces and services.
+              </p>
+              <ul class="feature-list">
+                <li>🛍️ Amazon Marketplace</li>
+                <li>📱 Social Media Platforms</li>
+                <li>📧 Email Marketing Tools</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -387,6 +540,156 @@
     color: #dc2626;
   }
 
+  /* Connected Accounts Section */
+  .section-description {
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-6) 0;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  .connected-accounts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .account-card {
+    background: var(--color-background-secondary);
+    border: 1px solid var(--color-border-muted);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    transition: all 0.2s ease;
+  }
+
+  .account-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .account-card.coming-soon {
+    opacity: 0.8;
+  }
+
+  .account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-4);
+  }
+
+  .account-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .account-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  .account-details h3 {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .account-details p {
+    color: var(--color-text-secondary);
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+
+  .account-status {
+    flex-shrink: 0;
+  }
+
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .status-indicator.connected {
+    background: var(--color-success-light);
+    color: var(--color-success-dark);
+  }
+
+  .status-indicator.disconnected {
+    background: var(--color-background-tertiary);
+    color: var(--color-text-muted);
+  }
+
+  .status-indicator.warning {
+    background: var(--color-warning-light);
+    color: var(--color-warning-dark);
+  }
+
+  .status-indicator.error {
+    background: var(--color-error-light);
+    color: var(--color-error-dark);
+  }
+
+  .status-indicator.checking {
+    background: var(--color-primary-light);
+    color: var(--color-primary-dark);
+  }
+
+  .status-indicator.coming-soon {
+    background: var(--color-warning-light);
+    color: var(--color-warning-dark);
+  }
+
+  .status-icon {
+    font-size: 0.875rem;
+  }
+
+  .account-content {
+    margin-bottom: var(--space-4);
+  }
+
+  .account-features {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .feature-text {
+    color: var(--color-text-secondary);
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .feature-list li {
+    display: flex;
+    align-items: center;
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+
+  .account-actions {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
   .password-form {
     display: flex;
     flex-direction: column;
@@ -469,6 +772,24 @@
 
     .user-info {
       gap: var(--space-3);
+    }
+
+    .account-header {
+      flex-direction: column;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+
+    .account-info {
+      width: 100%;
+    }
+
+    .account-actions {
+      flex-direction: column;
+    }
+
+    .account-actions :global(button) {
+      width: 100%;
     }
   }
 </style>

@@ -21,7 +21,7 @@
     authStore.init();
 
     // Small delay to allow store initialization
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     isInitialized = true;
 

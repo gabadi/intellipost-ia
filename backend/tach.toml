@@ -48,12 +48,12 @@ depends_on = ["modules.user_management.domain"]
 # User Management - Infrastructure Layer (External concerns, depends on domain for contracts)
 [[modules]]
 path = "modules.user_management.infrastructure"
-depends_on = ["modules.user_management.domain"]
+depends_on = ["modules.user_management.domain", "infrastructure"]
 
 # User Management - API Layer (Controllers, depends on application, infrastructure, and domain)
 [[modules]]
 path = "modules.user_management.api"
-depends_on = ["modules.user_management.application", "modules.user_management.domain"]
+depends_on = ["modules.user_management.application", "modules.user_management.domain", "modules.user_management.infrastructure", "api"]
 
 # Product Management module - TRUE INDEPENDENCE
 [[modules]]

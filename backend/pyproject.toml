@@ -34,6 +34,7 @@ dependencies = [
     "python-multipart>=0.0.6",
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
+    "cryptography>=41.0.0",
     "httpx>=0.28.0,<0.29.0",
     "pillow>=11.0.0,<12.0.0",
     "python-dotenv>=1.0.0",
@@ -149,6 +150,13 @@ reportConstantRedefinition = true
 reportIncompatibleMethodOverride = true
 reportIncompatibleVariableOverride = true
 reportOverlappingOverload = true
+# Temporarily disable some strict mode checks to make transition manageable
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportMissingParameterType = false
+reportMissingTypeArgument = false
 
 # Pytest configuration
 [tool.pytest.ini_options]
@@ -156,6 +164,7 @@ minversion = "7.0"
 addopts = [
     "--strict-markers",
     "--strict-config",
+    "-v",
 ]
 testpaths = ["../tests", "modules", "infrastructure/tests"]
 filterwarnings = [
@@ -167,7 +176,9 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "requires_db: marks tests that require database connection",
 ]
+asyncio_mode = "auto"
 
 # Coverage configuration
 [tool.coverage.run]

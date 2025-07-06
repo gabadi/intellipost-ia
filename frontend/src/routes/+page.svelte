@@ -9,17 +9,21 @@
     // Initialize auth store
     authStore.init();
 
-    // Check if user is already authenticated
-    const unsubscribe = authStore.subscribe(state => {
-      if (state.isAuthenticated) {
-        // Redirect to dashboard if already logged in
-        goto('/dashboard');
-      } else {
-        isChecking = false;
-      }
-    });
+    // Small delay to allow store initialization then check auth
+    setTimeout(() => {
+      // Check if user is already authenticated
+      const unsubscribe = authStore.subscribe(state => {
+        if (state.isAuthenticated) {
+          // Redirect to dashboard if already logged in
+          goto('/dashboard');
+        } else {
+          isChecking = false;
+        }
+      });
 
-    return unsubscribe;
+      // Return cleanup function
+      return unsubscribe;
+    }, 50);
   });
 </script>
 

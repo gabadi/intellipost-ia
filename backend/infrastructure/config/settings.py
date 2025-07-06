@@ -103,6 +103,33 @@ class Settings(BaseSettings):
         default=None, description="MercadoLibre API client secret"
     )
 
+    # MercadoLibre OAuth Configuration (Epic 6 Story 2)
+    ml_app_id: str | None = Field(
+        default=None, description="MercadoLibre OAuth app ID for authentication"
+    )
+    ml_app_secret: str | None = Field(
+        default=None, description="MercadoLibre OAuth app secret for authentication"
+    )
+    ml_auth_base_url: str = Field(
+        default="https://auth.mercadolibre.com.ar",
+        description="MercadoLibre OAuth base URL",
+    )
+    ml_api_base_url: str = Field(
+        default="https://api.mercadolibre.com", description="MercadoLibre API base URL"
+    )
+    ml_encryption_key: str | None = Field(
+        default=None, description="Encryption key for storing ML credentials securely"
+    )
+    ml_token_refresh_interval_minutes: int = Field(
+        default=30, description="Token refresh check interval in minutes"
+    )
+    ml_connection_timeout_seconds: int = Field(
+        default=30, description="MercadoLibre API connection timeout in seconds"
+    )
+    ml_rate_limit_per_minute: int = Field(
+        default=200, description="MercadoLibre API rate limit per minute"
+    )
+
     # User Management Module Configuration - Mobile-Optimized JWT Strategy
     user_jwt_secret_key: str = Field(
         default="dev-jwt-secret-change-in-production",
@@ -197,7 +224,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_secret_key_for_production(self):
-        """Validate that secret keys are properly set for production."""
+        """Validate that secret keys and configuration are properly set for production."""
         if self.environment.lower() == "production":
             if self.secret_key == "dev-secret-key-change-in-production":  # nosec B105
                 raise ValueError(
@@ -207,6 +234,21 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "JWT secret key must be changed from default value in production"
                 )
+
+            # Validate MercadoLibre OAuth configuration for production
+            if not self.ml_app_id:
+                raise ValueError(
+                    "MercadoLibre app ID (ML_APP_ID) is required in production"
+                )
+            if not self.ml_app_secret:
+                raise ValueError(
+                    "MercadoLibre app secret (ML_APP_SECRET) is required in production"
+                )
+            if not self.ml_encryption_key:
+                raise ValueError(
+                    "MercadoLibre encryption key (ML_ENCRYPTION_KEY) is required in production"
+                )
+
             # Ensure HTTPS origins in production
             for origin in self.cors_origins:
                 if not origin.startswith("https://") and not origin.startswith(
@@ -296,6 +338,19 @@ class Settings(BaseSettings):
                 )
                 if self.is_production
                 else True
+            ),
+            "ml_app_credentials_set": (
+                bool(self.ml_app_id and self.ml_app_secret)
+                if self.is_production
+                else True
+            ),
+            "ml_encryption_key_set": (
+                bool(self.ml_encryption_key) if self.is_production else True
+            ),
+            "ml_configuration_valid": (
+                self.ml_token_refresh_interval_minutes > 0
+                and self.ml_connection_timeout_seconds > 0
+                and self.ml_rate_limit_per_minute > 0
             ),
         }
         return validations

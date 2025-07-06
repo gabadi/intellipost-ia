@@ -120,7 +120,7 @@
     } catch (error) {
       // Handle registration error properly
       if (import.meta.env.DEV) {
-        console.error('Registration error:', error);
+        // Registration error
       }
       // Check if registration is disabled
       if (error && typeof error === 'object' && 'detail' in error) {

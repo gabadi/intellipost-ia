@@ -94,3 +94,17 @@ class OperationNotAllowedError(UserManagementError):
         )
         self.operation = operation
         self.reason = reason
+
+
+class AuthenticationError(UserManagementError):
+    """Raised when authentication fails."""
+
+    def __init__(self, message: str = "Authentication failed"):
+        super().__init__(message, error_code="AUTHENTICATION_ERROR")
+
+
+class ValidationError(UserManagementError):
+    """Raised when input validation fails."""
+
+    def __init__(self, message: str = "Validation failed"):
+        super().__init__(message, error_code="VALIDATION_ERROR")

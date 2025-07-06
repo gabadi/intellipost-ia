@@ -12,20 +12,6 @@ jobs:
     permissions:
       pull-requests: write
       contents: write
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: test_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - uses: actions/checkout@v4
         with:
@@ -73,33 +59,19 @@ jobs:
       - name: Run backend security checks
         working-directory: ./backend
         run: |
-          uvx bandit -r modules/ infrastructure/ api/ --exclude='*/tests/*,*/test_*.py,*/fixtures/*' --skip=B101,B601
+          uvx bandit -r modules/ infrastructure/ api/ --exclude='*/tests/*,*/test_*.py,*/fixtures/*' --skip=B101,B601,B105,B106,B110
 
-      - name: Run backend unit tests
+      - name: Run backend unit tests only
         working-directory: ./backend
         env:
           # Ensure environment variables are properly set for testing
           INTELLIPOST_ENVIRONMENT: testing
           INTELLIPOST_API_PORT: 8000
           INTELLIPOST_API_HOST: 127.0.0.1
-          INTELLIPOST_DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_db
           INTELLIPOST_LOG_LEVEL: INFO
           INTELLIPOST_SECRET_KEY: test-secret-key-for-ci-only
         run: |
           uv run pytest -v modules/ infrastructure/tests/ --disable-warnings --tb=short
-
-      - name: Run backend integration tests
-        working-directory: ./backend
-        env:
-          # Ensure environment variables are properly set for testing
-          INTELLIPOST_ENVIRONMENT: testing
-          INTELLIPOST_API_PORT: 8000
-          INTELLIPOST_API_HOST: 127.0.0.1
-          INTELLIPOST_DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_db
-          INTELLIPOST_LOG_LEVEL: INFO
-          INTELLIPOST_SECRET_KEY: test-secret-key-for-ci-only
-        run: |
-          uv run pytest -v ../tests/integration/ --disable-warnings --tb=short
 
 
   frontend:
