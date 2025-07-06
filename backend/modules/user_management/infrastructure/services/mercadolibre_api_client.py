@@ -74,7 +74,7 @@ class MercadoLibreAPIClient:
         "MCO": "https://auth.mercadolibre.com.co/authorization",
     }
 
-    TOKEN_URL = "https://api.mercadolibre.com/oauth/token"
+    TOKEN_URL = "https://api.mercadolibre.com/oauth/token"  # nosec B105
     USER_URL = "https://api.mercadolibre.com/users/me"
 
     def __init__(

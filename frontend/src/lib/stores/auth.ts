@@ -48,6 +48,7 @@ function createAuthStore() {
     } catch (error) {
       // Silently handle localStorage errors in production
       if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
         console.warn('Failed to save auth data to localStorage:', error);
       }
     }
@@ -71,6 +72,7 @@ function createAuthStore() {
     } catch (error) {
       // Silently handle localStorage errors in production
       if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
         console.warn('Failed to load auth data from localStorage:', error);
       }
       return { accessToken: null, refreshToken: null, user: null };
@@ -88,6 +90,7 @@ function createAuthStore() {
     } catch (error) {
       // Silently handle localStorage errors in production
       if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
         console.warn('Failed to clear auth data from localStorage:', error);
       }
     }
@@ -206,6 +209,7 @@ function createAuthStore() {
       } catch (error) {
         // Silently handle logout API failures in production
         if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
           console.warn('Logout API call failed:', error);
         }
         // Continue with client-side cleanup even if API call fails
@@ -295,6 +299,7 @@ function createAuthStore() {
             } catch (error) {
               // Silently handle localStorage errors in production
               if (import.meta.env.DEV) {
+                // eslint-disable-next-line no-console
                 console.warn('Failed to update user in localStorage:', error);
               }
             }

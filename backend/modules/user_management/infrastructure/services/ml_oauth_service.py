@@ -189,7 +189,7 @@ class MLOAuthService(MLOAuthServiceProtocol):
                 ml_secret_key_encrypted=encrypted_app_secret,
                 ml_access_token_encrypted=encrypted_access_token,
                 ml_refresh_token_encrypted=encrypted_refresh_token,
-                ml_token_type="bearer",
+                ml_token_type="bearer",  # nosec B106
                 ml_expires_at=expires_at,
                 ml_refresh_expires_at=refresh_expires_at,
                 ml_scopes="offline_access read write",
@@ -306,7 +306,8 @@ class MLOAuthService(MLOAuthServiceProtocol):
                             expires_at=refreshed_credentials.ml_expires_at,
                             last_validated_at=refreshed_credentials.ml_last_validated_at,
                         )
-                    except Exception:
+                    except Exception:  # nosec B110
+                        # Silently ignore token refresh failures, will mark as invalid below
                         pass
 
                 credentials.mark_invalid("Token validation failed")
