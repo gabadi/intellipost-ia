@@ -8,6 +8,7 @@ Depends() system, replacing the over-engineered manual DI container.
 from typing import Annotated
 
 from fastapi import Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.config.settings import Settings
@@ -24,6 +25,9 @@ from modules.user_management.application.use_cases.register_user import (
 from modules.user_management.domain.entities.user import User
 from modules.user_management.domain.services.authentication import (
     AuthenticationService,
+)
+from modules.user_management.infrastructure.middleware.auth_middleware import (
+    AuthMiddleware,
 )
 from modules.user_management.infrastructure.repositories.sqlalchemy_user_repository import (
     SQLAlchemyUserRepository,
@@ -103,8 +107,6 @@ def get_refresh_token_use_case(
 
 
 # Initialize the HTTPBearer security scheme
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
 security_scheme = HTTPBearer()
 
 
@@ -114,10 +116,6 @@ async def get_current_user(
     user_repository: SQLAlchemyUserRepository = Depends(get_user_repository),
 ) -> User:
     """Get current authenticated user."""
-    from modules.user_management.infrastructure.middleware.auth_middleware import (
-        AuthMiddleware,
-    )
-
     auth_middleware = AuthMiddleware(jwt_service, user_repository)
     return await auth_middleware.get_current_user(credentials)
 

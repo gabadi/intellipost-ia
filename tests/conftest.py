@@ -16,7 +16,7 @@ from testcontainers.postgres import PostgresContainer
 backend_dir = Path(__file__).parent.parent / "backend"
 sys.path.insert(0, str(backend_dir))
 
-from infrastructure.config.settings import Settings
+from infrastructure.config.settings import Settings  # noqa: E402
 
 
 @pytest.fixture(scope="session")

@@ -4,6 +4,7 @@ FastAPI authentication middleware for JWT token validation.
 This module provides middleware for protecting routes with JWT authentication.
 """
 
+from collections.abc import Awaitable, Callable
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -71,15 +72,20 @@ class AuthMiddleware:
 
         return user
 
-    async def get_current_active_user(
-        self, current_user: Annotated[User, Depends("get_current_user")]
-    ) -> User:
-        """Get current active user (additional check)."""
-        if not current_user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
-            )
-        return current_user
+    def get_current_active_user(self) -> Callable[..., Awaitable[User]]:
+        """Get dependency function for current active user."""
+
+        async def _get_current_active_user(
+            current_user: Annotated[User, Depends(self.get_current_user)],
+        ) -> User:
+            """Get current active user (additional check)."""
+            if not current_user.is_active:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
+                )
+            return current_user
+
+        return _get_current_active_user
 
 
 def create_auth_dependency(

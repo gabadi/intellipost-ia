@@ -70,7 +70,7 @@ def upgrade() -> None:
 
     if result is None:
         # Insert admin user only if it doesn't exist
-        op.execute(
+        connection.execute(
             sa.text("""
                 INSERT INTO users (
                     id, email, password_hash, first_name, last_name, status,
@@ -99,7 +99,8 @@ def downgrade() -> None:
     """Remove default admin user."""
     admin_email = "admin@intellipost.ai"
 
-    op.execute(
+    connection = op.get_bind()
+    connection.execute(
         sa.text("DELETE FROM users WHERE email = :email"), {"email": admin_email}
     )
     print(f"Removed default admin user: {admin_email}")

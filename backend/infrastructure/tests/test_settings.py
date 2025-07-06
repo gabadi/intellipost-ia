@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from backend.infrastructure.config.settings import Settings
+from infrastructure.config.settings import Settings
 
 
 class TestSettings:
@@ -149,7 +149,9 @@ class TestSettings:
         assert (
             settings.user_jwt_secret_key == "test-jwt-secret-for-ci-only"
         )  # CI override
-        assert settings.user_jwt_expire_minutes == 5  # CI environment override
+        assert (
+            settings.user_jwt_access_token_expire_minutes == 5
+        )  # CI environment override
         assert settings.user_session_expire_hours == 1  # CI environment override
         assert settings.user_max_login_attempts == 3  # CI environment override
         assert settings.user_password_min_length == 6  # CI environment override

@@ -4,6 +4,8 @@ Authentication API router for user management module.
 This module contains FastAPI routes for user authentication operations.
 """
 
+from collections.abc import Callable
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 
@@ -43,9 +45,9 @@ security = HTTPBearer()
 
 
 def create_auth_router(
-    register_use_case_factory,
-    authenticate_use_case_factory,
-    refresh_token_use_case_factory,
+    register_use_case_factory: Callable[[], RegisterUserUseCase],
+    authenticate_use_case_factory: Callable[[], AuthenticateUserUseCase],
+    refresh_token_use_case_factory: Callable[[], RefreshTokenUseCase],
     access_token_expire_minutes: int = 15,
     registration_enabled: bool = False,
 ) -> APIRouter:

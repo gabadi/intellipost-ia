@@ -4,9 +4,11 @@ User API router for user management module.
 This module contains FastAPI routes for user profile operations.
 """
 
-from typing import Annotated, Callable
+from collections.abc import Callable
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+
 from modules.user_management.api.schemas.auth_schemas import ErrorResponse
 from modules.user_management.api.schemas.user_schemas import (
     ChangePasswordRequest,
@@ -29,12 +31,12 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 def create_user_router(
-    user_repository: UserRepositoryProtocol,
-    password_service: PasswordServiceProtocol,
+    user_repository: Callable[[], UserRepositoryProtocol],
+    password_service: Callable[[], PasswordServiceProtocol],
     current_user_provider: Callable[[], User] | None = None,
 ) -> APIRouter:
     """Create user router with dependency injection."""
-    
+
     # Use the provided current_user_provider or create a dummy one
     if current_user_provider:
         current_user_dep = Depends(current_user_provider)
@@ -43,8 +45,9 @@ def create_user_router(
         def dummy_current_user() -> User:
             raise HTTPException(
                 status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                detail="Current user provider not configured"
+                detail="Current user provider not configured",
             )
+
         current_user_dep = Depends(dummy_current_user)
 
     @router.get(
@@ -88,6 +91,7 @@ def create_user_router(
     async def update_user_profile(
         request: UserProfileUpdateRequest,
         current_user: Annotated[User, current_user_dep],
+        user_repo: Annotated[UserRepositoryProtocol, Depends(user_repository)],
     ) -> UserDetailResponse:
         """Update current user profile."""
         try:
@@ -99,7 +103,7 @@ def create_user_router(
                 default_ml_site=request.default_ml_site,
             )
 
-            updated_user = await user_repository.update(current_user)
+            updated_user = await user_repo.update(current_user)
 
             return UserDetailResponse(
                 id=updated_user.id,
@@ -137,11 +141,13 @@ def create_user_router(
     async def change_password(
         request: ChangePasswordRequest,
         current_user: Annotated[User, current_user_dep],
+        user_repo: Annotated[UserRepositoryProtocol, Depends(user_repository)],
+        password_svc: Annotated[PasswordServiceProtocol, Depends(password_service)],
     ) -> dict[str, str]:
         """Change current user password."""
         try:
             # Verify current password
-            password_valid = await password_service.verify_password(
+            password_valid = await password_svc.verify_password(
                 request.current_password, current_user.password_hash
             )
 
@@ -160,20 +166,18 @@ def create_user_router(
             )
 
             auth_service = AuthenticationService(
-                user_repository=user_repository,
-                password_service=password_service,
+                user_repository=user_repo,
+                password_service=password_svc,
             )
 
             if not auth_service._is_password_strong(request.new_password):
                 raise WeakPasswordError()
 
             # Hash new password
-            new_password_hash = await password_service.hash_password(
-                request.new_password
-            )
+            new_password_hash = await password_svc.hash_password(request.new_password)
             current_user.password_hash = new_password_hash
 
-            await user_repository.update(current_user)
+            await user_repo.update(current_user)
 
             return {"message": "Password changed successfully"}
 
