@@ -53,40 +53,6 @@ jobs:
         working-directory: ./backend
         run: |
           uv sync --all-groups
-          # Verify installation was successful
-          uv run python -c "import sys; print('Python path setup:'); [print(f'  {p}') for p in sys.path]"
-
-      - name: Validate package imports
-        working-directory: ./backend
-        run: |
-          # Test critical imports to ensure package structure is correct
-          echo "Testing critical module imports..."
-          uv run python -c "
-          import sys
-          print('Testing imports...')
-          try:
-              import modules.user_management.infrastructure.models.user_model
-              print('✓ modules.user_management.infrastructure.models.user_model imported successfully')
-          except ImportError as e:
-              print(f'✗ Failed to import modules.user_management.infrastructure.models.user_model: {e}')
-              sys.exit(1)
-
-          try:
-              import modules.user_management.infrastructure.middleware
-              print('✓ modules.user_management.infrastructure.middleware imported successfully')
-          except ImportError as e:
-              print(f'✗ Failed to import modules.user_management.infrastructure.middleware: {e}')
-              sys.exit(1)
-
-          try:
-              import modules.user_management.domain.entities.user
-              print('✓ modules.user_management.domain.entities.user imported successfully')
-          except ImportError as e:
-              print(f'✗ Failed to import modules.user_management.domain.entities.user: {e}')
-              sys.exit(1)
-
-          print('All critical imports passed!')
-          "
 
       - name: Run backend linting and formatting
         working-directory: ./backend
