@@ -152,7 +152,7 @@
       {maxlength}
       {minlength}
       pattern={pattern && pattern.trim() ? pattern : undefined}
-      autocomplete={autocomplete ? autocomplete : undefined}
+      autocomplete={autocomplete as any}
       id={inputId}
       name={name || inputId}
       class="input input--{size}"

@@ -162,18 +162,18 @@
       <h2>Account Information</h2>
       <div class="user-info">
         <div class="info-item">
-          <label>Email</label>
+          <div class="info-label">Email</div>
           <div class="info-value">{authState.user?.email || 'Not available'}</div>
         </div>
         <div class="info-item">
-          <label>Name</label>
+          <div class="info-label">Name</div>
           <div class="info-value">
             {authState.user?.first_name || ''}
             {authState.user?.last_name || ''}
           </div>
         </div>
         <div class="info-item">
-          <label>Account Status</label>
+          <div class="info-label">Account Status</div>
           <div class="info-value status {authState.user?.status || 'unknown'}">
             {authState.user?.status || 'Unknown'}
           </div>
@@ -353,7 +353,7 @@
     gap: var(--space-1);
   }
 
-  .info-item label {
+  .info-label {
     font-size: var(--text-sm);
     font-weight: 500;
     color: var(--color-text-secondary);
