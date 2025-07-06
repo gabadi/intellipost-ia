@@ -15,6 +15,9 @@ from fastapi.testclient import TestClient
 
 from main import app
 
+# Mark all tests in this file as integration tests
+pytestmark = pytest.mark.integration
+
 
 class TestMainApp:
     """Test cases for main FastAPI application."""

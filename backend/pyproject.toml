@@ -164,6 +164,7 @@ minversion = "7.0"
 addopts = [
     "--strict-markers",
     "--strict-config",
+    "-v",
 ]
 testpaths = ["../tests", "modules", "infrastructure/tests"]
 filterwarnings = [
@@ -175,6 +176,7 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "requires_db: marks tests that require database connection",
 ]
 asyncio_mode = "auto"
 

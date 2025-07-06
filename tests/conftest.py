@@ -19,6 +19,73 @@ sys.path.insert(0, str(backend_dir))
 from infrastructure.config.settings import Settings  # noqa: E402
 
 
+def check_database_connection() -> bool:
+    """
+    Check if database is available for testing.
+
+    Returns True if database is available, False otherwise.
+    """
+    try:
+        import socket
+        import asyncpg
+
+        # Extract connection details from test settings
+        settings = Settings()
+        db_url = settings.get_database_url()
+
+        # Parse database URL to extract host and port
+        if "localhost:5432" in db_url:
+            host, port = "localhost", 5432
+        elif "127.0.0.1:5432" in db_url:
+            host, port = "127.0.0.1", 5432
+        elif "localhost:5443" in db_url:
+            host, port = "localhost", 5443
+        elif "127.0.0.1:5443" in db_url:
+            host, port = "127.0.0.1", 5443
+        else:
+            # Try to parse the URL more robustly
+            from urllib.parse import urlparse
+            parsed = urlparse(db_url)
+            host = parsed.hostname or "localhost"
+            port = parsed.port or 5432
+
+        # Try to connect to the database port
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex((host, port))
+        sock.close()
+
+        return result == 0
+
+    except Exception:
+        return False
+
+
+# Skip integration tests if database is not available
+def pytest_configure(config):
+    """Configure pytest to skip tests based on database availability."""
+    if not check_database_connection():
+        # Add skip marker for integration tests
+        config.addinivalue_line(
+            "markers",
+            "integration: marks tests as integration tests (skipped when database unavailable)"
+        )
+
+
+def pytest_collection_modifyitems(config, items):
+    """Modify test collection to skip integration tests when database is unavailable."""
+    if not check_database_connection():
+        skip_integration = pytest.mark.skip(
+            reason="Database not available - skipping integration tests"
+        )
+        for item in items:
+            if "integration" in item.keywords:
+                item.add_marker(skip_integration)
+            # Also skip tests that require database connection
+            if "requires_db" in item.keywords:
+                item.add_marker(skip_integration)
+
+
 @pytest.fixture(scope="session")
 def postgres_container() -> Generator[PostgresContainer, None, None]:
     """
