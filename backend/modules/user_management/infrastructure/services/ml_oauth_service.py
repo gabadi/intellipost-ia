@@ -9,7 +9,6 @@ import base64
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
-from typing import Optional
 from uuid import UUID, uuid4
 
 from modules.user_management.domain.entities.ml_credentials import MLCredentials
@@ -39,7 +38,7 @@ from modules.user_management.infrastructure.services.mercadolibre_api_client imp
 class MLOAuthService(MLOAuthServiceProtocol):
     """
     MercadoLibre OAuth service implementation.
-    
+
     Implements the complete OAuth 2.0 flow with PKCE security,
     manager account validation, and token management as specified
     in Epic 6 Story 2.
@@ -55,7 +54,7 @@ class MLOAuthService(MLOAuthServiceProtocol):
     ):
         """
         Initialize OAuth service.
-        
+
         Args:
             ml_client: MercadoLibre API client
             credentials_repository: ML credentials repository
@@ -68,7 +67,7 @@ class MLOAuthService(MLOAuthServiceProtocol):
         self._encryption_service = encryption_service
         self._app_id = app_id
         self._app_secret = app_secret
-        
+
         # State storage for CSRF protection (in production, use Redis/cache)
         self._state_storage: dict[str, dict] = {}
 
@@ -83,17 +82,17 @@ class MLOAuthService(MLOAuthServiceProtocol):
         valid_sites = {"MLA", "MLM", "MBL", "MLC", "MCO"}
         if site_id not in valid_sites:
             raise ValidationError(f"Invalid site_id: {site_id}")
-        
+
         # Validate redirect_uri
         if not redirect_uri or not redirect_uri.startswith(("http://", "https://")):
             raise ValidationError("Invalid redirect_uri")
-        
+
         # Generate PKCE parameters
         code_verifier, code_challenge = await self.generate_pkce_parameters()
-        
+
         # Generate CSRF state
         state = secrets.token_urlsafe(32)
-        
+
         # Store state and parameters for validation
         self._state_storage[state] = {
             "user_id": str(user_id),
@@ -102,7 +101,7 @@ class MLOAuthService(MLOAuthServiceProtocol):
             "redirect_uri": redirect_uri,
             "created_at": datetime.now(UTC),
         }
-        
+
         # Build authorization URL
         auth_url = self._ml_client.build_auth_url(
             site_id=site_id,
@@ -110,7 +109,7 @@ class MLOAuthService(MLOAuthServiceProtocol):
             state=state,
             code_challenge=code_challenge,
         )
-        
+
         return OAuthFlowData(
             authorization_url=auth_url,
             state=state,
@@ -131,18 +130,18 @@ class MLOAuthService(MLOAuthServiceProtocol):
         # Validate state parameter (CSRF protection)
         if not await self.validate_state_parameter(state, user_id):
             raise ValidationError("Invalid state parameter")
-        
+
         # Get stored parameters
         state_data = self._state_storage.get(state)
         if not state_data:
             raise ValidationError("State parameter not found")
-        
+
         # Clean up state storage
         del self._state_storage[state]
-        
+
         site_id = state_data["site_id"]
         redirect_uri = state_data["redirect_uri"]
-        
+
         try:
             # Exchange code for tokens
             token_response = await self._ml_client.exchange_code_for_tokens(
@@ -150,12 +149,12 @@ class MLOAuthService(MLOAuthServiceProtocol):
                 redirect_uri=redirect_uri,
                 code_verifier=code_verifier,
             )
-            
+
             access_token = token_response["access_token"]
             refresh_token = token_response["refresh_token"]
             expires_in = token_response["expires_in"]  # 21600 seconds (6 hours)
             ml_user_id = token_response["user_id"]
-            
+
             # CRITICAL: Validate manager account
             is_manager = await self.validate_manager_account(access_token)
             if not is_manager:
@@ -163,19 +162,25 @@ class MLOAuthService(MLOAuthServiceProtocol):
                     "Only manager accounts can authorize applications. "
                     "Collaborator accounts cannot connect to IntelliPost AI."
                 )
-            
+
             # Get user information
             user_info = await self._ml_client.get_user_info(access_token)
-            
+
             # Calculate expiration times
             expires_at = datetime.now(UTC) + timedelta(seconds=expires_in)
             refresh_expires_at = datetime.now(UTC) + timedelta(days=180)  # 6 months
-            
+
             # Encrypt tokens
-            encrypted_access_token = self._encryption_service.encrypt_access_token(access_token)
-            encrypted_refresh_token = self._encryption_service.encrypt_refresh_token(refresh_token)
-            encrypted_app_secret = self._encryption_service.encrypt_app_secret(self._app_secret)
-            
+            encrypted_access_token = self._encryption_service.encrypt_access_token(
+                access_token
+            )
+            encrypted_refresh_token = self._encryption_service.encrypt_refresh_token(
+                refresh_token
+            )
+            encrypted_app_secret = self._encryption_service.encrypt_app_secret(
+                self._app_secret
+            )
+
             # Create ML credentials
             credentials = MLCredentials(
                 id=uuid4(),
@@ -196,20 +201,20 @@ class MLOAuthService(MLOAuthServiceProtocol):
                 ml_is_valid=True,
                 created_at=datetime.now(UTC),
             )
-            
+
             # Save credentials
             await self._credentials_repository.save(credentials)
-            
+
             return credentials
-            
+
         except MLOAuthError as e:
-            raise AuthenticationError(f"OAuth authentication failed: {e}")
+            raise AuthenticationError(f"OAuth authentication failed: {e}") from e
         except MLRateLimitError as e:
-            raise AuthenticationError(f"OAuth authentication failed: {e}")
+            raise AuthenticationError(f"OAuth authentication failed: {e}") from e
         except MLManagerAccountError as e:
-            raise AuthenticationError(str(e))
+            raise AuthenticationError(str(e)) from e
         except Exception as e:
-            raise AuthenticationError(f"Failed to complete OAuth flow: {e}")
+            raise AuthenticationError(f"Failed to complete OAuth flow: {e}") from e
 
     async def refresh_token(self, credentials: MLCredentials) -> MLCredentials:
         """Refresh access token using refresh token."""
@@ -218,22 +223,26 @@ class MLOAuthService(MLOAuthServiceProtocol):
             refresh_token = self._encryption_service.decrypt_refresh_token(
                 credentials.ml_refresh_token_encrypted
             )
-            
+
             # Refresh tokens
             token_response = await self._ml_client.refresh_tokens(refresh_token)
-            
+
             access_token = token_response["access_token"]
             new_refresh_token = token_response["refresh_token"]
             expires_in = token_response["expires_in"]
-            
+
             # Calculate new expiration times
             expires_at = datetime.now(UTC) + timedelta(seconds=expires_in)
             refresh_expires_at = datetime.now(UTC) + timedelta(days=180)
-            
+
             # Encrypt new tokens
-            encrypted_access_token = self._encryption_service.encrypt_access_token(access_token)
-            encrypted_refresh_token = self._encryption_service.encrypt_refresh_token(new_refresh_token)
-            
+            encrypted_access_token = self._encryption_service.encrypt_access_token(
+                access_token
+            )
+            encrypted_refresh_token = self._encryption_service.encrypt_refresh_token(
+                new_refresh_token
+            )
+
             # Update credentials with new tokens
             credentials.update_tokens(
                 access_token_encrypted=encrypted_access_token,
@@ -241,16 +250,16 @@ class MLOAuthService(MLOAuthServiceProtocol):
                 expires_at=expires_at,
                 refresh_expires_at=refresh_expires_at,
             )
-            
+
             # Save updated credentials
             await self._credentials_repository.save(credentials)
-            
+
             return credentials
-            
+
         except Exception as e:
             credentials.mark_invalid(f"Token refresh failed: {e}")
             await self._credentials_repository.save(credentials)
-            raise AuthenticationError(f"Failed to refresh token: {e}")
+            raise AuthenticationError(f"Failed to refresh token: {e}") from e
 
     async def validate_connection(self, credentials: MLCredentials) -> ConnectionStatus:
         """Validate connection health and token validity."""
@@ -262,18 +271,18 @@ class MLOAuthService(MLOAuthServiceProtocol):
                     connection_health="expired",
                     error_message="Refresh token expired, reconnection required",
                 )
-            
+
             # Try to validate access token
             access_token = self._encryption_service.decrypt_access_token(
                 credentials.ml_access_token_encrypted
             )
-            
+
             is_valid = await self._ml_client.validate_token(access_token)
-            
+
             if is_valid:
                 credentials.mark_valid()
                 await self._credentials_repository.save(credentials)
-                
+
                 return ConnectionStatus(
                     is_connected=True,
                     connection_health="healthy",
@@ -299,20 +308,20 @@ class MLOAuthService(MLOAuthServiceProtocol):
                         )
                     except Exception:
                         pass
-                
+
                 credentials.mark_invalid("Token validation failed")
                 await self._credentials_repository.save(credentials)
-                
+
                 return ConnectionStatus(
                     is_connected=False,
                     connection_health="invalid",
                     error_message="Token validation failed",
                 )
-                
+
         except Exception as e:
             credentials.mark_invalid(f"Connection validation failed: {e}")
             await self._credentials_repository.save(credentials)
-            
+
             return ConnectionStatus(
                 is_connected=False,
                 connection_health="invalid",
@@ -329,13 +338,13 @@ class MLOAuthService(MLOAuthServiceProtocol):
     async def get_connection_status(self, user_id: UUID) -> ConnectionStatus:
         """Get connection status for user."""
         credentials = await self._credentials_repository.find_by_user_id(user_id)
-        
+
         if not credentials:
             return ConnectionStatus(
                 is_connected=False,
                 connection_health="disconnected",
             )
-        
+
         return await self.validate_connection(credentials)
 
     async def schedule_token_refresh(self, credentials: MLCredentials) -> bool:
@@ -347,16 +356,23 @@ class MLOAuthService(MLOAuthServiceProtocol):
     async def process_expired_tokens(self) -> int:
         """Process and refresh expired tokens."""
         # Find tokens that should be refreshed (at 5.5 hours)
-        refresh_threshold = datetime.now(UTC) + timedelta(minutes=30)  # 30 minutes from now
-        
+        refresh_threshold = datetime.now(UTC) + timedelta(
+            minutes=30
+        )  # 30 minutes from now
+
         try:
-            expiring_credentials = await self._credentials_repository.find_expiring_tokens(
-                refresh_threshold
+            expiring_credentials = (
+                await self._credentials_repository.find_expiring_tokens(
+                    refresh_threshold
+                )
             )
-            
+
             processed_count = 0
             for credentials in expiring_credentials:
-                if credentials.should_refresh_token and not credentials.is_refresh_token_expired:
+                if (
+                    credentials.should_refresh_token
+                    and not credentials.is_refresh_token_expired
+                ):
                     try:
                         await self.refresh_token(credentials)
                         processed_count += 1
@@ -364,9 +380,9 @@ class MLOAuthService(MLOAuthServiceProtocol):
                         # Mark as invalid if refresh fails
                         credentials.mark_invalid("Automatic refresh failed")
                         await self._credentials_repository.save(credentials)
-            
+
             return processed_count
-            
+
         except Exception:
             return 0
 
@@ -377,13 +393,21 @@ class MLOAuthService(MLOAuthServiceProtocol):
     async def generate_pkce_parameters(self) -> tuple[str, str]:
         """Generate PKCE code verifier and challenge."""
         # Generate code verifier (43-128 characters, base64url encoded)
-        code_verifier = base64.urlsafe_b64encode(secrets.token_bytes(96)).decode('utf-8').rstrip('=')
-        
+        code_verifier = (
+            base64.urlsafe_b64encode(secrets.token_bytes(96))
+            .decode("utf-8")
+            .rstrip("=")
+        )
+
         # Generate code challenge (SHA256 of verifier)
-        code_challenge = base64.urlsafe_b64encode(
-            hashlib.sha256(code_verifier.encode('utf-8')).digest()
-        ).decode('utf-8').rstrip('=')
-        
+        code_challenge = (
+            base64.urlsafe_b64encode(
+                hashlib.sha256(code_verifier.encode("utf-8")).digest()
+            )
+            .decode("utf-8")
+            .rstrip("=")
+        )
+
         return code_verifier, code_challenge
 
     async def validate_state_parameter(self, state: str, user_id: UUID) -> bool:
@@ -391,21 +415,21 @@ class MLOAuthService(MLOAuthServiceProtocol):
         state_data = self._state_storage.get(state)
         if not state_data:
             return False
-        
+
         # Check if state belongs to the user
         if state_data["user_id"] != str(user_id):
             return False
-        
+
         # Check if state is not too old (5 minutes max)
         created_at = state_data["created_at"]
         if datetime.now(UTC) - created_at > timedelta(minutes=5):
             # Clean up expired state
             del self._state_storage[state]
             return False
-        
+
         return True
 
-    async def get_user_credentials(self, user_id: UUID) -> Optional[MLCredentials]:
+    async def get_user_credentials(self, user_id: UUID) -> MLCredentials | None:
         """Get ML credentials for user."""
         return await self._credentials_repository.find_by_user_id(user_id)
 
@@ -415,15 +439,15 @@ class MLOAuthService(MLOAuthServiceProtocol):
         """Update user information from MercadoLibre API."""
         try:
             user_info = await self._ml_client.get_user_info(access_token)
-            
+
             credentials.update_user_info(
                 ml_user_id=user_info["id"],
                 nickname=user_info.get("nickname"),
                 email=user_info.get("email"),
             )
-            
+
             await self._credentials_repository.save(credentials)
             return credentials
-            
+
         except Exception as e:
-            raise AuthenticationError(f"Failed to update user info: {e}")
+            raise AuthenticationError(f"Failed to update user info: {e}") from e

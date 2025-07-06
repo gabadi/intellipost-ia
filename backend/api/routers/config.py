@@ -7,8 +7,8 @@ that affects frontend behavior.
 
 from fastapi import APIRouter
 
+from api.schemas.config import ConfigValidationResponse, FeatureFlagsResponse
 from infrastructure.config.settings import Settings
-from api.schemas.config import FeatureFlagsResponse, ConfigValidationResponse
 
 router = APIRouter(prefix="/config", tags=["configuration"])
 
@@ -37,7 +37,7 @@ def create_config_router(settings: Settings) -> APIRouter:
     def _get_config_warnings(settings: Settings) -> list[str]:
         """Get configuration warnings for production deployment."""
         warnings = []
-        
+
         if settings.is_production:
             if not settings.ml_app_id:
                 warnings.append("MercadoLibre app ID not configured")
@@ -47,7 +47,7 @@ def create_config_router(settings: Settings) -> APIRouter:
                 warnings.append("MercadoLibre encryption key not configured")
             if settings.debug:
                 warnings.append("Debug mode enabled in production")
-        
+
         return warnings
 
     return router

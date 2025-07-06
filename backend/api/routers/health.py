@@ -2,11 +2,12 @@
 
 import time
 from datetime import UTC, datetime
+from uuid import uuid4
 
-from fastapi import APIRouter, Response, Depends
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.schemas.health import HealthResponse, DetailedHealthResponse
+from api.schemas.health import DetailedHealthResponse, HealthResponse
 from infrastructure.database import get_database_session
 
 router = APIRouter(tags=["health"])
@@ -32,8 +33,7 @@ async def health_check(response: Response) -> HealthResponse:
 
 @router.get("/health/detailed", response_model=DetailedHealthResponse)
 async def detailed_health_check(
-    response: Response, 
-    db_session: AsyncSession = Depends(get_database_session)
+    response: Response, db_session: AsyncSession = Depends(get_database_session)
 ) -> DetailedHealthResponse:
     """
     Detailed health check endpoint with service status information.
@@ -54,67 +54,64 @@ async def detailed_health_check(
     # Check database connectivity
     try:
         from sqlalchemy import text
+
         start_time = time.time()
         await db_session.execute(text("SELECT 1"))
         response_time = int((time.time() - start_time) * 1000)
-        services["database"] = {
-            "status": "healthy",
-            "response_time_ms": response_time
-        }
+        services["database"] = {"status": "healthy", "response_time_ms": response_time}
     except Exception as e:
-        services["database"] = {
-            "status": "unhealthy",
-            "error": str(e)
-        }
+        services["database"] = {"status": "unhealthy", "error": str(e)}
         overall_status = "degraded"
 
     # Check authentication service
     try:
-        from modules.user_management.infrastructure.services.jose_jwt_service import JoseJWTService
         from infrastructure.config.settings import settings
-        
+        from modules.user_management.infrastructure.services.jose_jwt_service import (
+            JoseJWTService,
+        )
+
         jwt_service = JoseJWTService(
             secret_key=settings.user_jwt_secret_key,
             algorithm=settings.user_jwt_algorithm,
             access_token_expire_minutes=settings.user_jwt_access_token_expire_minutes,
             refresh_token_expire_days=settings.user_jwt_refresh_token_expire_days,
         )
-        
+
         # Test JWT service by creating a test token
-        test_token = jwt_service.create_access_token({"test": "user"})
+        test_token = jwt_service.create_access_token(uuid4())
         if test_token:
             services["authentication"] = {"status": "healthy"}
         else:
-            services["authentication"] = {"status": "unhealthy", "error": "Token generation failed"}
+            services["authentication"] = {
+                "status": "unhealthy",
+                "error": "Token generation failed",
+            }
             overall_status = "degraded"
     except Exception as e:
-        services["authentication"] = {
-            "status": "unhealthy",
-            "error": str(e)
-        }
+        services["authentication"] = {"status": "unhealthy", "error": str(e)}
         overall_status = "degraded"
 
     # Check ML integration status
     try:
-        from modules.user_management.infrastructure.services.ml_background_tasks import get_ml_background_status
-        
+        from modules.user_management.infrastructure.services.ml_background_tasks import (
+            get_ml_background_status,
+        )
+
         ml_status = await get_ml_background_status()
         ml_integration = {
             "status": "healthy" if ml_status.get("service_running") else "stopped",
             "background_service": ml_status.get("service_running", False),
             "database_connected": ml_status.get("database_connected", False),
-            "token_refresh_scheduler": ml_status.get("token_refresh_scheduler") is not None,
+            "token_refresh_scheduler": ml_status.get("token_refresh_scheduler")
+            is not None,
         }
-        
+
         # Add active connections count if available
         if ml_status.get("token_refresh_scheduler"):
             ml_integration["scheduler_status"] = ml_status["token_refresh_scheduler"]
 
     except Exception as e:
-        ml_integration = {
-            "status": "unhealthy",
-            "error": str(e)
-        }
+        ml_integration = {"status": "unhealthy", "error": str(e)}
         overall_status = "degraded"
 
     return DetailedHealthResponse(
@@ -122,5 +119,5 @@ async def detailed_health_check(
         timestamp=timestamp,
         version="1.0.0",
         services=services,
-        ml_integration=ml_integration
+        ml_integration=ml_integration,
     )

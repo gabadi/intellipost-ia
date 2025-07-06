@@ -7,12 +7,11 @@ with authentication, validation, and error handling.
 
 import logging
 from typing import Annotated
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPBearer
 
-from infrastructure.database import get_database_session
 from api.dependencies import get_current_user
 from modules.user_management.api.schemas.ml_oauth_schemas import (
     MLConnectionStatusResponse,
@@ -47,20 +46,15 @@ from modules.user_management.domain.exceptions import (
     AuthenticationError,
     ValidationError,
 )
-from modules.user_management.domain.services.ml_oauth import MLOAuthService
-from modules.user_management.infrastructure.models.ml_credentials_model import (
-    MLCredentialsModel,
-)
-from modules.user_management.infrastructure.repositories.sqlalchemy_ml_credentials_repository import (
-    SQLAlchemyMLCredentialsRepository,
-)
-from modules.user_management.infrastructure.services.credential_encryption_service import (
-    CredentialEncryptionService,
+from modules.user_management.infrastructure.dependencies import get_oauth_service
+from modules.user_management.infrastructure.services.mercadolibre_api_client import (
+    MLManagerAccountError as MLManagerAccountAPIError,
 )
 from modules.user_management.infrastructure.services.mercadolibre_api_client import (
-    MercadoLibreAPIClient,
-    MLManagerAccountError as MLManagerAccountAPIError,
     MLRateLimitError,
+)
+from modules.user_management.infrastructure.services.ml_oauth_service import (
+    MLOAuthService,
 )
 
 # Configure logging
@@ -72,7 +66,10 @@ router = APIRouter(
     tags=["MercadoLibre OAuth"],
     responses={
         401: {"model": MLErrorResponse, "description": "Unauthorized"},
-        403: {"model": MLManagerAccountError, "description": "Manager account required"},
+        403: {
+            "model": MLManagerAccountError,
+            "description": "Manager account required",
+        },
         429: {"model": MLRateLimitResponse, "description": "Rate limit exceeded"},
         500: {"model": MLErrorResponse, "description": "Internal server error"},
     },
@@ -84,34 +81,9 @@ bearer_scheme = HTTPBearer()
 
 async def get_current_user_id_from_user(
     current_user: Annotated[User, Depends(get_current_user)],
-) -> str:
+) -> UUID:
     """Extract user ID from authenticated user."""
-    return str(current_user.id)
-
-
-async def get_oauth_service(
-    db_session: Annotated[AsyncSession, Depends(get_database_session)],
-) -> MLOAuthService:
-    """Create ML OAuth service with dependencies."""
-    # Get configuration from settings
-    from infrastructure.config.settings import settings
-    
-    app_id = settings.ml_app_id or "test_app_id"
-    app_secret = settings.ml_app_secret or "test_app_secret"
-    
-    # Create dependencies
-    ml_client = MercadoLibreAPIClient(app_id, app_secret)
-    credentials_repository = SQLAlchemyMLCredentialsRepository(db_session)
-    encryption_service = CredentialEncryptionService()
-    
-    # Create service
-    return MLOAuthService(
-        ml_client=ml_client,
-        credentials_repository=credentials_repository,
-        encryption_service=encryption_service,
-        app_id=app_id,
-        app_secret=app_secret,
-    )
+    return current_user.id
 
 
 @router.post(
@@ -123,41 +95,44 @@ async def get_oauth_service(
 )
 async def initiate_oauth(
     request: MLOAuthInitiateRequest,
-    user_id: Annotated[str, Depends(get_current_user_id_from_user)],
+    user_id: Annotated[UUID, Depends(get_current_user_id_from_user)],
     oauth_service: Annotated[MLOAuthService, Depends(get_oauth_service)],
 ) -> MLOAuthInitiateResponse:
     """Initiate MercadoLibre OAuth flow."""
     try:
         # Create use case
         use_case = InitiateMLOAuthUseCase(oauth_service)
-        
+
         # Execute OAuth initiation
         flow_data = await use_case.execute(
             user_id=user_id,
             redirect_uri=request.redirect_uri,
             site_id=request.site_id,
         )
-        
+
         logger.info(f"OAuth flow initiated for user {user_id}, site {request.site_id}")
-        
+
         return MLOAuthInitiateResponse(
             authorization_url=flow_data.authorization_url,
             state=flow_data.state,
             code_verifier=flow_data.code_verifier,
         )
-        
+
     except ValidationError as e:
         logger.warning(f"OAuth initiation validation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"error": "validation_error", "error_description": str(e)},
-        )
+        ) from e
     except Exception as e:
         logger.error(f"OAuth initiation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "internal_error", "error_description": "Failed to initiate OAuth flow"},
-        )
+            detail={
+                "error": "internal_error",
+                "error_description": "Failed to initiate OAuth flow",
+            },
+        ) from e
 
 
 @router.post(
@@ -169,14 +144,14 @@ async def initiate_oauth(
 )
 async def handle_callback(
     request: MLOAuthCallbackRequest,
-    user_id: Annotated[str, Depends(get_current_user_id_from_user)],
+    user_id: Annotated[UUID, Depends(get_current_user_id_from_user)],
     oauth_service: Annotated[MLOAuthService, Depends(get_oauth_service)],
 ) -> MLOAuthCallbackResponse:
     """Handle MercadoLibre OAuth callback."""
     try:
         # Create use case
         use_case = HandleMLCallbackUseCase(oauth_service)
-        
+
         # Execute callback handling
         credentials = await use_case.execute(
             user_id=user_id,
@@ -184,9 +159,9 @@ async def handle_callback(
             state=request.state,
             code_verifier=request.code_verifier,
         )
-        
+
         logger.info(f"OAuth callback completed for user {user_id}")
-        
+
         return MLOAuthCallbackResponse(
             success=True,
             message="MercadoLibre account connected successfully",
@@ -195,7 +170,7 @@ async def handle_callback(
             ml_site_id=credentials.ml_site_id,
             connection_health=credentials.connection_health,
         )
-        
+
     except MLManagerAccountAPIError as e:
         logger.warning(f"Manager account validation failed: {e}")
         raise HTTPException(
@@ -203,22 +178,22 @@ async def handle_callback(
             detail={
                 "error": "manager_account_required",
                 "error_description": "Only manager accounts can authorize applications. "
-                                   "Collaborator accounts cannot connect to IntelliPost AI.",
+                "Collaborator accounts cannot connect to IntelliPost AI.",
                 "guidance": "Please use a MercadoLibre manager account to complete the connection.",
             },
-        )
+        ) from e
     except ValidationError as e:
         logger.warning(f"OAuth callback validation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"error": "validation_error", "error_description": str(e)},
-        )
+        ) from e
     except AuthenticationError as e:
         logger.warning(f"OAuth callback authentication error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"error": "authentication_failed", "error_description": str(e)},
-        )
+        ) from e
     except MLRateLimitError as e:
         logger.warning(f"Rate limit exceeded: {e}")
         raise HTTPException(
@@ -228,13 +203,16 @@ async def handle_callback(
                 "error_description": "Too many requests. Please try again later.",
                 "retry_after": e.retry_after or 60,
             },
-        )
+        ) from e
     except Exception as e:
         logger.error(f"OAuth callback error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "internal_error", "error_description": "Failed to complete OAuth flow"},
-        )
+            detail={
+                "error": "internal_error",
+                "error_description": "Failed to complete OAuth flow",
+            },
+        ) from e
 
 
 @router.get(
@@ -245,20 +223,20 @@ async def handle_callback(
     description="Check current connection status and health",
 )
 async def get_connection_status(
-    user_id: Annotated[str, Depends(get_current_user_id_from_user)],
+    user_id: Annotated[UUID, Depends(get_current_user_id_from_user)],
     oauth_service: Annotated[MLOAuthService, Depends(get_oauth_service)],
 ) -> MLConnectionStatusResponse:
     """Get MercadoLibre connection status."""
     try:
         # Create use case
         use_case = GetMLConnectionStatusUseCase(oauth_service)
-        
+
         # Execute status check
         status_info = await use_case.execute(user_id)
-        
+
         # Get credentials for additional info
         credentials = await oauth_service.get_user_credentials(user_id)
-        
+
         return MLConnectionStatusResponse(
             is_connected=status_info.is_connected,
             connection_health=status_info.connection_health,
@@ -269,15 +247,20 @@ async def get_connection_status(
             last_validated_at=status_info.last_validated_at,
             error_message=status_info.error_message,
             should_refresh=credentials.should_refresh_token if credentials else False,
-            time_until_refresh=credentials.time_until_refresh() if credentials else None,
+            time_until_refresh=credentials.time_until_refresh()
+            if credentials
+            else None,
         )
-        
+
     except Exception as e:
         logger.error(f"Status check error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "internal_error", "error_description": "Failed to check connection status"},
-        )
+            detail={
+                "error": "internal_error",
+                "error_description": "Failed to check connection status",
+            },
+        ) from e
 
 
 @router.post(
@@ -288,18 +271,18 @@ async def get_connection_status(
     description="Remove MercadoLibre integration and credentials",
 )
 async def disconnect(
-    request: MLDisconnectRequest,
-    user_id: Annotated[str, Depends(get_current_user_id_from_user)],
+    request: MLDisconnectRequest,  # noqa: ARG001
+    user_id: Annotated[UUID, Depends(get_current_user_id_from_user)],
     oauth_service: Annotated[MLOAuthService, Depends(get_oauth_service)],
 ) -> MLDisconnectResponse:
     """Disconnect MercadoLibre account."""
     try:
         # Create use case
         use_case = DisconnectMLUseCase(oauth_service)
-        
+
         # Execute disconnection
         success = await use_case.execute(user_id)
-        
+
         if success:
             logger.info(f"MercadoLibre disconnected for user {user_id}")
             return MLDisconnectResponse(
@@ -311,13 +294,16 @@ async def disconnect(
                 success=False,
                 message="No MercadoLibre connection found",
             )
-        
+
     except Exception as e:
         logger.error(f"Disconnect error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "internal_error", "error_description": "Failed to disconnect account"},
-        )
+            detail={
+                "error": "internal_error",
+                "error_description": "Failed to disconnect account",
+            },
+        ) from e
 
 
 @router.post(
@@ -328,32 +314,32 @@ async def disconnect(
     description="Manually refresh access tokens (normally done automatically)",
 )
 async def refresh_tokens(
-    user_id: Annotated[str, Depends(get_current_user_id_from_user)],
+    user_id: Annotated[UUID, Depends(get_current_user_id_from_user)],
     oauth_service: Annotated[MLOAuthService, Depends(get_oauth_service)],
 ) -> MLTokenRefreshResponse:
     """Refresh MercadoLibre tokens."""
     try:
         # Create use case
         use_case = RefreshMLTokenUseCase(oauth_service)
-        
+
         # Execute token refresh
         credentials = await use_case.execute(user_id)
-        
+
         logger.info(f"Tokens refreshed for user {user_id}")
-        
+
         return MLTokenRefreshResponse(
             success=True,
             message="Tokens refreshed successfully",
             expires_at=credentials.ml_expires_at,
             connection_health=credentials.connection_health,
         )
-        
+
     except AuthenticationError as e:
         logger.warning(f"Token refresh authentication error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"error": "refresh_failed", "error_description": str(e)},
-        )
+        ) from e
     except MLRateLimitError as e:
         logger.warning(f"Rate limit exceeded during refresh: {e}")
         raise HTTPException(
@@ -363,10 +349,13 @@ async def refresh_tokens(
                 "error_description": "Too many requests. Please try again later.",
                 "retry_after": e.retry_after or 60,
             },
-        )
+        ) from e
     except Exception as e:
         logger.error(f"Token refresh error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "internal_error", "error_description": "Failed to refresh tokens"},
-        )
+            detail={
+                "error": "internal_error",
+                "error_description": "Failed to refresh tokens",
+            },
+        ) from e

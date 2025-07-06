@@ -1,15 +1,15 @@
 """Configuration API schemas."""
 
-from typing import Dict, List, Any
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
 
 class FeatureFlagsResponse(BaseModel):
     """Feature flags response schema."""
-    
+
     registration_enabled: bool
-    
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -21,12 +21,12 @@ class FeatureFlagsResponse(BaseModel):
 
 class ConfigValidationResponse(BaseModel):
     """Configuration validation response schema."""
-    
+
     environment: str
     is_production_ready: bool
-    validations: Dict[str, Any]
-    warnings: List[str]
-    
+    validations: dict[str, Any]
+    warnings: list[str]
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -35,12 +35,12 @@ class ConfigValidationResponse(BaseModel):
                 "validations": {
                     "database_connection": True,
                     "required_secrets": False,
-                    "redis_connection": True
+                    "redis_connection": True,
                 },
                 "warnings": [
                     "MercadoLibre app ID not configured",
-                    "MercadoLibre app secret not configured"
-                ]
+                    "MercadoLibre app secret not configured",
+                ],
             }
         }
     )

@@ -8,6 +8,7 @@
     { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
     { path: '/products/new', label: 'New Product', icon: '➕' },
     { path: '/products', label: 'Products', icon: '📦' },
+    { path: '/integrations', label: 'Integrations', icon: '🔗' },
     { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 
@@ -26,6 +27,9 @@
         currentPath === '/products' ||
         (currentPath.startsWith('/products/') && currentPath !== '/products/new')
       );
+    }
+    if (path === '/integrations') {
+      return currentPath === '/integrations' || currentPath.startsWith('/integrations/');
     }
     // For other paths, use startsWith but exclude more specific matches
     return currentPath.startsWith(path) && currentPath !== '/products/new';

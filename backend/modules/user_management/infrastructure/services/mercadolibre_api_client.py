@@ -8,22 +8,22 @@ endpoints with rate limiting and error handling.
 import asyncio
 import json
 import time
-from typing import Any, Dict, Optional, Union
+from typing import Any
 from urllib.parse import urlencode
 
 import httpx
 from httpx import AsyncClient, Response
 
-from modules.user_management.domain.exceptions import (
-    AuthenticationError,
-    ValidationError,
-)
-
 
 class MLAPIError(Exception):
     """Base exception for MercadoLibre API errors."""
-    
-    def __init__(self, message: str, error_code: Optional[str] = None, status_code: Optional[int] = None):
+
+    def __init__(
+        self,
+        message: str,
+        error_code: str | None = None,
+        status_code: int | None = None,
+    ):
         super().__init__(message)
         self.error_code = error_code
         self.status_code = status_code
@@ -31,26 +31,28 @@ class MLAPIError(Exception):
 
 class MLRateLimitError(MLAPIError):
     """Exception for rate limit errors (429)."""
-    
-    def __init__(self, message: str, retry_after: Optional[int] = None):
+
+    def __init__(self, message: str, retry_after: int | None = None):
         super().__init__(message, error_code="rate_limited", status_code=429)
         self.retry_after = retry_after
 
 
 class MLOAuthError(MLAPIError):
     """Exception for OAuth-specific errors."""
+
     pass
 
 
 class MLManagerAccountError(MLAPIError):
     """Exception for manager account requirement errors."""
+
     pass
 
 
 class MercadoLibreAPIClient:
     """
     Client for MercadoLibre API operations with OAuth support.
-    
+
     Implements rate limiting, error handling, and retry logic
     as required by the story specifications.
     """
@@ -85,7 +87,7 @@ class MercadoLibreAPIClient:
     ):
         """
         Initialize MercadoLibre API client.
-        
+
         Args:
             client_id: MercadoLibre app ID
             client_secret: MercadoLibre app secret
@@ -98,7 +100,7 @@ class MercadoLibreAPIClient:
         self.timeout = timeout
         self.max_retries = max_retries
         self.rate_limit_per_minute = rate_limit_per_minute
-        
+
         # Rate limiting tracking
         self._request_times: list[float] = []
         self._last_request_time: float = 0
@@ -107,14 +109,14 @@ class MercadoLibreAPIClient:
         self,
         method: str,
         url: str,
-        headers: Optional[Dict[str, str]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str] | None = None,
+        data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
         retry_count: int = 0,
     ) -> Response:
         """
         Make HTTP request with rate limiting and error handling.
-        
+
         Args:
             method: HTTP method
             url: Request URL
@@ -122,26 +124,26 @@ class MercadoLibreAPIClient:
             data: Request data
             params: Query parameters
             retry_count: Current retry attempt
-            
+
         Returns:
             HTTP response
-            
+
         Raises:
             MLAPIError: For various API errors
         """
         # Rate limiting
         await self._enforce_rate_limit()
-        
+
         # Prepare request
         request_headers = {"Content-Type": "application/x-www-form-urlencoded"}
         if headers:
             request_headers.update(headers)
-        
+
         # Convert data to form-encoded if present
         request_data = None
         if data:
             request_data = urlencode(data)
-        
+
         try:
             async with AsyncClient(timeout=self.timeout) as client:
                 response = await client.request(
@@ -151,7 +153,7 @@ class MercadoLibreAPIClient:
                     content=request_data,
                     params=params,
                 )
-                
+
                 # Handle rate limiting
                 if response.status_code == 429:
                     retry_after = int(response.headers.get("Retry-After", "60"))
@@ -165,37 +167,35 @@ class MercadoLibreAPIClient:
                             "Rate limit exceeded and max retries reached",
                             retry_after=retry_after,
                         )
-                
+
                 # Handle OAuth errors
                 if response.status_code >= 400:
                     await self._handle_error_response(response)
-                
+
                 return response
-                
+
         except httpx.RequestError as e:
             if retry_count < self.max_retries:
-                await asyncio.sleep(2 ** retry_count)  # Exponential backoff
+                await asyncio.sleep(2**retry_count)  # Exponential backoff
                 return await self._make_request(
                     method, url, headers, data, params, retry_count + 1
                 )
             else:
-                raise MLAPIError(f"Request failed: {str(e)}")
+                raise MLAPIError(f"Request failed: {str(e)}") from e
 
     async def _enforce_rate_limit(self) -> None:
         """Enforce rate limiting based on requests per minute."""
         current_time = time.time()
-        
+
         # Clean old requests (older than 1 minute)
-        self._request_times = [
-            t for t in self._request_times if current_time - t < 60
-        ]
-        
+        self._request_times = [t for t in self._request_times if current_time - t < 60]
+
         # Check if we've hit the limit
         if len(self._request_times) >= self.rate_limit_per_minute:
             sleep_time = 60 - (current_time - self._request_times[0])
             if sleep_time > 0:
                 await asyncio.sleep(sleep_time)
-        
+
         # Record this request
         self._request_times.append(current_time)
         self._last_request_time = current_time
@@ -206,7 +206,7 @@ class MercadoLibreAPIClient:
             error_data = response.json()
             error_code = error_data.get("error", "unknown_error")
             error_description = error_data.get("error_description", "Unknown error")
-            
+
             # Handle specific OAuth errors
             if error_code == "invalid_client":
                 raise MLOAuthError(
@@ -238,13 +238,13 @@ class MercadoLibreAPIClient:
                     error_code=error_code,
                     status_code=response.status_code,
                 )
-                
-        except json.JSONDecodeError:
+
+        except json.JSONDecodeError as e:
             # Handle non-JSON error responses
             raise MLAPIError(
                 f"HTTP {response.status_code}: {response.text}",
                 status_code=response.status_code,
-            )
+            ) from e
 
     def build_auth_url(
         self,
@@ -256,25 +256,25 @@ class MercadoLibreAPIClient:
     ) -> str:
         """
         Build authorization URL for OAuth flow.
-        
+
         Args:
             site_id: MercadoLibre site ID
             redirect_uri: OAuth redirect URI
             state: CSRF state parameter
             code_challenge: PKCE code challenge
             scopes: OAuth scopes
-            
+
         Returns:
             Authorization URL
-            
+
         Raises:
             ValueError: If site_id is invalid
         """
         if site_id not in self.AUTH_URLS:
             raise ValueError(f"Invalid site_id: {site_id}")
-        
+
         auth_url = self.AUTH_URLS[site_id]
-        
+
         params = {
             "response_type": "code",
             "client_id": self.client_id,
@@ -284,7 +284,7 @@ class MercadoLibreAPIClient:
             "code_challenge": code_challenge,
             "code_challenge_method": "S256",
         }
-        
+
         return f"{auth_url}?{urlencode(params)}"
 
     async def exchange_code_for_tokens(
@@ -292,18 +292,18 @@ class MercadoLibreAPIClient:
         code: str,
         redirect_uri: str,
         code_verifier: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Exchange authorization code for access tokens.
-        
+
         Args:
             code: Authorization code
             redirect_uri: OAuth redirect URI
             code_verifier: PKCE code verifier
-            
+
         Returns:
             Token response data
-            
+
         Raises:
             MLOAuthError: If token exchange fails
         """
@@ -315,22 +315,22 @@ class MercadoLibreAPIClient:
             "redirect_uri": redirect_uri,
             "code_verifier": code_verifier,
         }
-        
+
         response = await self._make_request("POST", self.TOKEN_URL, data=data)
         return response.json()
 
-    async def refresh_tokens(self, refresh_token: str) -> Dict[str, Any]:
+    async def refresh_tokens(self, refresh_token: str) -> dict[str, Any]:
         """
         Refresh access tokens using refresh token.
-        
+
         CRITICAL: Implements single-use refresh token requirement.
-        
+
         Args:
             refresh_token: Current refresh token
-            
+
         Returns:
             New token response data
-            
+
         Raises:
             MLOAuthError: If token refresh fails
         """
@@ -340,20 +340,20 @@ class MercadoLibreAPIClient:
             "client_secret": self.client_secret,
             "refresh_token": refresh_token,
         }
-        
+
         response = await self._make_request("POST", self.TOKEN_URL, data=data)
         return response.json()
 
-    async def get_user_info(self, access_token: str) -> Dict[str, Any]:
+    async def get_user_info(self, access_token: str) -> dict[str, Any]:
         """
         Get user information using access token.
-        
+
         Args:
             access_token: ML access token
-            
+
         Returns:
             User information data
-            
+
         Raises:
             MLAPIError: If user info request fails
         """
@@ -364,10 +364,10 @@ class MercadoLibreAPIClient:
     async def validate_token(self, access_token: str) -> bool:
         """
         Validate access token by making a test request.
-        
+
         Args:
             access_token: ML access token to validate
-            
+
         Returns:
             True if token is valid, False otherwise
         """
@@ -383,20 +383,22 @@ class MercadoLibreAPIClient:
 
     def get_auth_domain(self, site_id: str) -> str:
         """Get auth domain for site ID."""
-        return self.AUTH_URLS.get(site_id, "https://auth.mercadolibre.com.ar").replace("https://", "")
+        return self.AUTH_URLS.get(site_id, "https://auth.mercadolibre.com.ar").replace(
+            "https://", ""
+        )
 
     async def check_manager_account(self, access_token: str) -> bool:
         """
         Check if the account is a manager account.
-        
+
         CRITICAL: Only manager accounts can authorize applications.
-        
+
         Args:
             access_token: ML access token
-            
+
         Returns:
             True if manager account, False if collaborator
-            
+
         Raises:
             MLAPIError: If check fails
         """
@@ -412,10 +414,10 @@ class MercadoLibreAPIClient:
     async def revoke_token(self, access_token: str) -> bool:
         """
         Revoke access token.
-        
+
         Args:
             access_token: ML access token to revoke
-            
+
         Returns:
             True if revocation successful, False otherwise
         """

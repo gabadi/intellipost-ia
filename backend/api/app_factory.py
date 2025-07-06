@@ -66,11 +66,13 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
 
         # Start MercadoLibre background tasks (including token refresh scheduler)
         try:
-            from modules.user_management.infrastructure.services.ml_background_tasks import start_ml_background_tasks
-            
+            from modules.user_management.infrastructure.services.ml_background_tasks import (
+                start_ml_background_tasks,
+            )
+
             await start_ml_background_tasks()
             logger.info("MercadoLibre background tasks started successfully")
-                
+
         except Exception as e:
             logger.error(f"Failed to start MercadoLibre background tasks: {e}")
             # Don't fail startup for scheduler errors in development
@@ -81,11 +83,13 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
 
         # Shutdown
         logger.info("Shutting down IntelliPost AI Backend...")
-        
+
         # Stop MercadoLibre background tasks
         try:
-            from modules.user_management.infrastructure.services.ml_background_tasks import stop_ml_background_tasks
-            
+            from modules.user_management.infrastructure.services.ml_background_tasks import (
+                stop_ml_background_tasks,
+            )
+
             await stop_ml_background_tasks()
             logger.info("MercadoLibre background tasks stopped successfully")
         except Exception as e:
@@ -126,9 +130,12 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
         password_service=get_password_service,
     )
     app.include_router(user_router)
-    
+
     # Include MercadoLibre OAuth router
-    from modules.user_management.api.routers.ml_oauth_router import router as ml_oauth_router
+    from modules.user_management.api.routers.ml_oauth_router import (
+        router as ml_oauth_router,
+    )
+
     app.include_router(ml_oauth_router)
 
     # Configure CORS middleware with secure settings

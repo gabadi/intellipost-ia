@@ -102,7 +102,7 @@ class Settings(BaseSettings):
     mercadolibre_client_secret: str | None = Field(
         default=None, description="MercadoLibre API client secret"
     )
-    
+
     # MercadoLibre OAuth Configuration (Epic 6 Story 2)
     ml_app_id: str | None = Field(
         default=None, description="MercadoLibre OAuth app ID for authentication"
@@ -111,12 +111,11 @@ class Settings(BaseSettings):
         default=None, description="MercadoLibre OAuth app secret for authentication"
     )
     ml_auth_base_url: str = Field(
-        default="https://auth.mercadolibre.com.ar", 
-        description="MercadoLibre OAuth base URL"
+        default="https://auth.mercadolibre.com.ar",
+        description="MercadoLibre OAuth base URL",
     )
     ml_api_base_url: str = Field(
-        default="https://api.mercadolibre.com", 
-        description="MercadoLibre API base URL"
+        default="https://api.mercadolibre.com", description="MercadoLibre API base URL"
     )
     ml_encryption_key: str | None = Field(
         default=None, description="Encryption key for storing ML credentials securely"
@@ -235,7 +234,7 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "JWT secret key must be changed from default value in production"
                 )
-            
+
             # Validate MercadoLibre OAuth configuration for production
             if not self.ml_app_id:
                 raise ValueError(
@@ -249,7 +248,7 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "MercadoLibre encryption key (ML_ENCRYPTION_KEY) is required in production"
                 )
-                
+
             # Ensure HTTPS origins in production
             for origin in self.cors_origins:
                 if not origin.startswith("https://") and not origin.startswith(
@@ -346,9 +345,7 @@ class Settings(BaseSettings):
                 else True
             ),
             "ml_encryption_key_set": (
-                bool(self.ml_encryption_key)
-                if self.is_production
-                else True
+                bool(self.ml_encryption_key) if self.is_production else True
             ),
             "ml_configuration_valid": (
                 self.ml_token_refresh_interval_minutes > 0

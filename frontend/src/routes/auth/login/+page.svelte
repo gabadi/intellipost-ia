@@ -40,10 +40,10 @@
       if (response.success && response.data) {
         registrationEnabled = response.data.registration_enabled;
       }
-    } catch (error) {
+    } catch {
       // Silently handle feature flags error, keep default value
       if (import.meta.env.DEV) {
-        console.error('Failed to fetch feature flags:', error);
+        // Failed to fetch feature flags
       }
       // Keep default value of true on error
     }
@@ -90,10 +90,10 @@
 
     try {
       await authStore.login({ email, password });
-    } catch (error) {
+    } catch {
       // Handle login error - already handled by authStore
       if (import.meta.env.DEV) {
-        console.error('Login error:', error);
+        // Login error
       }
     } finally {
       isSubmitting = false;

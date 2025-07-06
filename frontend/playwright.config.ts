@@ -29,7 +29,7 @@ export default defineConfig({
 
     /* Navigation timeout optimization */
     navigationTimeout: 10 * 1000,
-    
+
     /* Action timeout optimization */
     actionTimeout: 8 * 1000,
 
@@ -51,38 +51,46 @@ export default defineConfig({
     },
 
     // Only run Firefox in CI or when explicitly requested
-    ...(process.env.CI || process.env.PLAYWRIGHT_FIREFOX ? [{
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    }] : []),
+    ...(process.env.CI || process.env.PLAYWRIGHT_FIREFOX
+      ? [
+          {
+            name: 'firefox',
+            use: { ...devices['Desktop Firefox'] },
+          },
+        ]
+      : []),
 
     // Only run mobile tests when explicitly requested
-    ...(process.env.PLAYWRIGHT_MOBILE ? [
-      {
-        name: 'Mobile Chrome',
-        use: { ...devices['Pixel 5'] },
-      },
-    ] : []),
+    ...(process.env.PLAYWRIGHT_MOBILE
+      ? [
+          {
+            name: 'Mobile Chrome',
+            use: { ...devices['Pixel 5'] },
+          },
+        ]
+      : []),
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: process.env.CI ? {
-    // In CI, use preview server (faster startup)
-    command: 'npm run preview',
-    url: 'http://localhost:4173',
-    timeout: 60 * 1000,
-    stdout: 'ignore',
-    stderr: 'pipe',
-  } : {
-    // Local development, use dev server
-    command: 'npm run dev',
-    url: 'http://localhost:4000',
-    reuseExistingServer: true, // Allow reusing existing server for faster runs
-    timeout: 180 * 1000, // More generous timeout for local dev
-    stdout: 'ignore',
-    stderr: 'pipe',
-    env: {
-      PORT: '4000',
-    },
-  },
+  webServer: process.env.CI
+    ? {
+        // In CI, use preview server (faster startup)
+        command: 'npm run preview',
+        url: 'http://localhost:4173',
+        timeout: 60 * 1000,
+        stdout: 'ignore',
+        stderr: 'pipe',
+      }
+    : {
+        // Local development, use dev server
+        command: 'npm run dev',
+        url: 'http://localhost:4000',
+        reuseExistingServer: true, // Allow reusing existing server for faster runs
+        timeout: 180 * 1000, // More generous timeout for local dev
+        stdout: 'ignore',
+        stderr: 'pipe',
+        env: {
+          PORT: '4000',
+        },
+      },
 });

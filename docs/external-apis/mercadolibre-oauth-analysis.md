@@ -194,7 +194,7 @@ grant_type=refresh_token
 }
 
 {
-  "error": "invalid_scope", 
+  "error": "invalid_scope",
   "error_description": "the requested scope is invalid, unknown, or malformed"
 }
 
@@ -233,7 +233,7 @@ grant_type=refresh_token
 
 ### 1. Database Schema Adjustments
 ```sql
-ALTER TABLE ml_credentials 
+ALTER TABLE ml_credentials
 ADD COLUMN ml_site_id CHAR(3) DEFAULT 'MLA',  -- Country marketplace
 ADD COLUMN ml_auth_domain VARCHAR(255),        -- Auth domain used
 ADD COLUMN pkce_code_challenge VARCHAR(128),   -- Temporary PKCE storage
@@ -245,18 +245,18 @@ ADD COLUMN pkce_code_verifier VARCHAR(128);    -- Temporary PKCE storage
 class MercadoLibreOAuthService:
     SITE_DOMAINS = {
         'MLA': 'mercadolibre.com.ar',
-        'MLM': 'mercadolibre.com.mx', 
+        'MLM': 'mercadolibre.com.mx',
         'MBL': 'mercadolibre.com.br',
         'MLC': 'mercadolibre.cl',
         'MCO': 'mercadolibre.com.co'
     }
-    
+
     def get_auth_url(self, site_id: str, redirect_uri: str) -> dict:
         # Generate PKCE parameters
         # Build country-specific auth URL
         # Return auth_url, state, code_verifier for storage
         pass
-        
+
     def exchange_code(self, site_id: str, code: str, code_verifier: str) -> dict:
         # Country-specific token endpoint
         # Include PKCE verification
@@ -305,7 +305,7 @@ class MLInsufficientPermissionsError(MLOAuthError): pass
 def mock_ml_oauth_responses():
     with responses.RequestsMock() as rsps:
         # Mock authorization endpoint
-        rsps.add(responses.POST, 
+        rsps.add(responses.POST,
                 "https://api.mercadolibre.com/oauth/token",
                 json={"access_token": "test_token", "expires_in": 21600})
         yield rsps

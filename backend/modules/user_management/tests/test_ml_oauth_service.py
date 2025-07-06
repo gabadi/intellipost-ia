@@ -5,18 +5,24 @@ Tests the OAuth service implementation including PKCE flow,
 token refresh, and manager account validation.
 """
 
-import pytest
 from datetime import UTC, datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
+import pytest
+
 from modules.user_management.domain.entities.ml_credentials import MLCredentials
-from modules.user_management.domain.exceptions import AuthenticationError, ValidationError
-from modules.user_management.domain.services.ml_oauth import MLOAuthService
+from modules.user_management.domain.exceptions import (
+    AuthenticationError,
+    ValidationError,
+)
 from modules.user_management.infrastructure.services.mercadolibre_api_client import (
     MLManagerAccountError,
     MLOAuthError,
     MLRateLimitError,
+)
+from modules.user_management.infrastructure.services.ml_oauth_service import (
+    MLOAuthService,
 )
 
 
@@ -27,12 +33,14 @@ class TestMLOAuthService:
     def mock_ml_client(self):
         """Mock MercadoLibre API client."""
         mock = AsyncMock()
-        
+
         # Override sync methods with regular MagicMock
-        mock.build_auth_url = MagicMock(return_value="https://auth.mercadolibre.com.ar/authorization?...")
+        mock.build_auth_url = MagicMock(
+            return_value="https://auth.mercadolibre.com.ar/authorization?..."
+        )
         mock.get_site_domain = MagicMock(return_value="mercadolibre.com.ar")
         mock.get_auth_domain = MagicMock(return_value="mercadolibre.com.ar")
-        
+
         return mock
 
     @pytest.fixture
@@ -52,7 +60,9 @@ class TestMLOAuthService:
         return mock
 
     @pytest.fixture
-    def oauth_service(self, mock_ml_client, mock_credentials_repository, mock_encryption_service):
+    def oauth_service(
+        self, mock_ml_client, mock_credentials_repository, mock_encryption_service
+    ):
         """Create OAuth service with mocked dependencies."""
         return MLOAuthService(
             ml_client=mock_ml_client,
@@ -93,13 +103,18 @@ class TestMLOAuthService:
         site_id = "MLA"
 
         # Mock ML client response
-        mock_ml_client.build_auth_url.return_value = "https://auth.mercadolibre.com.ar/authorization?..."
+        mock_ml_client.build_auth_url.return_value = (
+            "https://auth.mercadolibre.com.ar/authorization?..."
+        )
 
         # Execute
         result = await oauth_service.initiate_oauth_flow(user_id, redirect_uri, site_id)
 
         # Assertions
-        assert result.authorization_url == "https://auth.mercadolibre.com.ar/authorization?..."
+        assert (
+            result.authorization_url
+            == "https://auth.mercadolibre.com.ar/authorization?..."
+        )
         assert result.state is not None
         assert result.code_verifier is not None
         assert result.code_challenge is not None
@@ -116,7 +131,9 @@ class TestMLOAuthService:
         invalid_site_id = "INVALID"
 
         with pytest.raises(ValidationError, match="Invalid site_id"):
-            await oauth_service.initiate_oauth_flow(user_id, redirect_uri, invalid_site_id)
+            await oauth_service.initiate_oauth_flow(
+                user_id, redirect_uri, invalid_site_id
+            )
 
     async def test_initiate_oauth_flow_invalid_redirect_uri(self, oauth_service):
         """Test OAuth initiation with invalid redirect URI."""
@@ -128,7 +145,11 @@ class TestMLOAuthService:
 
     # Test OAuth callback handling
     async def test_handle_oauth_callback_success(
-        self, oauth_service, mock_ml_client, mock_credentials_repository, sample_credentials
+        self,
+        oauth_service,
+        mock_ml_client,
+        mock_credentials_repository,
+        sample_credentials,
     ):
         """Test successful OAuth callback handling."""
         user_id = uuid4()
@@ -159,7 +180,9 @@ class TestMLOAuthService:
         }
 
         # Execute
-        result = await oauth_service.handle_oauth_callback(user_id, code, state, code_verifier)
+        result = await oauth_service.handle_oauth_callback(
+            user_id, code, state, code_verifier
+        )
 
         # Assertions
         assert result.ml_user_id == 12345
@@ -192,11 +215,16 @@ class TestMLOAuthService:
         # Mock ML client to raise manager account error
         mock_ml_client.exchange_code_for_tokens.side_effect = MLManagerAccountError(
             "Only manager accounts can authorize applications",
-            "Please use a manager account"
+            "Please use a manager account",
         )
 
-        with pytest.raises(AuthenticationError, match="Only manager accounts can authorize applications"):
-            await oauth_service.handle_oauth_callback(user_id, code, state, code_verifier)
+        with pytest.raises(
+            AuthenticationError,
+            match="Only manager accounts can authorize applications",
+        ):
+            await oauth_service.handle_oauth_callback(
+                user_id, code, state, code_verifier
+            )
 
     async def test_handle_oauth_callback_invalid_state(self, oauth_service):
         """Test OAuth callback with invalid state parameter."""
@@ -206,11 +234,17 @@ class TestMLOAuthService:
         code_verifier = "code_verifier_123"
 
         with pytest.raises(ValidationError, match="Invalid state parameter"):
-            await oauth_service.handle_oauth_callback(user_id, code, invalid_state, code_verifier)
+            await oauth_service.handle_oauth_callback(
+                user_id, code, invalid_state, code_verifier
+            )
 
     # Test token refresh
     async def test_refresh_token_success(
-        self, oauth_service, mock_ml_client, mock_credentials_repository, sample_credentials
+        self,
+        oauth_service,
+        mock_ml_client,
+        mock_credentials_repository,
+        sample_credentials,
     ):
         """Test successful token refresh."""
         # Mock ML client response
@@ -231,7 +265,11 @@ class TestMLOAuthService:
         mock_credentials_repository.save.assert_called_once()
 
     async def test_refresh_token_failure(
-        self, oauth_service, mock_ml_client, mock_credentials_repository, sample_credentials
+        self,
+        oauth_service,
+        mock_ml_client,
+        mock_credentials_repository,
+        sample_credentials,
     ):
         """Test token refresh failure."""
         # Mock ML client to raise error
@@ -247,7 +285,11 @@ class TestMLOAuthService:
 
     # Test connection validation
     async def test_validate_connection_healthy(
-        self, oauth_service, mock_ml_client, mock_credentials_repository, sample_credentials
+        self,
+        oauth_service,
+        mock_ml_client,
+        mock_credentials_repository,
+        sample_credentials,
     ):
         """Test connection validation for healthy connection."""
         # Mock ML client to return valid token
@@ -278,7 +320,11 @@ class TestMLOAuthService:
         assert "Refresh token expired" in result.error_message
 
     async def test_validate_connection_invalid_token_with_refresh(
-        self, oauth_service, mock_ml_client, mock_credentials_repository, sample_credentials
+        self,
+        oauth_service,
+        mock_ml_client,
+        mock_credentials_repository,
+        sample_credentials,
     ):
         """Test connection validation with invalid token but valid refresh."""
         # Mock ML client responses
@@ -312,9 +358,14 @@ class TestMLOAuthService:
         # Verify code challenge is SHA256 of verifier
         import base64
         import hashlib
-        expected_challenge = base64.urlsafe_b64encode(
-            hashlib.sha256(code_verifier.encode('utf-8')).digest()
-        ).decode('utf-8').rstrip('=')
+
+        expected_challenge = (
+            base64.urlsafe_b64encode(
+                hashlib.sha256(code_verifier.encode("utf-8")).digest()
+            )
+            .decode("utf-8")
+            .rstrip("=")
+        )
         assert code_challenge == expected_challenge
 
     # Test state parameter validation
@@ -381,7 +432,9 @@ class TestMLOAuthService:
         assert result is False
 
     # Test manager account validation
-    async def test_validate_manager_account_success(self, oauth_service, mock_ml_client):
+    async def test_validate_manager_account_success(
+        self, oauth_service, mock_ml_client
+    ):
         """Test manager account validation success."""
         access_token = "test_token"
         mock_ml_client.check_manager_account.return_value = True
@@ -391,7 +444,9 @@ class TestMLOAuthService:
         assert result is True
         mock_ml_client.check_manager_account.assert_called_once_with(access_token)
 
-    async def test_validate_manager_account_failure(self, oauth_service, mock_ml_client):
+    async def test_validate_manager_account_failure(
+        self, oauth_service, mock_ml_client
+    ):
         """Test manager account validation failure."""
         access_token = "test_token"
         mock_ml_client.check_manager_account.return_value = False
@@ -411,7 +466,9 @@ class TestMLOAuthService:
         assert result is True
         mock_credentials_repository.delete_by_user_id.assert_called_once_with(user_id)
 
-    async def test_disconnect_not_connected(self, oauth_service, mock_credentials_repository):
+    async def test_disconnect_not_connected(
+        self, oauth_service, mock_credentials_repository
+    ):
         """Test disconnect when user is not connected."""
         user_id = uuid4()
         mock_credentials_repository.delete_by_user_id.return_value = False
@@ -422,15 +479,21 @@ class TestMLOAuthService:
 
     # Test process expired tokens
     async def test_process_expired_tokens(
-        self, oauth_service, mock_credentials_repository, mock_ml_client, sample_credentials
+        self,
+        oauth_service,
+        mock_credentials_repository,
+        mock_ml_client,
+        sample_credentials,
     ):
         """Test processing of expired tokens."""
         # Make the credentials expire in 20 minutes (should be refreshed)
         sample_credentials.ml_expires_at = datetime.now(UTC) + timedelta(minutes=20)
-        
+
         # Mock repository to return expiring credentials
         expiring_credentials = [sample_credentials]
-        mock_credentials_repository.find_expiring_tokens.return_value = expiring_credentials
+        mock_credentials_repository.find_expiring_tokens.return_value = (
+            expiring_credentials
+        )
 
         # Mock successful token refresh
         mock_ml_client.refresh_tokens.return_value = {
@@ -468,7 +531,9 @@ class TestMLOAuthService:
         )
 
         with pytest.raises(AuthenticationError, match="OAuth authentication failed"):
-            await oauth_service.handle_oauth_callback(user_id, code, state, code_verifier)
+            await oauth_service.handle_oauth_callback(
+                user_id, code, state, code_verifier
+            )
 
     # Test edge cases
     async def test_get_connection_status_not_connected(
@@ -484,7 +549,11 @@ class TestMLOAuthService:
         assert result.connection_health == "disconnected"
 
     async def test_update_user_info_success(
-        self, oauth_service, mock_ml_client, mock_credentials_repository, sample_credentials
+        self,
+        oauth_service,
+        mock_ml_client,
+        mock_credentials_repository,
+        sample_credentials,
     ):
         """Test updating user info from ML API."""
         access_token = "test_token"

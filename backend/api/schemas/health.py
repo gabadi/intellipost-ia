@@ -1,6 +1,7 @@
 """Health check API schemas."""
 
-from typing import Dict, Any, Optional
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -28,8 +29,8 @@ class DetailedHealthResponse(BaseModel):
     status: str
     timestamp: str
     version: str
-    services: Dict[str, Any]
-    ml_integration: Optional[Dict[str, Any]] = None
+    services: dict[str, Any]
+    ml_integration: dict[str, Any] | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -45,8 +46,8 @@ class DetailedHealthResponse(BaseModel):
                     "status": "healthy",
                     "background_service": True,
                     "token_refresh_scheduler": True,
-                    "active_connections": 5
-                }
+                    "active_connections": 5,
+                },
             }
         }
     )

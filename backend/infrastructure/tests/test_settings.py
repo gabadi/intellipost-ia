@@ -41,7 +41,7 @@ class TestSettings:
             ml_app_id="test_app_id",
             ml_app_secret="test_app_secret",
             ml_encryption_key="test_encryption_key",
-            cors_origins=["https://example.com"]
+            cors_origins=["https://example.com"],
         )
         assert settings.is_development is False
 
@@ -61,7 +61,7 @@ class TestSettings:
             ml_app_id="test_app_id",
             ml_app_secret="test_app_secret",
             ml_encryption_key="test_encryption_key",
-            cors_origins=["https://example.com"]
+            cors_origins=["https://example.com"],
         )
         assert settings.is_production is True
 
@@ -107,13 +107,13 @@ class TestSettings:
     def test_secret_key_validation_production_passes(self):
         """Test secret key validation passes in production with custom key."""
         settings = Settings(
-            environment="production", 
+            environment="production",
             secret_key="custom-production-secret-key",
             user_jwt_secret_key="production-jwt-secret",
             ml_app_id="test_app_id",
             ml_app_secret="test_app_secret",
             ml_encryption_key="test_encryption_key",
-            cors_origins=["https://example.com"]
+            cors_origins=["https://example.com"],
         )
         assert settings.secret_key == "custom-production-secret-key"
 
@@ -191,7 +191,7 @@ class TestSettings:
         )  # From .env.testing
         assert (
             settings.user_jwt_access_token_expire_minutes == 15
-        )  # Default development value  
+        )  # Default development value
         assert settings.user_session_expire_hours == 1  # From .env.testing override
         assert settings.user_max_login_attempts == 3  # From .env.testing override
         assert settings.user_password_min_length == 6  # From .env.testing override

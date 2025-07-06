@@ -311,26 +311,26 @@ TOKEN_REFRESH_CONFIG = {
 ```python
 class MLOAuthServiceProtocol(Protocol):
     async def initiate_oauth_flow(
-        self, 
-        user_id: UUID, 
+        self,
+        user_id: UUID,
         redirect_uri: str
     ) -> OAuthFlowData: ...
-    
+
     async def handle_oauth_callback(
-        self, 
-        user_id: UUID, 
-        code: str, 
-        state: str, 
+        self,
+        user_id: UUID,
+        code: str,
+        state: str,
         code_verifier: str
     ) -> MLCredentials: ...
-    
+
     async def refresh_token(
-        self, 
+        self,
         credentials: MLCredentials
     ) -> MLCredentials: ...
-    
+
     async def validate_connection(
-        self, 
+        self,
         credentials: MLCredentials
     ) -> ConnectionStatus: ...
 
@@ -462,7 +462,7 @@ test('ML connection modal explains benefits before OAuth redirect')
 test('Connection status indicator shows correct health states')
 test('OAuth callback handler processes success and error states')
 
-// Integration tests  
+// Integration tests
 test('ML connection store manages OAuth flow state correctly')
 test('API client handles OAuth initiation and callback')
 test('Connection status updates across components')
