@@ -6,7 +6,7 @@ This module provides JWT token operations using python-jose library.
 
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from jose import JWTError, jwt
 
@@ -43,6 +43,7 @@ class JoseJWTService:
             "exp": expire,
             "type": "access",
             "iat": datetime.now(UTC),
+            "jti": str(uuid4()),  # Add unique JWT ID
         }
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
@@ -54,6 +55,7 @@ class JoseJWTService:
             "exp": expire,
             "type": "refresh",
             "iat": datetime.now(UTC),
+            "jti": str(uuid4()),  # Add unique JWT ID
         }
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
