@@ -21,6 +21,7 @@ from modules.user_management.application.use_cases.refresh_token import (
 from modules.user_management.application.use_cases.register_user import (
     RegisterUserUseCase,
 )
+from modules.user_management.domain.entities.user import User
 from modules.user_management.domain.services.authentication import (
     AuthenticationService,
 )
@@ -33,7 +34,6 @@ from modules.user_management.infrastructure.services.bcrypt_password_service imp
 from modules.user_management.infrastructure.services.jose_jwt_service import (
     JoseJWTService,
 )
-from modules.user_management.domain.entities.user import User
 
 
 # Settings dependency
@@ -103,7 +103,8 @@ def get_refresh_token_use_case(
 
 
 # Initialize the HTTPBearer security scheme
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 security_scheme = HTTPBearer()
 
 
@@ -116,7 +117,7 @@ async def get_current_user(
     from modules.user_management.infrastructure.middleware.auth_middleware import (
         AuthMiddleware,
     )
-    
+
     auth_middleware = AuthMiddleware(jwt_service, user_repository)
     return await auth_middleware.get_current_user(credentials)
 

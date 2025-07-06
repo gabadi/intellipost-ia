@@ -1,5 +1,5 @@
 interfaces = []
-exclude = ["migrations"]
+exclude = ["migrations", "intellipost", "tests"]
 source_roots = [
     ".",
 ]
@@ -18,17 +18,66 @@ depends_on = ["api", "infrastructure"]
 # Global API layer - can depend on infrastructure and modules for creating dependencies
 [[modules]]
 path = "api"
-depends_on = ["infrastructure", "modules.user_management"]
+depends_on = [
+    "infrastructure",
+    "modules.user_management.domain",
+    "modules.user_management.application",
+    "modules.user_management.infrastructure",
+    "modules.user_management.api",
+]
 
+# ========================================
+# HEXAGONAL ARCHITECTURE ENFORCEMENT
+# ========================================
 
 # User Management module - TRUE INDEPENDENCE with protocols
 [[modules]]
 path = "modules.user_management"
 depends_on = []
 
+# User Management - Domain Layer (Pure business logic, no external dependencies)
+[[modules]]
+path = "modules.user_management.domain"
+depends_on = []
+
+# User Management - Application Layer (Use cases, can only depend on domain)
+[[modules]]
+path = "modules.user_management.application"
+depends_on = ["modules.user_management.domain"]
+
+# User Management - Infrastructure Layer (External concerns, depends on domain for contracts)
+[[modules]]
+path = "modules.user_management.infrastructure"
+depends_on = ["modules.user_management.domain"]
+
+# User Management - API Layer (Controllers, depends on application, infrastructure, and domain)
+[[modules]]
+path = "modules.user_management.api"
+depends_on = ["modules.user_management.application", "modules.user_management.domain"]
+
 # Product Management module - TRUE INDEPENDENCE
 [[modules]]
 path = "modules.product_management"
+depends_on = ["modules.product_management.domain"]
+
+# Product Management - Domain Layer (Pure business logic, no external dependencies)
+[[modules]]
+path = "modules.product_management.domain"
+depends_on = []
+
+# Product Management - Application Layer (Use cases, can only depend on domain)
+[[modules]]
+path = "modules.product_management.application"
+depends_on = []
+
+# Product Management - Infrastructure Layer (External concerns, depends on domain for contracts)
+[[modules]]
+path = "modules.product_management.infrastructure"
+depends_on = []
+
+# Product Management - API Layer (Controllers, depends on application, infrastructure, and domain)
+[[modules]]
+path = "modules.product_management.api"
 depends_on = []
 
 # Content Generation module - TRUE INDEPENDENCE
@@ -36,12 +85,72 @@ depends_on = []
 path = "modules.content_generation"
 depends_on = []
 
+# Content Generation - Domain Layer (Pure business logic, no external dependencies)
+[[modules]]
+path = "modules.content_generation.domain"
+depends_on = []
+
+# Content Generation - Application Layer (Use cases, can only depend on domain)
+[[modules]]
+path = "modules.content_generation.application"
+depends_on = []
+
+# Content Generation - Infrastructure Layer (External concerns, depends on domain for contracts)
+[[modules]]
+path = "modules.content_generation.infrastructure"
+depends_on = []
+
+# Content Generation - API Layer (Controllers, depends on application, infrastructure, and domain)
+[[modules]]
+path = "modules.content_generation.api"
+depends_on = []
+
 # Marketplace Integration module - TRUE INDEPENDENCE
 [[modules]]
 path = "modules.marketplace_integration"
 depends_on = []
 
+# Marketplace Integration - Domain Layer (Pure business logic, no external dependencies)
+[[modules]]
+path = "modules.marketplace_integration.domain"
+depends_on = []
+
+# Marketplace Integration - Application Layer (Use cases, can only depend on domain)
+[[modules]]
+path = "modules.marketplace_integration.application"
+depends_on = []
+
+# Marketplace Integration - Infrastructure Layer (External concerns, depends on domain for contracts)
+[[modules]]
+path = "modules.marketplace_integration.infrastructure"
+depends_on = []
+
+# Marketplace Integration - API Layer (Controllers, depends on application, infrastructure, and domain)
+[[modules]]
+path = "modules.marketplace_integration.api"
+depends_on = []
+
 # Notifications module - TRUE INDEPENDENCE
 [[modules]]
 path = "modules.notifications"
+depends_on = []
+
+# Notifications - Domain Layer (Pure business logic, no external dependencies)
+[[modules]]
+path = "modules.notifications.domain"
+depends_on = []
+
+# Notifications - Application Layer (Use cases, can only depend on domain)
+[[modules]]
+path = "modules.notifications.application"
+depends_on = []
+
+# Notifications - Infrastructure Layer (External concerns, depends on domain for contracts)
+[[modules]]
+path = "modules.notifications.infrastructure"
+depends_on = []
+
+# Notifications - API Layer (Controllers, depends on application, infrastructure, and domain)
+[[modules]]
+path = "modules.notifications.api"
 depends_on = []

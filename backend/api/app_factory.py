@@ -13,7 +13,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.dependencies import (
     get_authenticate_user_use_case,
-    get_current_user,
     get_password_service,
     get_refresh_token_use_case,
     get_register_user_use_case,

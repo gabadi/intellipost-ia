@@ -4,10 +4,9 @@ User API router for user management module.
 This module contains FastAPI routes for user profile operations.
 """
 
-from typing import Annotated
+from typing import Annotated, Callable
 
 from fastapi import APIRouter, Depends, HTTPException, status
-
 from modules.user_management.api.schemas.auth_schemas import ErrorResponse
 from modules.user_management.api.schemas.user_schemas import (
     ChangePasswordRequest,
@@ -26,17 +25,27 @@ from modules.user_management.domain.ports.user_repository_protocol import (
     UserRepositoryProtocol,
 )
 
-# Import current user dependency directly
-from api.dependencies import get_current_user
-
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 def create_user_router(
     user_repository: UserRepositoryProtocol,
     password_service: PasswordServiceProtocol,
+    current_user_provider: Callable[[], User] | None = None,
 ) -> APIRouter:
     """Create user router with dependency injection."""
+    
+    # Use the provided current_user_provider or create a dummy one
+    if current_user_provider:
+        current_user_dep = Depends(current_user_provider)
+    else:
+        # Fallback - this will be replaced when the router is properly wired
+        def dummy_current_user() -> User:
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail="Current user provider not configured"
+            )
+        current_user_dep = Depends(dummy_current_user)
 
     @router.get(
         "/me",
@@ -46,7 +55,7 @@ def create_user_router(
         },
     )
     async def get_current_user_profile(
-        current_user: Annotated[User, Depends(get_current_user)],
+        current_user: Annotated[User, current_user_dep],
     ) -> UserDetailResponse:
         """Get current user profile."""
         return UserDetailResponse(
@@ -78,7 +87,7 @@ def create_user_router(
     )
     async def update_user_profile(
         request: UserProfileUpdateRequest,
-        current_user: Annotated[User, Depends(get_current_user)],
+        current_user: Annotated[User, current_user_dep],
     ) -> UserDetailResponse:
         """Update current user profile."""
         try:
@@ -127,7 +136,7 @@ def create_user_router(
     )
     async def change_password(
         request: ChangePasswordRequest,
-        current_user: Annotated[User, Depends(get_current_user)],
+        current_user: Annotated[User, current_user_dep],
     ) -> dict[str, str]:
         """Change current user password."""
         try:
