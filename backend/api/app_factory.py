@@ -60,9 +60,7 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
             await seed_database(settings)
         except Exception as e:
             logger.error(f"Failed to seed database: {e}")
-            # Don't fail startup for seeding errors in development
-            if settings.is_production:
-                raise
+            raise
 
         # Start MercadoLibre background tasks (including token refresh scheduler)
         try:
@@ -75,9 +73,7 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
 
         except Exception as e:
             logger.error(f"Failed to start MercadoLibre background tasks: {e}")
-            # Don't fail startup for scheduler errors in development
-            if settings.is_production:
-                raise
+            raise
 
         yield
 
