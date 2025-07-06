@@ -284,9 +284,17 @@ config/secrets.yml
 secrets.json
 
 # AI/ML specific
-models/
+# AI/ML model files and directories (not SQLAlchemy models)
+ai_models/
+ml_models/
 *.pkl
 *.joblib
+*.h5
+*.pb
+*.onnx
+*.pt
+*.pth
+*.model
 data/raw/
 data/processed/
 checkpoints/
