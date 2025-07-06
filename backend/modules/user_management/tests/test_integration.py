@@ -144,7 +144,9 @@ class TestBcryptPasswordService:
         assert is_valid is True
 
         # Verify incorrect password
-        is_valid = await password_service.verify_password("wrong_password", password_hash)
+        is_valid = await password_service.verify_password(
+            "wrong_password", password_hash
+        )
         assert is_valid is False
 
     @pytest.mark.asyncio
@@ -292,7 +294,9 @@ class TestUserManagementIntegration:
         )
 
         # Verify password verification works
-        is_valid = await password_service.verify_password(plain_password, user.password_hash)
+        is_valid = await password_service.verify_password(
+            plain_password, user.password_hash
+        )
         assert is_valid is True
 
         # Convert to model and back

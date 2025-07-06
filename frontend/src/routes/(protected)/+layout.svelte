@@ -1,6 +1,6 @@
 <!--
   Protected layout for authenticated routes
-  
+
   Automatically redirects to login if user is not authenticated
   and initializes auth store on mount
 -->
@@ -19,10 +19,10 @@
   onMount(async () => {
     // Initialize auth store from localStorage
     authStore.init();
-    
+
     // Small delay to allow store initialization
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     isInitialized = true;
 
     // If not authenticated, redirect to login

@@ -12,7 +12,7 @@ from modules.user_management.api.routers.auth_router import create_auth_router
 
 def create_auth_router_with_dependencies(
     register_use_case_factory,
-    authenticate_use_case_factory, 
+    authenticate_use_case_factory,
     refresh_token_use_case_factory,
     access_token_expire_minutes: int = 15,
     registration_enabled: bool = False,

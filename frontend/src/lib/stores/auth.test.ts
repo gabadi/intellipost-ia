@@ -49,7 +49,7 @@ describe('Auth Store', () => {
   describe('Initial State', () => {
     it('should have correct initial state', () => {
       const state = get(authStore);
-      
+
       expect(state.user).toBeNull();
       expect(state.accessToken).toBeNull();
       expect(state.refreshToken).toBeNull();

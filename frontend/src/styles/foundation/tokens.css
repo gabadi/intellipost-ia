@@ -381,6 +381,18 @@
   --color-error: var(--color-error-400);
   --color-info: var(--color-info-400);
 
+  /* Status color backgrounds for dark mode */
+  --color-success-50: rgba(34, 197, 94, 0.1);
+  --color-warning-50: rgba(251, 191, 36, 0.1);
+  --color-error-50: rgba(239, 68, 68, 0.1);
+  --color-info-50: rgba(59, 130, 246, 0.1);
+
+  /* Status color borders for dark mode */
+  --color-success-200: rgba(34, 197, 94, 0.3);
+  --color-warning-200: rgba(251, 191, 36, 0.3);
+  --color-error-200: rgba(239, 68, 68, 0.3);
+  --color-info-200: rgba(59, 130, 246, 0.3);
+
   /* Shadow adjustments for dark mode */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
@@ -431,6 +443,18 @@
     --color-warning: var(--color-warning-400);
     --color-error: var(--color-error-400);
     --color-info: var(--color-info-400);
+
+    /* Status color backgrounds for dark mode */
+    --color-success-50: rgba(34, 197, 94, 0.1);
+    --color-warning-50: rgba(251, 191, 36, 0.1);
+    --color-error-50: rgba(239, 68, 68, 0.1);
+    --color-info-50: rgba(59, 130, 246, 0.1);
+
+    /* Status color borders for dark mode */
+    --color-success-200: rgba(34, 197, 94, 0.3);
+    --color-warning-200: rgba(251, 191, 36, 0.3);
+    --color-error-200: rgba(239, 68, 68, 0.3);
+    --color-info-200: rgba(59, 130, 246, 0.3);
 
     /* Shadow adjustments for dark mode */
     --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);

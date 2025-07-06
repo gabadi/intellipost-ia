@@ -40,7 +40,9 @@ class TestAuthenticationService:
         )
 
     @pytest.mark.asyncio
-    async def test_register_user_success(self, auth_service, mock_user_repository, mock_password_service):
+    async def test_register_user_success(
+        self, auth_service, mock_user_repository, mock_password_service
+    ):
         """Test successful user registration."""
         # Setup
         email = "test@example.com"
@@ -62,7 +64,9 @@ class TestAuthenticationService:
         mock_user_repository.create.return_value = created_user
 
         # Execute
-        result = await auth_service.register_user(email, password, first_name, last_name)
+        result = await auth_service.register_user(
+            email, password, first_name, last_name
+        )
 
         # Verify
         assert result == created_user
@@ -79,7 +83,9 @@ class TestAuthenticationService:
         assert user_arg.status == UserStatus.PENDING_VERIFICATION
 
     @pytest.mark.asyncio
-    async def test_register_user_already_exists(self, auth_service, mock_user_repository):
+    async def test_register_user_already_exists(
+        self, auth_service, mock_user_repository
+    ):
         """Test registration fails when user already exists."""
         # Setup
         email = "existing@example.com"
@@ -99,7 +105,9 @@ class TestAuthenticationService:
         mock_user_repository.create.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_register_user_weak_password(self, auth_service, mock_user_repository):
+    async def test_register_user_weak_password(
+        self, auth_service, mock_user_repository
+    ):
         """Test registration fails with weak password."""
         # Setup
         mock_user_repository.get_by_email.return_value = None
@@ -109,7 +117,9 @@ class TestAuthenticationService:
             await auth_service.register_user("test@example.com", "weak")
 
     @pytest.mark.asyncio
-    async def test_authenticate_user_success(self, auth_service, mock_user_repository, mock_password_service):
+    async def test_authenticate_user_success(
+        self, auth_service, mock_user_repository, mock_password_service
+    ):
         """Test successful user authentication."""
         # Setup
         email = "test@example.com"
@@ -134,23 +144,31 @@ class TestAuthenticationService:
         # Verify
         assert result == user
         mock_user_repository.get_by_email.assert_called_once_with(email)
-        mock_password_service.verify_password.assert_called_once_with(password, "hashed_password")
+        mock_password_service.verify_password.assert_called_once_with(
+            password, "hashed_password"
+        )
         mock_user_repository.update.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_authenticate_user_not_found(self, auth_service, mock_user_repository):
+    async def test_authenticate_user_not_found(
+        self, auth_service, mock_user_repository
+    ):
         """Test authentication fails when user not found."""
         # Setup
         mock_user_repository.get_by_email.return_value = None
 
         # Execute
-        result = await auth_service.authenticate_user("nonexistent@example.com", "password")
+        result = await auth_service.authenticate_user(
+            "nonexistent@example.com", "password"
+        )
 
         # Verify
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_authenticate_user_account_locked(self, auth_service, mock_user_repository):
+    async def test_authenticate_user_account_locked(
+        self, auth_service, mock_user_repository
+    ):
         """Test authentication fails when account is locked."""
         # Setup
         user = User(
@@ -171,7 +189,9 @@ class TestAuthenticationService:
         assert exc_info.value.max_attempts == 5
 
     @pytest.mark.asyncio
-    async def test_authenticate_user_account_inactive(self, auth_service, mock_user_repository):
+    async def test_authenticate_user_account_inactive(
+        self, auth_service, mock_user_repository
+    ):
         """Test authentication fails when account is inactive."""
         # Setup
         user = User(
@@ -189,7 +209,9 @@ class TestAuthenticationService:
             await auth_service.authenticate_user("test@example.com", "password")
 
     @pytest.mark.asyncio
-    async def test_authenticate_user_wrong_password(self, auth_service, mock_user_repository, mock_password_service):
+    async def test_authenticate_user_wrong_password(
+        self, auth_service, mock_user_repository, mock_password_service
+    ):
         """Test authentication fails with wrong password."""
         # Setup
         user = User(
@@ -206,7 +228,9 @@ class TestAuthenticationService:
         mock_user_repository.update.return_value = user
 
         # Execute
-        result = await auth_service.authenticate_user("test@example.com", "wrong_password")
+        result = await auth_service.authenticate_user(
+            "test@example.com", "wrong_password"
+        )
 
         # Verify
         assert result is None
@@ -265,7 +289,9 @@ class TestAuthenticationService:
         mock_user_repository.update.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_initiate_password_reset_success(self, auth_service, mock_user_repository):
+    async def test_initiate_password_reset_success(
+        self, auth_service, mock_user_repository
+    ):
         """Test successful password reset initiation."""
         # Setup
         user = User(
@@ -289,7 +315,9 @@ class TestAuthenticationService:
         mock_user_repository.update.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_initiate_password_reset_user_not_found(self, auth_service, mock_user_repository):
+    async def test_initiate_password_reset_user_not_found(
+        self, auth_service, mock_user_repository
+    ):
         """Test password reset initiation for non-existent user."""
         # Setup
         mock_user_repository.get_by_email.return_value = None
@@ -302,7 +330,9 @@ class TestAuthenticationService:
         mock_user_repository.update.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_reset_password_success(self, auth_service, mock_user_repository, mock_password_service):
+    async def test_reset_password_success(
+        self, auth_service, mock_user_repository, mock_password_service
+    ):
         """Test successful password reset."""
         # Setup
         user_id = uuid4()
@@ -334,7 +364,9 @@ class TestAuthenticationService:
         mock_user_repository.update.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_reset_password_expired_token(self, auth_service, mock_user_repository):
+    async def test_reset_password_expired_token(
+        self, auth_service, mock_user_repository
+    ):
         """Test password reset with expired token."""
         # Setup
         user_id = uuid4()
@@ -352,14 +384,18 @@ class TestAuthenticationService:
         mock_user_repository.get_by_id.return_value = user
 
         # Execute
-        result = await auth_service.reset_password(user_id, reset_token, "NewPassword123!")
+        result = await auth_service.reset_password(
+            user_id, reset_token, "NewPassword123!"
+        )
 
         # Verify
         assert result is False
         mock_user_repository.update.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_change_password_success(self, auth_service, mock_user_repository, mock_password_service):
+    async def test_change_password_success(
+        self, auth_service, mock_user_repository, mock_password_service
+    ):
         """Test successful password change."""
         # Setup
         user_id = uuid4()
@@ -379,17 +415,23 @@ class TestAuthenticationService:
         mock_user_repository.update.return_value = user
 
         # Execute
-        result = await auth_service.change_password(user_id, current_password, new_password)
+        result = await auth_service.change_password(
+            user_id, current_password, new_password
+        )
 
         # Verify
         assert result is True
         assert user.password_hash == "new_hashed_password"
-        mock_password_service.verify_password.assert_called_once_with(current_password, "current_hashed_password")
+        mock_password_service.verify_password.assert_called_once_with(
+            current_password, "current_hashed_password"
+        )
         mock_password_service.hash_password.assert_called_once_with(new_password)
         mock_user_repository.update.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_change_password_wrong_current_password(self, auth_service, mock_user_repository, mock_password_service):
+    async def test_change_password_wrong_current_password(
+        self, auth_service, mock_user_repository, mock_password_service
+    ):
         """Test password change with wrong current password."""
         # Setup
         user_id = uuid4()
@@ -405,7 +447,9 @@ class TestAuthenticationService:
         mock_password_service.verify_password.return_value = False
 
         # Execute
-        result = await auth_service.change_password(user_id, "wrong_password", "NewPassword123!")
+        result = await auth_service.change_password(
+            user_id, "wrong_password", "NewPassword123!"
+        )
 
         # Verify
         assert result is False
@@ -427,13 +471,13 @@ class TestAuthenticationService:
     def test_is_password_strong_invalid_passwords(self, auth_service):
         """Test password strength validation with invalid passwords."""
         invalid_passwords = [
-            "short",                    # Too short
-            "nouppercase123!",         # No uppercase
-            "NOLOWERCASE123!",         # No lowercase
-            "NoNumbers!@#",            # No numbers
-            "NoSpecialChars123",       # No special characters
-            "password",                # Too weak overall
-            "",                        # Empty
+            "short",  # Too short
+            "nouppercase123!",  # No uppercase
+            "NOLOWERCASE123!",  # No lowercase
+            "NoNumbers!@#",  # No numbers
+            "NoSpecialChars123",  # No special characters
+            "password",  # Too weak overall
+            "",  # Empty
         ]
 
         for password in invalid_passwords:

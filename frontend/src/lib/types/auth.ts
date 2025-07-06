@@ -1,6 +1,6 @@
 /**
  * Authentication type definitions for IntelliPost AI frontend.
- * 
+ *
  * Defines TypeScript interfaces for authentication state, user data,
  * and API request/response structures.
  */

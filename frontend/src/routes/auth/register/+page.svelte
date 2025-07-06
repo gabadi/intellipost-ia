@@ -1,6 +1,6 @@
 <!--
   Registration page for IntelliPost AI
-  
+
   Mobile-first responsive design with real-time validation
   and password strength indicator
 -->
@@ -12,7 +12,7 @@
   import Button from '$lib/components/ui/Button.svelte';
   import Input from '$lib/components/ui/Input.svelte';
   import LoadingSpinner from '$lib/components/ui/LoadingSpinner.svelte';
-  
+
   let email = '';
   let password = '';
   let firstName = '';
@@ -45,7 +45,7 @@
       emailError = '';
       return;
     }
-    
+
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(value)) {
       emailError = 'Please enter a valid email address';
@@ -59,7 +59,7 @@
       passwordError = '';
       return;
     }
-    
+
     const requirements = {
       length: value.length >= 8,
       uppercase: /[A-Z]/.test(value),
@@ -84,7 +84,7 @@
 
   function getPasswordStrength(value: string): 'weak' | 'medium' | 'strong' {
     if (!value) return 'weak';
-    
+
     const requirements = {
       length: value.length >= 8,
       uppercase: /[A-Z]/.test(value),
@@ -94,7 +94,7 @@
     };
 
     const score = Object.values(requirements).filter(Boolean).length;
-    
+
     if (score < 3) return 'weak';
     if (score < 5) return 'medium';
     return 'strong';
@@ -109,7 +109,7 @@
 
     isSubmitting = true;
     authStore.clearError();
-    
+
     try {
       await authStore.register({
         email,
@@ -224,7 +224,7 @@
             {showPassword ? '👁️' : '👁️‍🗨️'}
           </button>
         </div>
-        
+
         <!-- Password Strength Indicator -->
         {#if password}
           <div class="password-strength">

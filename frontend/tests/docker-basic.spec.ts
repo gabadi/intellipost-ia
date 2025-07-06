@@ -17,7 +17,7 @@ test.describe('Docker Basic Authentication', () => {
   test('Backend health check works', async ({ page }) => {
     const response = await page.request.get(`${BACKEND_URL}/health`);
     expect(response.ok()).toBeTruthy();
-    
+
     const data = await response.json();
     expect(data.status).toBe('healthy');
   });
@@ -38,7 +38,7 @@ test.describe('Docker Basic Authentication', () => {
 
   test('Protected route redirects to login', async ({ page }) => {
     await page.goto(`${FRONTEND_URL}/products`);
-    
+
     // Should redirect to login page
     await page.waitForURL('**/auth/login');
     await expect(page.locator('h1')).toContainText('Welcome back');
@@ -46,23 +46,23 @@ test.describe('Docker Basic Authentication', () => {
 
   test('Login form accepts input', async ({ page }) => {
     await page.goto(`${FRONTEND_URL}/auth/login`);
-    
+
     await page.fill('input[type="email"]', 'test@example.com');
     await page.fill('input[type="password"]', 'password123');
-    
+
     const emailValue = await page.locator('input[type="email"]').inputValue();
     const passwordValue = await page.locator('input[type="password"]').inputValue();
-    
+
     expect(emailValue).toBe('test@example.com');
     expect(passwordValue).toBe('password123');
   });
 
   test('Login form validation works', async ({ page }) => {
     await page.goto(`${FRONTEND_URL}/auth/login`);
-    
+
     // Try to submit without filling fields
     await page.click('button[type="submit"]');
-    
+
     // Should still be on login page
     await expect(page.url()).toContain('/auth/login');
   });
@@ -72,20 +72,20 @@ test.describe('Docker Basic Authentication', () => {
     const loginResponse = await page.request.post(`${BACKEND_URL}/auth/login`, {
       data: { email: 'test@test.com', password: 'test' }
     });
-    
+
     // Should not be 404 - endpoint exists
     expect(loginResponse.status()).not.toBe(404);
-    
+
     // Test register endpoint exists
     const registerResponse = await page.request.post(`${BACKEND_URL}/auth/register`, {
-      data: { 
-        email: 'test@test.com', 
+      data: {
+        email: 'test@test.com',
         password: 'test',
         first_name: 'Test',
         last_name: 'User'
       }
     });
-    
+
     // Should not be 404 - endpoint exists
     expect(registerResponse.status()).not.toBe(404);
   });
@@ -99,15 +99,15 @@ test.describe('Docker Basic Authentication', () => {
   test('Docker containers are properly networked', async ({ page }) => {
     // Test that frontend can reach backend
     await page.goto(`${FRONTEND_URL}/auth/login`);
-    
+
     // Fill form and submit (this tests frontend -> backend communication)
     await page.fill('input[type="email"]', 'test@example.com');
     await page.fill('input[type="password"]', 'password123');
     await page.click('button[type="submit"]');
-    
+
     // Wait for any network requests to complete
     await page.waitForTimeout(2000);
-    
+
     // Should still be on login page (since credentials are invalid)
     // But this confirms network communication is working
     expect(page.url()).toContain('/auth/login');

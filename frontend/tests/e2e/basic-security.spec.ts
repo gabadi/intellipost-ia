@@ -13,12 +13,12 @@ test.describe('Basic Security Tests', () => {
 
   test('should show public landing page for unauthenticated users', async ({ page }) => {
     await page.goto('/');
-    
+
     // Should stay on landing page
     await expect(page).toHaveURL('/');
     await expect(page.getByRole('heading', { name: 'IntelliPost AI' })).toBeVisible();
     await expect(page.getByText('Intelligent Social Media Posting Platform')).toBeVisible();
-    
+
     // Should show auth buttons
     await expect(page.getByRole('link', { name: 'Get Started' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Create Account' })).toBeVisible();
@@ -27,7 +27,7 @@ test.describe('Basic Security Tests', () => {
   test('should redirect to login when accessing protected dashboard', async ({ page }) => {
     // Try to access the dashboard directly
     await page.goto('/dashboard');
-    
+
     // Should be redirected to login page
     await expect(page).toHaveURL(/\/auth\/login/);
     await expect(page.getByRole('heading')).toBeVisible();
@@ -36,7 +36,7 @@ test.describe('Basic Security Tests', () => {
   test('should redirect to login when accessing protected products', async ({ page }) => {
     // Try to access products page directly
     await page.goto('/products');
-    
+
     // Should be redirected to login page
     await expect(page).toHaveURL(/\/auth\/login/);
     await expect(page.getByRole('heading')).toBeVisible();
@@ -45,7 +45,7 @@ test.describe('Basic Security Tests', () => {
   test('should redirect to login when accessing protected new product', async ({ page }) => {
     // Try to access new product page directly
     await page.goto('/products/new');
-    
+
     // Should be redirected to login page
     await expect(page).toHaveURL(/\/auth\/login/);
     await expect(page.getByRole('heading')).toBeVisible();
@@ -53,7 +53,7 @@ test.describe('Basic Security Tests', () => {
 
   test('should display login form correctly', async ({ page }) => {
     await page.goto('/auth/login');
-    
+
     // Check that form elements are present
     await expect(page.getByRole('heading')).toBeVisible();
     await expect(page.getByLabel('Email')).toBeVisible();
@@ -63,7 +63,7 @@ test.describe('Basic Security Tests', () => {
 
   test('should display registration form correctly', async ({ page }) => {
     await page.goto('/auth/register');
-    
+
     // Check that form elements are present
     await expect(page.getByRole('heading')).toBeVisible();
     await expect(page.getByLabel('First Name')).toBeVisible();

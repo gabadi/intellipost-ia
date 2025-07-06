@@ -74,7 +74,7 @@ class Settings(BaseSettings):
             "http://localhost:3001",  # SvelteKit dev server
             "http://127.0.0.1:3001",
             "http://localhost:4173",  # SvelteKit preview
-            "http://127.0.0.1:4173"
+            "http://127.0.0.1:4173",
         ],
         description="Allowed CORS origins - production should use HTTPS",
     )
@@ -112,7 +112,8 @@ class Settings(BaseSettings):
         default="HS256", description="JWT algorithm for MVP security requirements"
     )
     user_jwt_access_token_expire_minutes: int = Field(
-        default=15, description="Access token expiry time in minutes (battery optimization)"
+        default=15,
+        description="Access token expiry time in minutes (battery optimization)",
     )
     user_jwt_refresh_token_expire_days: int = Field(
         default=7, description="Refresh token expiry time in days (user convenience)"
@@ -208,7 +209,9 @@ class Settings(BaseSettings):
                 )
             # Ensure HTTPS origins in production
             for origin in self.cors_origins:
-                if not origin.startswith("https://") and not origin.startswith("http://localhost"):
+                if not origin.startswith("https://") and not origin.startswith(
+                    "http://localhost"
+                ):
                     raise ValueError(
                         f"Production CORS origins must use HTTPS: {origin}"
                     )
@@ -286,8 +289,11 @@ class Settings(BaseSettings):
                 else True
             ),
             "cors_origins_secure": (
-                all(origin.startswith("https://") or origin.startswith("http://localhost") 
-                    for origin in self.cors_origins)
+                all(
+                    origin.startswith("https://")
+                    or origin.startswith("http://localhost")
+                    for origin in self.cors_origins
+                )
                 if self.is_production
                 else True
             ),

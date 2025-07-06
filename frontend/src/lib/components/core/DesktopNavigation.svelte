@@ -77,7 +77,7 @@
         </div>
         <div class="user-email">{authState.user?.email || ''}</div>
       </div>
-      <button 
+      <button
         type="button"
         class="logout-btn"
         on:click={handleLogout}

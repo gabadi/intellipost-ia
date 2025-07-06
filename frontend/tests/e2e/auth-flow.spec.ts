@@ -32,7 +32,7 @@ test.describe('Authentication Flow E2E Tests', () => {
     test('should redirect to login when accessing protected dashboard', async ({ page }) => {
       // Try to access the dashboard directly
       await page.goto('/dashboard');
-      
+
       // Should be redirected to login page
       await expect(page).toHaveURL(/\/auth\/login/);
       await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
@@ -41,7 +41,7 @@ test.describe('Authentication Flow E2E Tests', () => {
     test('should redirect to login when accessing protected products', async ({ page }) => {
       // Try to access products page directly
       await page.goto('/products');
-      
+
       // Should be redirected to login page
       await expect(page).toHaveURL(/\/auth\/login/);
       await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
@@ -50,7 +50,7 @@ test.describe('Authentication Flow E2E Tests', () => {
     test('should redirect to login when accessing protected new product', async ({ page }) => {
       // Try to access new product page directly
       await page.goto('/products/new');
-      
+
       // Should be redirected to login page
       await expect(page).toHaveURL(/\/auth\/login/);
       await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
@@ -58,12 +58,12 @@ test.describe('Authentication Flow E2E Tests', () => {
 
     test('should show public landing page for unauthenticated users', async ({ page }) => {
       await page.goto('/');
-      
+
       // Should stay on landing page
       await expect(page).toHaveURL('/');
       await expect(page.getByRole('heading', { name: 'IntelliPost AI' })).toBeVisible();
       await expect(page.getByText('Intelligent Social Media Posting Platform')).toBeVisible();
-      
+
       // Should show auth buttons
       await expect(page.getByRole('link', { name: 'Get Started' })).toBeVisible();
       await expect(page.getByRole('link', { name: 'Create Account' })).toBeVisible();
@@ -73,7 +73,7 @@ test.describe('Authentication Flow E2E Tests', () => {
   test.describe('User Registration Flow', () => {
     test('should display registration form correctly', async ({ page }) => {
       await page.goto('/auth/register');
-      
+
       // Check that form elements are present
       await expect(page.getByRole('heading', { name: /register|sign up|create account/i })).toBeVisible();
       await expect(page.getByLabel('First Name')).toBeVisible();
@@ -86,15 +86,15 @@ test.describe('Authentication Flow E2E Tests', () => {
 
     test('should display form validation requirements', async ({ page }) => {
       await page.goto('/auth/register');
-      
+
       // Try to submit empty form to check validation
       await page.getByRole('button', { name: /create|register|sign up/i }).click();
-      
+
       // Form should prevent submission or show validation
       const firstNameField = page.getByLabel('First Name');
       const emailField = page.getByLabel('Email');
       const passwordField = page.getByLabel('Password', { exact: true });
-      
+
       // Check that required fields are marked as required
       await expect(firstNameField).toHaveAttribute('required', '');
       await expect(emailField).toHaveAttribute('required', '');
@@ -105,17 +105,17 @@ test.describe('Authentication Flow E2E Tests', () => {
   test.describe('User Login Flow', () => {
     test('should display login form correctly', async ({ page }) => {
       await page.goto('/auth/login');
-      
+
       // Check that form elements are present
       await expect(page.getByRole('heading', { name: /sign in|login/i })).toBeVisible();
       await expect(page.getByLabel('Email')).toBeVisible();
       await expect(page.getByLabel('Password')).toBeVisible();
       await expect(page.getByRole('button', { name: /sign in|login/i })).toBeVisible();
-      
+
       // Check form validation
       const emailField = page.getByLabel('Email');
       const passwordField = page.getByLabel('Password');
-      
+
       await expect(emailField).toHaveAttribute('required', '');
       await expect(passwordField).toHaveAttribute('required', '');
     });
@@ -126,7 +126,7 @@ test.describe('Authentication Flow E2E Tests', () => {
       // Check login page links
       await page.goto('/auth/login');
       await expect(page.getByRole('link', { name: /register|sign up|create account/i })).toBeVisible();
-      
+
       // Check register page links
       await page.goto('/auth/register');
       await expect(page.getByRole('link', { name: /login|sign in/i })).toBeVisible();
@@ -136,7 +136,7 @@ test.describe('Authentication Flow E2E Tests', () => {
   test.describe('Backend Health Check', () => {
     test('should handle backend health check on landing page', async ({ page }) => {
       await page.goto('/');
-      
+
       // Landing page should load without errors
       await expect(page.getByRole('heading', { name: 'IntelliPost AI' })).toBeVisible();
     });

@@ -4,7 +4,7 @@ Authentication API router for user management module.
 This module contains FastAPI routes for user authentication operations.
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 
 from modules.user_management.api.schemas.auth_schemas import (
@@ -35,6 +35,7 @@ from modules.user_management.domain.exceptions import (
     UserNotFoundError,
     WeakPasswordError,
 )
+
 # Import dependencies will be injected by FastAPI
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -62,7 +63,9 @@ def create_auth_router(
     async def register(
         request: RegisterRequest,
         register_use_case: RegisterUserUseCase = Depends(register_use_case_factory),
-        authenticate_use_case: AuthenticateUserUseCase = Depends(authenticate_use_case_factory),
+        authenticate_use_case: AuthenticateUserUseCase = Depends(
+            authenticate_use_case_factory
+        ),
     ) -> TokenResponse:
         """Register a new user account."""
         if not registration_enabled:
@@ -70,10 +73,10 @@ def create_auth_router(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail={
                     "error_code": "REGISTRATION_DISABLED",
-                    "message": "User registration is currently disabled"
+                    "message": "User registration is currently disabled",
                 },
             )
-        
+
         try:
             user = await register_use_case.execute(
                 email=request.email,
@@ -132,7 +135,9 @@ def create_auth_router(
     )
     async def login(
         request: LoginRequest,
-        authenticate_use_case: AuthenticateUserUseCase = Depends(authenticate_use_case_factory),
+        authenticate_use_case: AuthenticateUserUseCase = Depends(
+            authenticate_use_case_factory
+        ),
     ) -> TokenResponse:
         """Authenticate user and return JWT tokens."""
         try:
@@ -196,7 +201,9 @@ def create_auth_router(
     )
     async def refresh_token(
         request: RefreshTokenRequest,
-        refresh_token_use_case: RefreshTokenUseCase = Depends(refresh_token_use_case_factory),
+        refresh_token_use_case: RefreshTokenUseCase = Depends(
+            refresh_token_use_case_factory
+        ),
     ) -> TokenResponse:
         """Refresh access token using refresh token."""
         try:

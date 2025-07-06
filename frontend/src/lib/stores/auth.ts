@@ -1,6 +1,6 @@
 /**
  * Authentication store for IntelliPost AI frontend.
- * 
+ *
  * Manages user authentication state, token storage, and automatic
  * token refresh with mobile-optimized behavior.
  */
@@ -59,7 +59,7 @@ function createAuthStore() {
       const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       const userStr = localStorage.getItem(STORAGE_KEYS.USER);
       const user = userStr ? JSON.parse(userStr) : null;
-      
+
       return { accessToken, refreshToken, user };
     } catch (error) {
       console.warn('Failed to load auth data from localStorage:', error);
@@ -142,10 +142,10 @@ function createAuthStore() {
      */
     register: async (userData: RegisterRequest): Promise<void> => {
       setLoading(true);
-      
+
       try {
         const response = await AuthAPI.register(userData);
-        
+
         if (response.success && response.data) {
           const { access_token, refresh_token, user } = response.data;
           setAuthenticated(access_token, refresh_token, user);
@@ -165,10 +165,10 @@ function createAuthStore() {
      */
     login: async (credentials: LoginRequest): Promise<void> => {
       setLoading(true);
-      
+
       try {
         const response = await AuthAPI.login(credentials);
-        
+
         if (response.success && response.data) {
           const { access_token, refresh_token, user } = response.data;
           setAuthenticated(access_token, refresh_token, user);
@@ -194,7 +194,7 @@ function createAuthStore() {
         console.warn('Logout API call failed:', error);
         // Continue with client-side cleanup even if API call fails
       }
-      
+
       clearStorage();
       set(createInitialAuthState());
       goto('/auth/login');
@@ -205,7 +205,7 @@ function createAuthStore() {
      */
     refreshToken: async (): Promise<boolean> => {
       const { refreshToken } = loadFromStorage();
-      
+
       if (!refreshToken) {
         clearStorage();
         set(createInitialAuthState());
@@ -214,7 +214,7 @@ function createAuthStore() {
 
       try {
         const response = await AuthAPI.refreshToken({ refresh_token: refreshToken });
-        
+
         if (response.success && response.data) {
           const { access_token, refresh_token, user } = response.data;
           setAuthenticated(access_token, refresh_token, user);
@@ -236,10 +236,10 @@ function createAuthStore() {
      */
     updateProfile: async (profileData: UserProfileUpdateRequest): Promise<boolean> => {
       setLoading(true);
-      
+
       try {
         const response = await AuthAPI.updateProfile(profileData);
-        
+
         if (response.success && response.data) {
           update(state => ({
             ...state,
@@ -257,7 +257,7 @@ function createAuthStore() {
             isLoading: false,
             error: null
           }));
-          
+
           // Update user in localStorage
           if (response.data) {
             const user = {
@@ -277,7 +277,7 @@ function createAuthStore() {
               console.warn('Failed to update user in localStorage:', error);
             }
           }
-          
+
           return true;
         } else {
           const authError = extractAuthError(response.error);
@@ -296,10 +296,10 @@ function createAuthStore() {
      */
     changePassword: async (passwordData: ChangePasswordRequest): Promise<boolean> => {
       setLoading(true);
-      
+
       try {
         const response = await AuthAPI.changePassword(passwordData);
-        
+
         if (response.success) {
           update(state => ({
             ...state,

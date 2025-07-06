@@ -1,6 +1,6 @@
 <!--
   Login page for IntelliPost AI
-  
+
   Mobile-first responsive design with 44px touch targets
   and real-time validation feedback
 -->
@@ -13,7 +13,7 @@
   import Button from '$lib/components/ui/Button.svelte';
   import Input from '$lib/components/ui/Input.svelte';
   import LoadingSpinner from '$lib/components/ui/LoadingSpinner.svelte';
-  
+
   let email = '';
   let password = '';
   let showPassword = false;
@@ -55,7 +55,7 @@
       emailError = '';
       return;
     }
-    
+
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(value)) {
       emailError = 'Please enter a valid email address';
@@ -70,7 +70,7 @@
       passwordError = '';
       return;
     }
-    
+
     // No format validation for login - let the backend handle authentication
     passwordError = '';
   }
@@ -84,7 +84,7 @@
 
     isSubmitting = true;
     authStore.clearError();
-    
+
     try {
       await authStore.login({ email, password });
     } catch (error) {
@@ -208,9 +208,10 @@
   .login-card {
     width: 100%;
     max-width: 400px;
-    background: white;
+    background: var(--color-card-background);
+    border: 1px solid var(--color-card-border);
     border-radius: 12px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--color-card-shadow);
     padding: 2rem;
   }
 
@@ -222,12 +223,12 @@
   .login-header h1 {
     font-size: 1.875rem;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--color-text-primary);
     margin: 0 0 0.5rem 0;
   }
 
   .login-header p {
-    color: #6b7280;
+    color: var(--color-text-secondary);
     margin: 0;
   }
 
@@ -264,18 +265,18 @@
   }
 
   .password-toggle:hover {
-    background-color: #f3f4f6;
+    background-color: var(--color-background-secondary);
   }
 
   .password-toggle:focus {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 
   .error-message {
-    background-color: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #dc2626;
+    background-color: var(--color-error-50);
+    border: 1px solid var(--color-error-200);
+    color: var(--color-error);
     padding: 0.75rem;
     border-radius: 6px;
     font-size: 0.875rem;
@@ -298,7 +299,7 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--color-text-secondary);
     cursor: pointer;
   }
 
@@ -311,17 +312,17 @@
     text-align: center;
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--color-border);
   }
 
   .login-footer p {
     margin: 0;
-    color: #6b7280;
+    color: var(--color-text-secondary);
     font-size: 0.875rem;
   }
 
   .login-footer a {
-    color: #3b82f6;
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: 500;
   }

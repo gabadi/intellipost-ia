@@ -1,6 +1,6 @@
 <!--
   User Profile page for IntelliPost AI
-  
+
   Mobile-first responsive design with password change functionality
 -->
 
@@ -11,7 +11,7 @@
   import Button from '$lib/components/ui/Button.svelte';
   import Input from '$lib/components/ui/Input.svelte';
   import LoadingSpinner from '$lib/components/ui/LoadingSpinner.svelte';
-  
+
   let currentPassword = '';
   let newPassword = '';
   let confirmPassword = '';
@@ -35,7 +35,7 @@
       newPasswordError = '';
       return;
     }
-    
+
     const requirements = {
       length: value.length >= 8,
       uppercase: /[A-Z]/.test(value),
@@ -63,7 +63,7 @@
       confirmPasswordError = '';
       return;
     }
-    
+
     if (value !== newPassword) {
       confirmPasswordError = 'Passwords do not match';
     } else {
@@ -88,7 +88,7 @@
     }
 
     isSubmitting = true;
-    
+
     try {
       const response = await AuthAPI.changePassword({
         current_password: currentPassword,

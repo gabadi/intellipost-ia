@@ -157,7 +157,9 @@ def create_user_router(
                 raise WeakPasswordError()
 
             # Hash new password
-            new_password_hash = await password_service.hash_password(request.new_password)
+            new_password_hash = await password_service.hash_password(
+                request.new_password
+            )
             current_user.password_hash = new_password_hash
 
             await user_repository.update(current_user)

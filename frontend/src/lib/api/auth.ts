@@ -1,6 +1,6 @@
 /**
  * Authentication API client for IntelliPost AI frontend.
- * 
+ *
  * Provides functions for making authentication-related API calls
  * with automatic token refresh and error handling.
  */
@@ -90,7 +90,7 @@ export function extractAuthError(error: unknown): AuthError {
       };
     }
   }
-  
+
   return {
     error_code: 'UNKNOWN_ERROR',
     message: 'An unexpected error occurred'

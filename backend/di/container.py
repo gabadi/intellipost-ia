@@ -3,12 +3,11 @@
 from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.app_factory import create_fastapi_app
 from infrastructure.config.logging import get_logger, setup_logging
 from infrastructure.config.settings import Settings
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import AsyncGenerator
 from infrastructure.database import get_database_session
 from modules.content_generation.domain.ports.ai_service_protocols import (
     AIContentServiceProtocol,
@@ -130,7 +129,9 @@ class DependencyContainer:
         """Register user registration use case implementation."""
         self._register_user_use_case = use_case
 
-    def register_authenticate_user_use_case(self, use_case: AuthenticateUserUseCase) -> None:
+    def register_authenticate_user_use_case(
+        self, use_case: AuthenticateUserUseCase
+    ) -> None:
         """Register user authentication use case implementation."""
         self._authenticate_user_use_case = use_case
 
@@ -211,7 +212,9 @@ container = DependencyContainer()
 
 
 # FastAPI dependency functions
-def get_user_repository(session: AsyncSession = Depends(get_database_session)) -> UserRepositoryProtocol:
+def get_user_repository(
+    session: AsyncSession = Depends(get_database_session),
+) -> UserRepositoryProtocol:
     """FastAPI dependency for user repository."""
     return SQLAlchemyUserRepository(session)
 
@@ -252,7 +255,7 @@ def get_authentication_service() -> AuthenticationService:
 
 
 def get_register_user_use_case(
-    user_repository: UserRepositoryProtocol = Depends(get_user_repository)
+    user_repository: UserRepositoryProtocol = Depends(get_user_repository),
 ) -> RegisterUserUseCase:
     """FastAPI dependency for user registration use case."""
     authentication_service = AuthenticationService(
@@ -265,7 +268,7 @@ def get_register_user_use_case(
 
 
 def get_authenticate_user_use_case(
-    user_repository: UserRepositoryProtocol = Depends(get_user_repository)
+    user_repository: UserRepositoryProtocol = Depends(get_user_repository),
 ) -> AuthenticateUserUseCase:
     """FastAPI dependency for user authentication use case."""
     authentication_service = AuthenticationService(
@@ -278,17 +281,20 @@ def get_authenticate_user_use_case(
 
 
 def get_refresh_token_use_case(
-    user_repository: UserRepositoryProtocol = Depends(get_user_repository)
+    user_repository: UserRepositoryProtocol = Depends(get_user_repository),
 ) -> RefreshTokenUseCase:
     """FastAPI dependency for token refresh use case."""
     return RefreshTokenUseCase(container.get_jwt_service(), user_repository)
 
 
 def get_current_user(
-    user_repository: UserRepositoryProtocol = Depends(get_user_repository)
+    user_repository: UserRepositoryProtocol = Depends(get_user_repository),
 ):
     """FastAPI dependency for current user authentication."""
-    from modules.user_management.infrastructure.middleware.auth_middleware import create_auth_dependency
+    from modules.user_management.infrastructure.middleware.auth_middleware import (
+        create_auth_dependency,
+    )
+
     return create_auth_dependency(container.get_jwt_service(), user_repository)
 
 
@@ -306,10 +312,18 @@ MercadoLibreServiceDep = Annotated[
 EmailServiceDep = Annotated[EmailServiceProtocol, Depends(get_email_service)]
 PasswordServiceDep = Annotated[PasswordServiceProtocol, Depends(get_password_service)]
 JWTServiceDep = Annotated[JWTServiceProtocol, Depends(get_jwt_service)]
-AuthenticationServiceDep = Annotated[AuthenticationService, Depends(get_authentication_service)]
-RegisterUserUseCaseDep = Annotated[RegisterUserUseCase, Depends(get_register_user_use_case)]
-AuthenticateUserUseCaseDep = Annotated[AuthenticateUserUseCase, Depends(get_authenticate_user_use_case)]
-RefreshTokenUseCaseDep = Annotated[RefreshTokenUseCase, Depends(get_refresh_token_use_case)]
+AuthenticationServiceDep = Annotated[
+    AuthenticationService, Depends(get_authentication_service)
+]
+RegisterUserUseCaseDep = Annotated[
+    RegisterUserUseCase, Depends(get_register_user_use_case)
+]
+AuthenticateUserUseCaseDep = Annotated[
+    AuthenticateUserUseCase, Depends(get_authenticate_user_use_case)
+]
+RefreshTokenUseCaseDep = Annotated[
+    RefreshTokenUseCase, Depends(get_refresh_token_use_case)
+]
 
 
 def create_application() -> FastAPI:
@@ -339,7 +353,7 @@ def create_application() -> FastAPI:
         access_token_expire_minutes=settings.user_jwt_access_token_expire_minutes,
         refresh_token_expire_days=settings.user_jwt_refresh_token_expire_days,
     )
-    
+
     container.register_password_service(password_service)
     container.register_jwt_service(jwt_service)
 

@@ -8,7 +8,7 @@
   onMount(() => {
     // Initialize auth store
     authStore.init();
-    
+
     // Check if user is already authenticated
     const unsubscribe = authStore.subscribe((state) => {
       if (state.isAuthenticated) {

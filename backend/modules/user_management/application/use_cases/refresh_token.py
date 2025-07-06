@@ -4,7 +4,6 @@ Refresh token use case.
 This module contains the application use case for JWT token refresh.
 """
 
-
 from modules.user_management.domain.entities.user import User
 from modules.user_management.domain.exceptions import (
     InvalidTokenError,

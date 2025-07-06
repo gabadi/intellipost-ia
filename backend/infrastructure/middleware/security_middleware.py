@@ -10,14 +10,15 @@ from collections import defaultdict, deque
 from typing import Any
 
 from fastapi import HTTPException, Request, Response, status
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.base import RequestResponseEndpoint
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Middleware to add security headers to all responses."""
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         response = await call_next(request)
 
         # Security headers
@@ -33,9 +34,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         # Content Security Policy (basic policy for API)
         response.headers["Content-Security-Policy"] = (
-            "default-src 'none'; "
-            "frame-ancestors 'none'; "
-            "base-uri 'none';"
+            "default-src 'none'; frame-ancestors 'none'; base-uri 'none';"
         )
 
         # HSTS (only for HTTPS)
@@ -50,7 +49,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Basic rate limiting middleware for authentication endpoints."""
 
-    def __init__(self, app: Any, requests_per_minute: int = 60, auth_requests_per_minute: int = 5):
+    def __init__(
+        self, app: Any, requests_per_minute: int = 60, auth_requests_per_minute: int = 5
+    ):
         super().__init__(app)
         self.requests_per_minute = requests_per_minute
         self.auth_requests_per_minute = auth_requests_per_minute
@@ -94,7 +95,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         request_times.append(current_time)
         return False
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         client_ip = self._get_client_ip(request)
         is_auth_endpoint = request.url.path.startswith("/auth/")
 
@@ -104,8 +107,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 detail={
                     "error_code": "RATE_LIMITED",
                     "message": "Too many requests. Please try again later.",
-                    "retry_after": 60
-                }
+                    "retry_after": 60,
+                },
             )
 
         return await call_next(request)
@@ -118,7 +121,9 @@ class RequestValidationMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.max_request_size = max_request_size
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         # Check request size
         content_length = request.headers.get("content-length")
         if content_length and int(content_length) > self.max_request_size:
@@ -126,8 +131,8 @@ class RequestValidationMiddleware(BaseHTTPMiddleware):
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 detail={
                     "error_code": "REQUEST_TOO_LARGE",
-                    "message": f"Request size exceeds maximum allowed size of {self.max_request_size} bytes"
-                }
+                    "message": f"Request size exceeds maximum allowed size of {self.max_request_size} bytes",
+                },
             )
 
         # Basic header validation
@@ -137,15 +142,24 @@ class RequestValidationMiddleware(BaseHTTPMiddleware):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "error_code": "INVALID_HEADERS",
-                    "message": "Invalid request headers"
-                }
+                    "message": "Invalid request headers",
+                },
             )
 
         # Check for suspicious paths
         suspicious_patterns = [
-            "../", "..\\", "%2e%2e", "%2e%2e%2f", "%2e%2e%5c",
-            "<script", "javascript:", "data:",
-            "wp-admin", "admin", ".env", ".git"
+            "../",
+            "..\\",
+            "%2e%2e",
+            "%2e%2e%2f",
+            "%2e%2e%5c",
+            "<script",
+            "javascript:",
+            "data:",
+            "wp-admin",
+            "admin",
+            ".env",
+            ".git",
         ]
 
         path = request.url.path.lower()
@@ -154,8 +168,8 @@ class RequestValidationMiddleware(BaseHTTPMiddleware):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "error_code": "INVALID_PATH",
-                    "message": "Invalid request path"
-                }
+                    "message": "Invalid request path",
+                },
             )
 
         return await call_next(request)

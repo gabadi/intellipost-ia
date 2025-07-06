@@ -42,7 +42,7 @@ class APIClient {
 
     this.isRefreshing = true;
     this.refreshPromise = this.performTokenRefresh();
-    
+
     try {
       const result = await this.refreshPromise;
       return result;
@@ -72,11 +72,11 @@ class APIClient {
       }
 
       const data = await response.json();
-      
+
       // Store new tokens
       localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
       localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token);
-      
+
       return true;
     } catch {
       return false;
