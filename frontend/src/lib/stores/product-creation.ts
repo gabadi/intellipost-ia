@@ -73,9 +73,8 @@ function createProductCreationStore() {
             })
           );
           newState.autoSaved = true;
-        } catch (error) {
+        } catch {
           // Silent fail for localStorage issues
-          console.warn('Failed to auto-save:', error);
         }
       }
 

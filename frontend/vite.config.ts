@@ -39,6 +39,9 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,ts}'],
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
+    env: {
+      VITE_API_URL: 'http://localhost:8080',
+    },
     coverage: {
       reporter: ['text', 'json', 'json-summary', 'html'],
       include: ['src/**/*'],

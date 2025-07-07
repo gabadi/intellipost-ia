@@ -4,7 +4,6 @@
   import { productCreationStore } from '$lib/stores/product-creation';
   import PromptInputComponent from '$lib/components/product/PromptInputComponent.svelte';
   import PhotoCollectionComponent from '$lib/components/product/PhotoCollectionComponent.svelte';
-  import type { ValidationState } from '$lib/types/product';
 
   let isLoading = false;
 
@@ -88,13 +87,17 @@
     <form on:submit={handleSubmit} class="product-creation-form">
       <div class="form-content">
         <!-- Photo Collection Section -->
-        <section class="form-section" class:form-section--valid={imagesValidation.isValid} class:form-section--invalid={!imagesValidation.isValid && $productCreationStore.images.length > 0}>
-          <PhotoCollectionComponent
-            images={$productCreationStore.images}
-            disabled={isLoading}
-          />
+        <section
+          class="form-section"
+          class:form-section--valid={imagesValidation.isValid}
+          class:form-section--invalid={!imagesValidation.isValid &&
+            $productCreationStore.images.length > 0}
+        >
+          <PhotoCollectionComponent images={$productCreationStore.images} disabled={isLoading} />
           {#if imagesValidation.message}
-            <div class="section-validation-message section-validation-message--{imagesValidation.type}">
+            <div
+              class="section-validation-message section-validation-message--{imagesValidation.type}"
+            >
               {#if imagesValidation.type === 'success'}✓{/if}
               {#if imagesValidation.type === 'warning'}⚠{/if}
               {#if imagesValidation.type === 'error'}✕{/if}
@@ -104,7 +107,12 @@
         </section>
 
         <!-- Prompt Input Section -->
-        <section class="form-section" class:form-section--valid={promptValidation.isValid} class:form-section--invalid={!promptValidation.isValid && $productCreationStore.prompt_text.trim().length > 0}>
+        <section
+          class="form-section"
+          class:form-section--valid={promptValidation.isValid}
+          class:form-section--invalid={!promptValidation.isValid &&
+            $productCreationStore.prompt_text.trim().length > 0}
+        >
           <PromptInputComponent
             value={$productCreationStore.prompt_text}
             onChange={handlePromptChange}

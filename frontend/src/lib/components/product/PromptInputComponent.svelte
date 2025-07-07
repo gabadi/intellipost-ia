@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ValidationState } from '../../types/product';
-  import { debounceStringFunction } from '../../utils/validation';
 
   export let value: string = '';
   export let onChange: (value: string) => void;

@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import type { ProductImageData, ValidationState } from '../../types/product';
-  import { validateImageFile, validateImageBatch } from '../../utils/validation';
+  import type { ProductImageData } from '../../types/product';
+  import { validateImageFile } from '../../utils/validation';
   import { processImageFile } from '../../utils/image';
   import { isCameraSupported } from '../../utils/camera';
-  import { DEFAULT_IMAGE_VALIDATION_RULES } from '../../types/product';
   import { productCreationStore } from '../../stores/product-creation';
   import CameraCapture from './CameraCapture.svelte';
   import ImageThumbnail from './ImageThumbnail.svelte';
@@ -12,10 +10,6 @@
   export let images: ProductImageData[] = [];
   export let maxImages = 8;
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<{
-    imagesChange: { images: ProductImageData[] };
-  }>();
 
   let fileInput: HTMLInputElement;
   let dragover = false;
