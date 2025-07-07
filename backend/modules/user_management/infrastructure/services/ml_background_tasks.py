@@ -65,11 +65,17 @@ class MLBackgroundTasksService:
             # Fallback to direct values (for testing)
             import os
 
-            self._database_url = database_url or os.getenv("DATABASE_URL", "")
-            self._ml_app_id = ml_app_id or os.getenv("ML_APP_ID", "")
-            self._ml_app_secret = ml_app_secret or os.getenv("ML_APP_SECRET", "")
-            is_production = os.getenv("ENVIRONMENT", "development") == "production"
-            environment = os.getenv("ENVIRONMENT", "development")
+            self._database_url = database_url or os.getenv(
+                "INTELLIPOST_DATABASE_URL", ""
+            )
+            self._ml_app_id = ml_app_id or os.getenv("INTELLIPOST_ML_APP_ID", "")
+            self._ml_app_secret = ml_app_secret or os.getenv(
+                "INTELLIPOST_ML_APP_SECRET", ""
+            )
+            is_production = (
+                os.getenv("INTELLIPOST_ENVIRONMENT", "development") == "production"
+            )
+            environment = os.getenv("INTELLIPOST_ENVIRONMENT", "development")
 
         # Validate configuration (allow defaults for testing/development)
         if not self._ml_app_id or not self._ml_app_secret:
@@ -261,7 +267,10 @@ async def get_ml_background_service() -> MLBackgroundTasksService:
     global _background_service
 
     if _background_service is None:
-        _background_service = MLBackgroundTasksService()
+        # Use settings from infrastructure to ensure proper configuration
+        from infrastructure.config.settings import settings
+
+        _background_service = MLBackgroundTasksService(settings=settings)
 
     return _background_service
 

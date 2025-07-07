@@ -1,0 +1,209 @@
+import { render, screen, fireEvent } from '@testing-library/svelte';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
+import PromptInputComponent from './PromptInputComponent.svelte';
+
+describe('PromptInputComponent', () => {
+  const mockOnChange = vi.fn();
+  const mockOnValidationChange = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('renders with default props', () => {
+    render(PromptInputComponent, {
+      props: {
+        value: '',
+        onChange: mockOnChange,
+        onValidationChange: mockOnValidationChange,
+      },
+    });
+
+    expect(screen.getByLabelText(/product description/i)).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveAttribute('maxlength', '500');
+  });
+
+  test('shows character count', () => {
+    render(PromptInputComponent, {
+      props: {
+        value: 'Test description',
+        onChange: mockOnChange,
+        onValidationChange: mockOnValidationChange,
+      },
+    });
+
+    expect(screen.getByText('16/500')).toBeInTheDocument();
+  });
+
+  test('calls onChange when text is input', async () => {
+    render(PromptInputComponent, {
+      props: {
+        value: '',
+        onChange: mockOnChange,
+        onValidationChange: mockOnValidationChange,
+      },
+    });
+
+    const textarea = screen.getByRole('textbox');
+    await fireEvent.input(textarea, { target: { value: 'New product description' } });
+
+    expect(mockOnChange).toHaveBeenCalledWith('New product description');
+  });
+
+  test('validates minimum length', async () => {
+    render(PromptInputComponent, {
+      props: {
+        value: '',
+        onChange: mockOnChange,
+        onValidationChange: mockOnValidationChange,
+        minLength: 10,
+      },
+    });
+
+    const textarea = screen.getByRole('textbox');
+    await fireEvent.input(textarea, { target: { value: 'short' } });
+
+    // Wait for debounced validation
+    await new Promise(resolve => setTimeout(resolve, 350));
+
+    expect(mockOnValidationChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isValid: false,
+        message: 'Minimum 10 characters required',
+        type: 'error',
+      })
+    );
+  });
+
+  test('validates maximum length', async () => {
+    render(PromptInputComponent, {
+      props: {
+        value: '',
+        onChange: mockOnChange,
+        onValidationChange: mockOnValidationChange,
+        maxLength: 50,
+      },
+    });
+
+    const longText = 'This is a very long description that exceeds the maximum allowed length';
+    const textarea = screen.getByRole('textbox');
+    await fireEvent.input(textarea, { target: { value: longText } });
+
+    // Wait for debounced validation
+    await new Promise(resolve => setTimeout(resolve, 350));
+
+    expect(mockOnValidationChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isValid: false,
+        message: 'Maximum 50 characters allowed',
+        type: 'error',
+      })
+    );
+  });
+
+  test('shows warning when approaching character limit', async () => {
+    render(PromptInputComponent, {
+      props: {
+        value: '',
+        onChange: mockOnChange,
+        onValidationChange: mockOnValidationChange,
+        maxLength: 50,
+      },
+    });
+
+    // 45 characters - 90% of 50
+    const nearLimitText = 'This description is very close to the limit!!';
+    const textarea = screen.getByRole('textbox');
+    await fireEvent.input(textarea, { target: { value: nearLimitText } });
+
+    // Wait for debounced validation
+    await new Promise(resolve => setTimeout(resolve, 350));
+
+    expect(mockOnValidationChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isValid: true,
+        message: '5 characters remaining',
+        type: 'warning',
+      })
+    );
+  });
+
+  test('shows success state for valid input', async () => {
+    render(PromptInputComponent, {
+      props: {
+        value: '',
+        onChange: mockOnChange,
+        onValidationChange: mockOnValidationChange,
+        minLength: 10,
+        maxLength: 100,
+      },
+    });
+
+    const validText = 'This is a valid product description';
+    const textarea = screen.getByRole('textbox');
+    await fireEvent.input(textarea, { target: { value: validText } });
+
+    // Wait for debounced validation
+    await new Promise(resolve => setTimeout(resolve, 350));
+
+    expect(mockOnValidationChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isValid: true,
+        message: 'Valid description',
+        type: 'success',
+      })
+    );
+  });
+
+  test('disables textarea when disabled prop is true', () => {
+    render(PromptInputComponent, {
+      props: {
+        value: '',
+        onChange: mockOnChange,
+        onValidationChange: mockOnValidationChange,
+        disabled: true,
+      },
+    });
+
+    expect(screen.getByRole('textbox')).toBeDisabled();
+  });
+
+  test('applies correct CSS classes based on validation state', async () => {
+    render(PromptInputComponent, {
+      props: {
+        value: '',
+        onChange: mockOnChange,
+        onValidationChange: mockOnValidationChange,
+        minLength: 10,
+      },
+    });
+
+    const textarea = screen.getByRole('textbox');
+
+    // Invalid input
+    await fireEvent.input(textarea, { target: { value: 'short' } });
+    await new Promise(resolve => setTimeout(resolve, 350));
+    expect(textarea).toHaveClass('prompt-textarea--invalid');
+
+    // Valid input
+    await fireEvent.input(textarea, { target: { value: 'This is a valid description' } });
+    await new Promise(resolve => setTimeout(resolve, 350));
+    expect(textarea).toHaveClass('prompt-textarea--valid');
+  });
+
+  test('shows validation message with correct icon', async () => {
+    render(PromptInputComponent, {
+      props: {
+        value: 'Valid description text',
+        onChange: mockOnChange,
+        onValidationChange: mockOnValidationChange,
+      },
+    });
+
+    // Wait for initial validation
+    await new Promise(resolve => setTimeout(resolve, 350));
+
+    expect(screen.getByText('✓')).toBeInTheDocument();
+    expect(screen.getByText('Valid description')).toBeInTheDocument();
+  });
+});

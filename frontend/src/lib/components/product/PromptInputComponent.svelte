@@ -4,18 +4,15 @@
 
   export let value: string = '';
   export let onChange: (value: string) => void;
-  export let onValidationChange: (validation: ValidationState) => void;
+  export let validation: ValidationState = { isValid: false, type: 'error' };
   export let maxLength = 500;
-  export let minLength = 10;
+  // Remove unused export
+  // export let minLength = 10;
   export let placeholder =
     'Describe your product (e.g., iPhone 13 Pro usado, excelente estado, 128GB)';
   export let disabled = false;
 
-  let validationState: ValidationState = { isValid: false, type: 'error' };
   let characterCount = 0;
-
-  // Debounced validation to avoid excessive calls
-  const debouncedValidation = debounceStringFunction(validatePrompt, 300);
 
   // Keep a local copy of the current input value for immediate character counting
   let currentInputValue = value;
@@ -35,45 +32,6 @@
 
     // Call onChange to update the store
     onChange(newValue);
-    debouncedValidation(newValue);
-  }
-
-  function validatePrompt(text: string) {
-    const trimmedText = text.trim();
-
-    if (trimmedText.length === 0) {
-      validationState = {
-        isValid: false,
-        message: 'Product description is required',
-        type: 'error',
-      };
-    } else if (trimmedText.length < minLength) {
-      validationState = {
-        isValid: false,
-        message: `Minimum ${minLength} characters required`,
-        type: 'error',
-      };
-    } else if (trimmedText.length > maxLength) {
-      validationState = {
-        isValid: false,
-        message: `Maximum ${maxLength} characters allowed`,
-        type: 'error',
-      };
-    } else if (trimmedText.length > maxLength * 0.8) {
-      validationState = {
-        isValid: true,
-        message: `${maxLength - trimmedText.length} characters remaining`,
-        type: 'warning',
-      };
-    } else {
-      validationState = {
-        isValid: true,
-        message: 'Valid description',
-        type: 'success',
-      };
-    }
-
-    onValidationChange(validationState);
   }
 
   function getCharacterCountClass(): string {
@@ -83,8 +41,11 @@
   }
 
   function getTextareaClass(): string {
+    // Only apply validation classes if we have a value and validation has run
     if (!value || value.trim().length === 0) return '';
-    return validationState.isValid ? 'prompt-textarea--valid' : 'prompt-textarea--invalid';
+    if (validation.isValid === true) return 'prompt-textarea--valid';
+    if (validation.isValid === false) return 'prompt-textarea--invalid';
+    return '';
   }
 </script>
 
@@ -107,12 +68,12 @@
       {characterCount}/{maxLength}
     </span>
 
-    {#if validationState.message && value.trim().length > 0}
-      <span class="validation-message validation-message--{validationState.type}">
-        {#if validationState.type === 'success'}✓{/if}
-        {#if validationState.type === 'warning'}⚠{/if}
-        {#if validationState.type === 'error'}✕{/if}
-        {validationState.message}
+    {#if validation.message && value.trim().length > 0}
+      <span class="validation-message validation-message--{validation.type}">
+        {#if validation.type === 'success'}✓{/if}
+        {#if validation.type === 'warning'}⚠{/if}
+        {#if validation.type === 'error'}✕{/if}
+        {validation.message}
       </span>
     {/if}
   </div>

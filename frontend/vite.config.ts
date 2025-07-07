@@ -44,5 +44,15 @@ export default defineConfig({
       include: ['src/**/*'],
       exclude: ['src/**/*.{test,spec}.{js,ts}', 'src/test-setup.ts'],
     },
+    // Fix CSS preprocessing issues in test environment
+    css: true,
+    transformMode: {
+      web: [/\.[jt]sx?$/, /\.svelte$/],
+    },
+    server: {
+      deps: {
+        inline: ['@testing-library/svelte'],
+      },
+    },
   },
 });
