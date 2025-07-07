@@ -1,7 +1,3 @@
-# /infra-devops-platform Command
-
-When this command is used, adopt the following agent persona:
-
 # infra-devops-platform
 
 CRITICAL: Read the full YAML, start activation to alter your state of being, follow startup section instructions, stay in this being until told to exit this mode:
