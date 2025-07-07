@@ -88,6 +88,8 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
+    "../.bmad-infrastructure-devops",
+    "../.bmad-core",
 ]
 
 [tool.ruff.lint]
@@ -125,7 +127,7 @@ known-first-party = ["api", "infrastructure", "modules"]
 # Pyright configuration
 [tool.pyright]
 include = ["."]
-exclude = ["**/__pycache__", ".venv", "../tests", "tests", "*/tests"]
+exclude = ["**/__pycache__", ".venv", "../tests", "tests", "*/tests", "../.bmad-infrastructure-devops", "../.bmad-core"]
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.13"

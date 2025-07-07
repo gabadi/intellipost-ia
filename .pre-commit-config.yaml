@@ -69,16 +69,25 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^(.bmad-infrastructure-devops/|.bmad-core/)
       - id: end-of-file-fixer
+        exclude: ^(.bmad-infrastructure-devops/|.bmad-core/)
       - id: check-yaml
+        exclude: ^(.bmad-infrastructure-devops/|.bmad-core/)
       - id: check-json
+        exclude: ^(.bmad-infrastructure-devops/|.bmad-core/)
       - id: check-toml
+        exclude: ^(.bmad-infrastructure-devops/|.bmad-core/)
       - id: check-merge-conflict
+        exclude: ^(.bmad-infrastructure-devops/|.bmad-core/)
       - id: check-added-large-files
         args: [--maxkb=1000]
+        exclude: ^(.bmad-infrastructure-devops/|.bmad-core/)
       - id: detect-private-key
+        exclude: ^(.bmad-infrastructure-devops/|.bmad-core/)
       - id: mixed-line-ending
         args: [--fix=lf]
+        exclude: ^(.bmad-infrastructure-devops/|.bmad-core/)
 
   # Commit message hooks
   - repo: https://github.com/compilerla/conventional-pre-commit

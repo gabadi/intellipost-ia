@@ -20,3 +20,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# BMAD directories
+../.bmad-infrastructure-devops/
+../.bmad-core/
