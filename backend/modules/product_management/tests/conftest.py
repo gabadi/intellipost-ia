@@ -37,18 +37,8 @@ async def minio_container():
 # which properly manages the database engine and table creation
 
 
-@pytest.fixture(scope="session", autouse=True)
-async def setup_database_tables(test_engine):
-    """Ensure database tables are created for product management tests."""
-    # Create all tables
-    async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    yield
-
-    # Cleanup tables after all tests
-    async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+# Removed setup_database_tables fixture - the main conftest.py handles database setup
+# and individual tests can create their own database fixtures if needed
 
 
 # Removed duplicate async_session fixture - using the one from main conftest.py
