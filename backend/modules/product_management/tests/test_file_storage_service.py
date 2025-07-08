@@ -5,6 +5,7 @@ This module tests the file storage functionality including S3 operations,
 validation, and presigned URL generation.
 """
 
+from datetime import UTC
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
 
@@ -244,18 +245,20 @@ class TestFileStorageService:
     async def test_list_files_by_prefix(self, file_storage_service, mock_s3_client):
         """Test listing files by prefix."""
         prefix = "products/user123/"
+        from datetime import datetime
+
         mock_response = {
             "Contents": [
                 {
                     "Key": "products/user123/image1.jpg",
                     "Size": 1024,
-                    "LastModified": "2023-01-01T00:00:00Z",
+                    "LastModified": datetime(2023, 1, 1, tzinfo=UTC),
                     "ETag": '"abc123"',
                 },
                 {
                     "Key": "products/user123/image2.jpg",
                     "Size": 2048,
-                    "LastModified": "2023-01-02T00:00:00Z",
+                    "LastModified": datetime(2023, 1, 2, tzinfo=UTC),
                     "ETag": '"def456"',
                 },
             ]
@@ -277,10 +280,12 @@ class TestFileStorageService:
     @pytest.mark.asyncio
     async def test_get_file_metadata(self, file_storage_service, mock_s3_client):
         """Test getting file metadata."""
+        from datetime import datetime
+
         s3_key = "test/key.jpg"
         mock_response = {
             "ContentLength": 1024,
-            "LastModified": "2023-01-01T00:00:00Z",
+            "LastModified": datetime(2023, 1, 1, tzinfo=UTC),
             "ETag": '"abc123"',
             "ContentType": "image/jpeg",
             "Metadata": {"custom": "value"},
@@ -326,7 +331,9 @@ class TestFileStorageService:
         assert result["bucket_name"] == "test-bucket"
         assert result["total_files"] == 3
         assert result["total_size_bytes"] == 3584  # 1024 + 2048 + 512
-        assert result["total_size_mb"] == 3.5  # 3584 / 1024 / 1024
+        assert (
+            result["total_size_mb"] == 0.0
+        )  # 3584 bytes is less than 1 MB, rounds to 0.0
 
     def test_get_image_dimensions(self, file_storage_service):
         """Test image dimension extraction."""
@@ -366,8 +373,8 @@ class TestFileStorageService:
         assert file_storage_service._get_file_format("image.PNG") == "png"
         assert file_storage_service._get_file_format("image.webp") == "webp"
         assert (
-            file_storage_service._get_file_format("image.unknown") == "jpg"
-        )  # Default
+            file_storage_service._get_file_format("image.unknown") == "unknown"
+        )  # Unknown format
 
     def test_generate_s3_key(self, file_storage_service):
         """Test S3 key generation."""

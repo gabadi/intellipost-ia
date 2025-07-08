@@ -100,7 +100,7 @@ class FileStorageService:
         elif suffix in [".webp"]:
             return "webp"
         else:
-            return "jpg"  # Default fallback
+            return "unknown"  # Unknown format - will fail validation
 
     def _generate_s3_key(self, user_id: UUID, product_id: UUID, filename: str) -> str:
         """Generate S3 key for the file."""

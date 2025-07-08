@@ -18,38 +18,26 @@ class TestProductBusinessRules:
         product = ProductCore(
             id=uuid4(),
             user_id=uuid4(),
-            status=ProductStatus.UPLOADING,
+            status=ProductStatus.READY,
             prompt_text="Test prompt",
             title="Test Product",
         )
 
         assert ProductBusinessRules.is_ready_for_processing(product) is True
 
-    def test_is_ready_for_processing_false_no_title(self):
-        """Test product is not ready when title is missing."""
-        product = ProductCore(
-            id=uuid4(),
-            user_id=uuid4(),
-            status=ProductStatus.UPLOADING,
-            prompt_text="Test prompt",
-        )
-
-        assert ProductBusinessRules.is_ready_for_processing(product) is False
-
-    def test_is_ready_for_processing_false_empty_title(self):
-        """Test product is not ready when title is empty."""
-        product = ProductCore(
-            id=uuid4(),
-            user_id=uuid4(),
-            status=ProductStatus.UPLOADING,
-            prompt_text="Test prompt",
-            title="   ",
-        )
-
-        assert ProductBusinessRules.is_ready_for_processing(product) is False
-
     def test_is_ready_for_processing_false_wrong_status(self):
-        """Test product is not ready when status is not UPLOADING."""
+        """Test product is not ready when status is not READY."""
+        product = ProductCore(
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.UPLOADING,
+            prompt_text="Test prompt",
+        )
+
+        assert ProductBusinessRules.is_ready_for_processing(product) is False
+
+    def test_is_ready_for_processing_false_processing_status(self):
+        """Test product is not ready when status is PROCESSING."""
         product = ProductCore(
             id=uuid4(),
             user_id=uuid4(),

@@ -188,8 +188,11 @@ class TestProductStatus:
     def test_all_statuses_defined(self):
         """Test that all required statuses are defined."""
         expected_statuses = {
+            "draft",
+            "pending",
             "uploading",
             "processing",
+            "processed",
             "ready",
             "publishing",
             "published",

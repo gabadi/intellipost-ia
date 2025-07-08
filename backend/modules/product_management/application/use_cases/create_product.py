@@ -173,9 +173,14 @@ class CreateProductUseCase:
                 else None,
             }
 
+        except ValueError as e:
+            # ValueError means validation or business logic failure
+            # The specific error cases handle their own cleanup
+            logger.error(f"Failed to create product: {e}")
+            raise e
         except Exception as e:
             logger.error(f"Failed to create product: {e}")
-            # Attempt to clean up if product was created
+            # Attempt to clean up if product was created (for unexpected errors only)
             with contextlib.suppress(Exception):
                 await self.product_repository.delete(product_id)
 

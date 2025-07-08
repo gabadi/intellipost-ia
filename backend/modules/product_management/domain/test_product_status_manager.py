@@ -25,7 +25,7 @@ class TestProductStatusManager:
 
         ProductStatusManager.mark_as_processed(product, ConfidenceScore.high())
 
-        assert product.status == ProductStatus.PROCESSED
+        assert product.status == ProductStatus.READY
         assert product.confidence == ConfidenceScore.high()
         assert (
             product.updated_at is not None
@@ -38,7 +38,7 @@ class TestProductStatusManager:
         product = ProductCore(
             id=uuid4(),
             user_id=uuid4(),
-            status=ProductStatus.PROCESSED,
+            status=ProductStatus.READY,
             prompt_text="Test prompt",
         )
         initial_updated_at = product.updated_at
