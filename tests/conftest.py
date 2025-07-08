@@ -116,13 +116,24 @@ def database_url(postgres_container: PostgresContainer) -> str:
 
 @pytest_asyncio.fixture(scope="session")
 async def test_engine(database_url: str):
-    """Create an async database engine for testing."""
+    """Create an async database engine for testing with Alembic migrations."""
+    from alembic import command
+    from alembic.config import Config
+    
     engine = create_async_engine(
         database_url,
         echo=False,  # Set to True for SQL debugging
         pool_size=5,
         max_overflow=10,
     )
+    
+    # Run Alembic migrations to create tables
+    alembic_cfg = Config(str(Path(__file__).parent.parent / "backend" / "alembic.ini"))
+    alembic_cfg.set_main_option("sqlalchemy.url", database_url.replace("+asyncpg", ""))
+    
+    # Upgrade to head (latest migration)
+    command.upgrade(alembic_cfg, "head")
+    
     yield engine
     await engine.dispose()
 
