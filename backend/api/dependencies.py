@@ -13,6 +13,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.config.settings import Settings
 from infrastructure.database import get_database_session
+
+# Product management imports
+from modules.product_management.application.use_cases.create_product import (
+    CreateProductUseCase,
+    GetProductsUseCase,
+)
+from modules.product_management.infrastructure.repositories.product_repository import (
+    SQLAlchemyProductRepository,
+)
+from modules.product_management.infrastructure.services.file_storage_service import (
+    FileStorageService,
+)
 from modules.user_management.application.use_cases.authenticate_user import (
     AuthenticateUserUseCase,
 )
@@ -137,4 +149,47 @@ AuthenticateUseCaseDep = Annotated[
 ]
 RefreshTokenUseCaseDep = Annotated[
     RefreshTokenUseCase, Depends(get_refresh_token_use_case)
+]
+
+
+# Product management dependencies
+def get_product_repository(
+    session: AsyncSession = Depends(get_database_session),
+) -> SQLAlchemyProductRepository:
+    """Get product repository instance."""
+    return SQLAlchemyProductRepository(session)
+
+
+def get_file_storage_service(
+    settings: Settings = Depends(get_settings),
+) -> FileStorageService:
+    """Get file storage service instance."""
+    return FileStorageService(settings)
+
+
+def get_create_product_use_case(
+    product_repository: SQLAlchemyProductRepository = Depends(get_product_repository),
+    file_storage_service: FileStorageService = Depends(get_file_storage_service),
+) -> CreateProductUseCase:
+    """Get create product use case instance."""
+    return CreateProductUseCase(product_repository, file_storage_service)
+
+
+def get_get_products_use_case(
+    product_repository: SQLAlchemyProductRepository = Depends(get_product_repository),
+) -> GetProductsUseCase:
+    """Get products use case instance."""
+    return GetProductsUseCase(product_repository)
+
+
+# Product management type aliases
+ProductRepositoryDep = Annotated[
+    SQLAlchemyProductRepository, Depends(get_product_repository)
+]
+FileStorageServiceDep = Annotated[FileStorageService, Depends(get_file_storage_service)]
+CreateProductUseCaseDep = Annotated[
+    CreateProductUseCase, Depends(get_create_product_use_case)
+]
+GetProductsUseCaseDep = Annotated[
+    GetProductsUseCase, Depends(get_get_products_use_case)
 ]

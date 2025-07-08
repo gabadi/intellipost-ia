@@ -25,30 +25,51 @@
 
     isLoading = true;
     productCreationStore.setUploading(true);
+    productCreationStore.clearErrors();
 
     try {
-      // TODO: Implement actual API call to create product
-      // For now, simulate form submission
-      await simulateProductCreation();
+      // Import the API function dynamically to avoid SSR issues
+      const { createProduct, simulateUploadProgress } = await import('$lib/api/product-api');
 
-      // Navigate to success page or product list
+      // Simulate upload progress for better UX
+      const progressPromise = simulateUploadProgress((progress) => {
+        // Update progress for all images
+        $productCreationStore.images.forEach(img => {
+          productCreationStore.setUploadProgress(img.id, progress);
+        });
+      });
+
+      // Create product via API
+      const createPromise = createProduct(
+        $productCreationStore.prompt_text,
+        $productCreationStore.images
+      );
+
+      // Wait for both progress simulation and actual upload
+      await Promise.all([progressPromise, createPromise]);
+
+      // Success! Reset form and navigate
+      productCreationStore.reset();
       await goto('/products');
-    } catch {
-      // Log error and show user-friendly message
-      productCreationStore.addError('Failed to create product. Please try again.');
+    } catch (error) {
+      // Handle different types of errors
+      let errorMessage = 'Failed to create product. Please try again.';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      productCreationStore.addError(errorMessage);
+      console.error('Product creation failed:', error);
     } finally {
       isLoading = false;
       productCreationStore.setUploading(false);
-    }
-  }
 
-  async function simulateProductCreation(): Promise<void> {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        productCreationStore.reset();
-        resolve();
-      }, 2000);
-    });
+      // Clear upload progress
+      $productCreationStore.images.forEach(img => {
+        productCreationStore.setUploadProgress(img.id, 0);
+      });
+    }
   }
 
   function handlePromptChange(text: string) {
