@@ -219,3 +219,85 @@ def event_loop():
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
+
+
+# Product Management Test Fixtures
+@pytest.fixture
+def sample_image_bytes():
+    """Create sample image bytes for testing."""
+    # Create a minimal valid JPEG header
+    return (
+        b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00"
+        b"\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t"
+        b"\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a"
+        b"\x1f\x1e\x1d\x1a\x1c\x1c $.' \",#\x1c\x1c(7),01444\x1f'9=82<.342"
+        b"\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x01\x01\x11\x00\x02\x11\x01"
+        b"\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xc4\x00\x14\x10\x01\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff"
+        b"\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00\xaa\xff\xd9"
+    )
+
+
+@pytest.fixture
+def sample_upload_files(sample_image_bytes):
+    """Create sample UploadFile objects for testing."""
+    from io import BytesIO
+    from fastapi import UploadFile
+
+    files = []
+    for i in range(3):
+        file_like = BytesIO(sample_image_bytes)
+        upload_file = UploadFile(filename=f"test_image_{i}.jpg", file=file_like)
+        files.append(upload_file)
+
+    return files
+
+
+@pytest.fixture
+def product_factory():
+    """Factory for creating test Product entities."""
+    from typing import Any
+    from uuid import uuid4
+
+    def create_product(**kwargs: Any):
+        # Import locally to avoid circular imports
+        from modules.product_management.domain.entities.product import Product
+        from modules.product_management.domain.entities.product_status import ProductStatus
+        
+        return Product(
+            id=kwargs.get("id", uuid4()),
+            user_id=kwargs.get("user_id", uuid4()),
+            status=kwargs.get("status", ProductStatus.UPLOADING),
+            prompt_text=kwargs.get("prompt_text", "Test product description"),
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k not in ["id", "user_id", "status", "prompt_text"]
+            },
+        )
+
+    return create_product
+
+
+@pytest.fixture
+def image_data_factory():
+    """Factory for creating test image data."""
+    from uuid import uuid4
+
+    def create_image_data(**kwargs):
+        defaults = {
+            "product_id": uuid4(),
+            "original_filename": "test.jpg",
+            "s3_key": "products/user/product/test.jpg",
+            "s3_url": "https://bucket.s3.amazonaws.com/products/user/product/test.jpg",
+            "file_size_bytes": 1024,
+            "file_format": "jpg",
+            "resolution_width": 1920,
+            "resolution_height": 1080,
+            "is_primary": False,
+        }
+        defaults.update(kwargs)
+        return defaults
+
+    return create_image_data
