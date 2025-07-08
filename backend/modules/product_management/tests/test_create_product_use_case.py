@@ -10,6 +10,9 @@ from uuid import uuid4
 import pytest
 from fastapi import UploadFile
 
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
+
 from modules.product_management.application.use_cases.create_product import (
     CreateProductUseCase,
     GetProductsUseCase,

@@ -5,6 +5,9 @@ import os
 import pytest
 from pydantic import ValidationError
 
+# Mark all tests in this module as unit tests (settings config doesn't need DB)
+pytestmark = pytest.mark.unit
+
 from infrastructure.config.settings import Settings
 
 

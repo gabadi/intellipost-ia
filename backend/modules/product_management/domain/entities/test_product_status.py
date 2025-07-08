@@ -1,5 +1,10 @@
 """Tests for product status enumeration."""
 
+import pytest
+
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
+
 from .product_status import ProductStatus
 
 

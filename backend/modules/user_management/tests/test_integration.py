@@ -13,6 +13,9 @@ from uuid import uuid4
 
 import pytest  # type: ignore[import-untyped]
 
+# This file already has @pytest.mark.integration but adding pytestmark for completeness
+pytestmark = pytest.mark.integration
+
 from modules.user_management.domain.entities.user import User, UserStatus
 from modules.user_management.infrastructure.models.user_model import UserModel
 from modules.user_management.infrastructure.services.bcrypt_password_service import (

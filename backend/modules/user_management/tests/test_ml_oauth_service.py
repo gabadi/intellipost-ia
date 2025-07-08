@@ -11,6 +11,9 @@ from uuid import uuid4
 
 import pytest
 
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
+
 from modules.user_management.domain.entities.ml_credentials import MLCredentials
 from modules.user_management.domain.exceptions import (
     AuthenticationError,

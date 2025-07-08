@@ -10,6 +10,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi import FastAPI
+
+# Mark all tests in this module as integration tests
+pytestmark = pytest.mark.integration
 from fastapi.testclient import TestClient
 
 from modules.user_management.api.routers.ml_oauth_router import router
