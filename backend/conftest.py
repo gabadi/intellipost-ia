@@ -41,8 +41,9 @@ try:
 except ImportError:
     # Fallback: define minimal fixtures locally if import fails
     import asyncio
+
     import pytest
-    
+
     @pytest.fixture(scope="session")
     def event_loop():
         """Fallback event loop fixture."""
