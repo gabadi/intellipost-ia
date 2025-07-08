@@ -176,6 +176,8 @@ class TestUser:
         )
         initial_updated_at = user.updated_at
 
+        # Add small delay to ensure updated_at timestamp is different
+        time.sleep(0.001)
         user.suspend()
 
         assert user.status == UserStatus.SUSPENDED

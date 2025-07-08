@@ -16,6 +16,8 @@ sys.path.insert(0, str(backend_dir))
 from infrastructure.config.settings import Settings
 from infrastructure.database import Base
 
+# Import all models to ensure they're included in metadata
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

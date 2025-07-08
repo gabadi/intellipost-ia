@@ -10,12 +10,10 @@ from uuid import uuid4
 
 from sqlalchemy import TIMESTAMP, Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, mapped_column
 
+from infrastructure.database import Base
 from modules.user_management.domain.entities.ml_credentials import MLCredentials
-
-Base = declarative_base()
 
 
 class MLCredentialsModel(Base):

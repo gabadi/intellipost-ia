@@ -10,6 +10,7 @@ from enum import Enum
 class ProductStatus(Enum):
     """Product processing status enumeration."""
 
+    PENDING = "pending"
     UPLOADING = "uploading"
     PROCESSING = "processing"
     PROCESSED = "processed"

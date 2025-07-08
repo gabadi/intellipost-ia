@@ -18,7 +18,7 @@ describe('API Client Integration Tests', () => {
   let apiClient: APIClient;
 
   beforeEach(() => {
-    apiClient = new APIClient('http://localhost:8000');
+    apiClient = new APIClient('http://localhost:8080');
   });
 
   afterEach(() => {
@@ -39,7 +39,7 @@ describe('API Client Integration Tests', () => {
 
       expect(result).toEqual(healthData);
 
-      expect(fetch).toHaveBeenCalledWith('http://localhost:8000/health');
+      expect(fetch).toHaveBeenCalledWith('http://localhost:8080/health');
     });
 
     it('should throw error when health check fails', async () => {
@@ -79,7 +79,7 @@ describe('API Client Integration Tests', () => {
       expect(result.data).toEqual(responseData);
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:8000/test-endpoint',
+        'http://localhost:8080/test-endpoint',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify(postData),
@@ -108,7 +108,7 @@ describe('API Client Integration Tests', () => {
       expect(result.success).toBe(true);
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:8000/test-endpoint/1',
+        'http://localhost:8080/test-endpoint/1',
         expect.objectContaining({
           method: 'DELETE',
         })
@@ -163,7 +163,7 @@ describe('API Client Integration Tests', () => {
       await apiClient.get('/test');
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:8000/test',
+        'http://localhost:8080/test',
         expect.objectContaining({
           headers: expect.objectContaining({
             'Content-Type': 'application/json',

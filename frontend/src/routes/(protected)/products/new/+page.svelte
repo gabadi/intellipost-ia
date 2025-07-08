@@ -1,29 +1,93 @@
 <script lang="ts">
-  // Placeholder for new product creation
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { productCreationStore } from '$lib/stores/product-creation';
+  import PromptInputComponent from '$lib/components/product/PromptInputComponent.svelte';
+  import PhotoCollectionComponent from '$lib/components/product/PhotoCollectionComponent.svelte';
+
   let isLoading = false;
-  const formData = {
-    name: '',
-    description: '',
-    category: '',
-  };
+
+  // Use store validation states instead of local ones
+  $: promptValidation = $productCreationStore.validation.prompt;
+  $: imagesValidation = $productCreationStore.validation.images;
+  $: isFormValid = $productCreationStore.validation.form.isValid;
+  $: canSubmit = isFormValid && !isLoading;
+
+  onMount(() => {
+    // Clear any previous form data when mounting
+    productCreationStore.clearErrors();
+  });
 
   async function handleSubmit(event: Event) {
     event.preventDefault();
+
+    if (!canSubmit) return;
+
     isLoading = true;
+    productCreationStore.setUploading(true);
+    productCreationStore.clearErrors();
 
-    // TODO: Implement API call to create product
-    // For now, simulate form submission
+    try {
+      // Import the API function dynamically to avoid SSR issues
+      const { createProduct, simulateUploadProgress } = await import('$lib/api/product-api');
 
-    setTimeout(() => {
+      // Simulate upload progress for better UX
+      const progressPromise = simulateUploadProgress(progress => {
+        // Update progress for all images
+        $productCreationStore.images.forEach(img => {
+          productCreationStore.setUploadProgress(img.id, progress);
+        });
+      });
+
+      // Create product via API
+      const createPromise = createProduct(
+        $productCreationStore.prompt_text,
+        $productCreationStore.images
+      );
+
+      // Wait for both progress simulation and actual upload
+      await Promise.all([progressPromise, createPromise]);
+
+      // Success! Reset form and navigate
+      productCreationStore.reset();
+      await goto('/products');
+    } catch (error) {
+      // Handle different types of errors
+      let errorMessage = 'Failed to create product. Please try again.';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      productCreationStore.addError(errorMessage);
+    } finally {
       isLoading = false;
-      // Redirect to products list after creation
+      productCreationStore.setUploading(false);
 
-      window.location.href = '/products';
-    }, 2000);
+      // Clear upload progress
+      $productCreationStore.images.forEach(img => {
+        productCreationStore.setUploadProgress(img.id, 0);
+      });
+    }
+  }
+
+  function handlePromptChange(text: string) {
+    productCreationStore.setPromptText(text);
   }
 
   function handleCancel() {
-    window.history.back();
+    // eslint-disable-next-line no-alert
+    if (window.confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+      productCreationStore.reset();
+      goto('/products');
+    }
+  }
+
+  function handleReset() {
+    // eslint-disable-next-line no-alert
+    if (window.confirm('Are you sure you want to reset the form? All data will be lost.')) {
+      productCreationStore.reset();
+    }
   }
 </script>
 
@@ -35,61 +99,82 @@
   <div class="page-container">
     <header class="page-header">
       <h1 class="page-title">Create New Product</h1>
-      <p class="page-subtitle">Let AI help you create compelling product listings</p>
+      <p class="page-subtitle">
+        Upload photos and describe your product to generate AI-powered listings
+      </p>
     </header>
 
-    <div class="form-container form-container-split">
-      <form on:submit={handleSubmit} class="card card-form">
-        <div class="form-section">
-          <h2 class="form-section-title">Product Information</h2>
-
-          <div class="form-group">
-            <label for="name" class="form-label">Product Name</label>
-            <input
-              type="text"
-              id="name"
-              bind:value={formData.name}
-              class="form-input"
-              placeholder="Enter product name"
-              required
-              disabled={isLoading}
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="description" class="form-label">Description</label>
-            <textarea
-              id="description"
-              bind:value={formData.description}
-              class="form-textarea"
-              placeholder="Describe your product..."
-              rows="4"
-              required
-              disabled={isLoading}
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="category" class="form-label">Category</label>
-            <select
-              id="category"
-              bind:value={formData.category}
-              class="form-select"
-              required
-              disabled={isLoading}
+    <form on:submit={handleSubmit} class="product-creation-form">
+      <div class="form-content">
+        <!-- Photo Collection Section -->
+        <section
+          class="form-section"
+          class:form-section--valid={imagesValidation.isValid}
+          class:form-section--invalid={!imagesValidation.isValid &&
+            $productCreationStore.images.length > 0}
+        >
+          <PhotoCollectionComponent images={$productCreationStore.images} disabled={isLoading} />
+          {#if imagesValidation.message}
+            <div
+              class="section-validation-message section-validation-message--{imagesValidation.type}"
             >
-              <option value="">Select a category</option>
-              <option value="electronics">Electronics</option>
-              <option value="clothing">Clothing</option>
-              <option value="home">Home & Garden</option>
-              <option value="books">Books</option>
-              <option value="sports">Sports & Outdoors</option>
-              <option value="other">Other</option>
-            </select>
+              {#if imagesValidation.type === 'success'}✓{/if}
+              {#if imagesValidation.type === 'warning'}⚠{/if}
+              {#if imagesValidation.type === 'error'}✕{/if}
+              {imagesValidation.message}
+            </div>
+          {/if}
+        </section>
+
+        <!-- Prompt Input Section -->
+        <section
+          class="form-section"
+          class:form-section--valid={promptValidation.isValid}
+          class:form-section--invalid={!promptValidation.isValid &&
+            $productCreationStore.prompt_text.trim().length > 0}
+        >
+          <PromptInputComponent
+            value={$productCreationStore.prompt_text}
+            onChange={handlePromptChange}
+            validation={promptValidation}
+            disabled={isLoading}
+          />
+        </section>
+
+        <!-- Form Status -->
+        {#if $productCreationStore.errors.length > 0}
+          <section class="error-section">
+            {#each $productCreationStore.errors as error}
+              <div class="error-message">
+                <span class="error-icon">⚠</span>
+                {error}
+              </div>
+            {/each}
+          </section>
+        {/if}
+
+        {#if $productCreationStore.autoSaved}
+          <div class="autosave-indicator">
+            <span class="autosave-icon">💾</span>
+            Your progress has been automatically saved
           </div>
+        {/if}
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <div class="form-actions-secondary">
+          <button
+            type="button"
+            class="btn btn--ghost btn--md"
+            on:click={handleReset}
+            disabled={isLoading}
+          >
+            Reset Form
+          </button>
         </div>
 
-        <div class="form-actions">
+        <div class="form-actions-primary">
           <button
             type="button"
             class="btn btn--secondary btn--md"
@@ -101,56 +186,313 @@
 
           <button
             type="submit"
-            class="btn btn--primary btn--md"
+            class="btn btn--primary btn--lg"
             class:btn--loading={isLoading}
-            disabled={isLoading}
+            disabled={!canSubmit}
           >
-            {#if !isLoading}
+            {#if isLoading}
+              <span class="btn-spinner"></span>
+              Creating...
+            {:else}
               <span class="btn-icon">✨</span>
               Create Product
             {/if}
           </button>
         </div>
-      </form>
-
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">AI Preview</h3>
-        </div>
-        <div class="card-content">
-          <div class="preview-area">
-            <div class="preview-icon">🤖</div>
-            <p
-              style="color: var(--color-text-muted); font-size: var(--text-sm); text-align: center;"
-            >
-              AI-powered content generation will appear here as you fill out the form
-            </p>
-          </div>
-        </div>
       </div>
-    </div>
+
+      <!-- Form Validation Summary -->
+      <div class="validation-summary">
+        <div class="validation-item" class:validation-item--valid={imagesValidation.isValid}>
+          <span class="validation-icon">
+            {imagesValidation.isValid ? '✓' : '○'}
+          </span>
+          <span class="validation-text">
+            {imagesValidation.isValid ? 'Images ready' : 'Add product photos'}
+          </span>
+        </div>
+
+        <div class="validation-item" class:validation-item--valid={promptValidation.isValid}>
+          <span class="validation-icon">
+            {promptValidation.isValid ? '✓' : '○'}
+          </span>
+          <span class="validation-text">
+            {promptValidation.isValid ? 'Description ready' : 'Add product description'}
+          </span>
+        </div>
+
+        {#if isFormValid}
+          <div class="validation-item validation-item--success">
+            <span class="validation-icon">🚀</span>
+            <span class="validation-text">Ready to create your product!</span>
+          </div>
+        {/if}
+      </div>
+    </form>
   </div>
 </div>
 
 <style>
-  .btn-icon {
+  .product-creation-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .form-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .form-section {
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    transition: all 0.2s ease;
+  }
+
+  .form-section:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+  }
+
+  .form-section--valid {
+    border-color: var(--color-success);
+  }
+
+  .form-section--invalid {
+    border-color: var(--color-error);
+  }
+
+  .section-validation-message {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    margin-top: var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .section-validation-message--success {
+    background: var(--color-success-light);
+    border: 1px solid var(--color-success);
+    color: var(--color-success-dark);
+  }
+
+  .section-validation-message--warning {
+    background: var(--color-warning-light);
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning-dark);
+  }
+
+  .section-validation-message--error {
+    background: var(--color-error-light);
+    border: 1px solid var(--color-error);
+    color: var(--color-error-dark);
+  }
+
+  .error-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    background: var(--color-error-light);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    color: var(--color-error-dark);
+  }
+
+  .error-icon {
+    font-size: var(--text-base);
+    flex-shrink: 0;
+  }
+
+  .autosave-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    background: var(--color-success-light);
+    border: 1px solid var(--color-success);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    color: var(--color-success-dark);
+    animation: fadeInOut 0.3s ease;
+  }
+
+  .autosave-icon {
     font-size: var(--text-base);
   }
 
-  .preview-area {
+  .form-actions {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    padding: var(--space-8);
-    border: 2px dashed var(--color-border-secondary);
-    border-radius: var(--radius-lg);
-    text-align: center;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    background: var(--color-background-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    flex-wrap: wrap;
   }
 
-  .preview-icon {
-    font-size: 48px;
-    margin-bottom: var(--space-4);
-    opacity: 0.5;
+  .form-actions-secondary {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .form-actions-primary {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .btn-icon {
+    font-size: var(--text-base);
+    margin-right: var(--space-1);
+  }
+
+  .btn-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: var(--space-2);
+  }
+
+  .validation-summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    background: var(--color-background-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .validation-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    transition: all 0.2s ease;
+  }
+
+  .validation-item--valid {
+    color: var(--color-success);
+  }
+
+  .validation-item--success {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  .validation-icon {
+    font-size: var(--text-base);
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .validation-text {
+    flex: 1;
+  }
+
+  /* Mobile-first responsive design */
+  @media (max-width: 768px) {
+    .product-creation-form {
+      gap: var(--space-4);
+    }
+
+    .form-section {
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+    }
+
+    .form-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-3);
+      padding: var(--space-4);
+    }
+
+    .form-actions-secondary,
+    .form-actions-primary {
+      justify-content: stretch;
+      width: 100%;
+    }
+
+    .form-actions-primary {
+      flex-direction: column;
+    }
+
+    .form-actions-primary .btn {
+      width: 100%;
+    }
+
+    .btn--lg {
+      min-height: 52px;
+      font-size: var(--text-base);
+    }
+
+    .validation-summary {
+      padding: var(--space-3);
+    }
+  }
+
+  /* Desktop enhancements */
+  @media (min-width: 1024px) {
+    .product-creation-form {
+      max-width: 1000px;
+    }
+
+    .form-content {
+      gap: var(--space-8);
+    }
+
+    .form-section {
+      padding: var(--space-8);
+    }
+
+    .form-actions {
+      padding: var(--space-8);
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes fadeInOut {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>

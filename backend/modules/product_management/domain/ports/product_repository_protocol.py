@@ -31,3 +31,23 @@ class ProductRepositoryProtocol(Protocol):
     async def delete(self, product_id: UUID) -> bool:
         """Delete a product by ID."""
         ...
+
+    async def create_product_image(
+        self,
+        product_id: UUID,
+        original_filename: str,
+        s3_key: str,
+        s3_url: str,
+        file_size_bytes: int,
+        file_format: str,
+        resolution_width: int,
+        resolution_height: int,
+        is_primary: bool = False,
+        processing_metadata: dict | None = None,
+    ) -> Any:
+        """Create a new product image."""
+        ...
+
+    async def get_product_images(self, product_id: UUID) -> list[Any]:
+        """Get all images for a product."""
+        ...

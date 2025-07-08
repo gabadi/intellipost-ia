@@ -126,6 +126,18 @@
   --color-error: var(--color-error-500);
   --color-info: var(--color-info-500);
 
+  /* Status Light Variants for Focus States */
+  --color-success-light: var(--color-success-50);
+  --color-warning-light: var(--color-warning-50);
+  --color-error-light: var(--color-error-50);
+  --color-info-light: var(--color-info-50);
+
+  /* Status Dark Variants for Contrast */
+  --color-success-dark: var(--color-success-700);
+  --color-warning-dark: var(--color-warning-700);
+  --color-error-dark: var(--color-error-700);
+  --color-info-dark: var(--color-info-700);
+
   /* Gray Scale */
   --color-gray-50: #f9fafb;
   --color-gray-100: #f3f4f6;
@@ -381,6 +393,18 @@
   --color-error: var(--color-error-400);
   --color-info: var(--color-info-400);
 
+  /* Status Light Variants for Focus States in Dark Mode */
+  --color-success-light: rgba(34, 197, 94, 0.1);
+  --color-warning-light: rgba(251, 191, 36, 0.1);
+  --color-error-light: rgba(239, 68, 68, 0.1);
+  --color-info-light: rgba(59, 130, 246, 0.1);
+
+  /* Status Dark Variants for Contrast in Dark Mode */
+  --color-success-dark: var(--color-success-200);
+  --color-warning-dark: var(--color-warning-200);
+  --color-error-dark: var(--color-error-200);
+  --color-info-dark: var(--color-info-200);
+
   /* Status color backgrounds for dark mode */
   --color-success-50: rgba(34, 197, 94, 0.1);
   --color-warning-50: rgba(251, 191, 36, 0.1);
@@ -443,6 +467,18 @@
     --color-warning: var(--color-warning-400);
     --color-error: var(--color-error-400);
     --color-info: var(--color-info-400);
+
+    /* Status Light Variants for Focus States in Dark Mode */
+    --color-success-light: rgba(34, 197, 94, 0.1);
+    --color-warning-light: rgba(251, 191, 36, 0.1);
+    --color-error-light: rgba(239, 68, 68, 0.1);
+    --color-info-light: rgba(59, 130, 246, 0.1);
+
+    /* Status Dark Variants for Contrast in Dark Mode */
+    --color-success-dark: var(--color-success-200);
+    --color-warning-dark: var(--color-warning-200);
+    --color-error-dark: var(--color-error-200);
+    --color-info-dark: var(--color-info-200);
 
     /* Status color backgrounds for dark mode */
     --color-success-50: rgba(34, 197, 94, 0.1);
