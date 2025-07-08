@@ -16,10 +16,11 @@ repos:
     hooks:
       - id: pyright
         name: pyright-check
-        entry: uv run pyright backend/
+        entry: bash -c 'cd backend && uv run pyright'
         language: system
         files: ^backend/
         types: [python]
+        pass_filenames: false
 
   # Tach architectural boundaries with uvx
   - repo: local

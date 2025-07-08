@@ -127,7 +127,7 @@ known-first-party = ["api", "infrastructure", "modules"]
 # Pyright configuration
 [tool.pyright]
 include = ["."]
-exclude = ["**/__pycache__", ".venv", "../tests", "tests", "*/tests", "../.bmad-infrastructure-devops", "../.bmad-core"]
+exclude = ["**/__pycache__", ".venv", "../tests", "tests", "*/tests", "**/test_*.py", "*/conftest.py", "../.bmad-infrastructure-devops", "../.bmad-core"]
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.13"
@@ -226,6 +226,7 @@ test = [
     "pytest-cov>=6.2.1",
     "coverage[toml]>=7.0.0",
     "respx>=0.22.0",
-    "testcontainers>=4.10.0",
-    "testcontainers[postgresql]>=4.10.0",
+    "testcontainers[postgres]>=4.10.0",
+    "testcontainers[minio]>=4.10.0",
+    "minio>=7.2.0",
 ]

@@ -14,6 +14,8 @@ class ProductImageResponse(BaseModel):
     product_id: str
     original_filename: str
     s3_url: str
+    original_s3_url: str
+    processed_s3_url: str | None = None
     file_size_bytes: int
     file_format: str
     resolution_width: int
@@ -22,6 +24,8 @@ class ProductImageResponse(BaseModel):
     processing_metadata: dict | None = None
     created_at: str
     updated_at: str
+    uploaded_at: str
+    processed_at: str | None = None
 
 
 class ProductResponse(BaseModel):
@@ -31,6 +35,9 @@ class ProductResponse(BaseModel):
     user_id: str
     status: str
     confidence: str | None = None
+
+    # Required user input
+    prompt_text: str
 
     # Product information
     title: str | None = None
@@ -47,6 +54,11 @@ class ProductResponse(BaseModel):
     ml_listing_id: str | None = None
     ml_category_id: str | None = None
 
+    # Processing tracking
+    processing_started_at: str | None = None
+    processing_completed_at: str | None = None
+    processing_error: str | None = None
+
     # Timestamps
     created_at: str
     updated_at: str
@@ -62,8 +74,8 @@ class CreateProductRequest(BaseModel):
     prompt_text: str = Field(
         ...,
         min_length=10,
-        max_length=1000,
-        description="Product description prompt for AI generation",
+        max_length=500,
+        description="Product description prompt for AI generation (10-500 characters)",
     )
 
     @field_validator("prompt_text")

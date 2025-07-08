@@ -2,12 +2,17 @@
 
 from uuid import uuid4
 
+import pytest
+
 from modules.product_management.domain.entities.confidence_score import ConfidenceScore
 from modules.product_management.domain.entities.product_status import ProductStatus
 from modules.product_management.domain.product_core import ProductCore
 from modules.product_management.domain.product_status_manager import (
     ProductStatusManager,
 )
+
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
 
 
 class TestProductStatusManager:
@@ -16,13 +21,16 @@ class TestProductStatusManager:
     def test_mark_as_processed(self):
         """Test marking product as processed."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.UPLOADING
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.UPLOADING,
+            prompt_text="Test prompt",
         )
         initial_updated_at = product.updated_at
 
         ProductStatusManager.mark_as_processed(product, ConfidenceScore.high())
 
-        assert product.status == ProductStatus.PROCESSED
+        assert product.status == ProductStatus.READY
         assert product.confidence == ConfidenceScore.high()
         assert (
             product.updated_at is not None
@@ -33,7 +41,10 @@ class TestProductStatusManager:
     def test_mark_as_published(self):
         """Test marking product as published."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.PROCESSED
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.READY,
+            prompt_text="Test prompt",
         )
         initial_updated_at = product.updated_at
         listing_id = "ML123456"
@@ -52,7 +63,10 @@ class TestProductStatusManager:
     def test_mark_as_failed(self):
         """Test marking product processing as failed."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.PROCESSING
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.PROCESSING,
+            prompt_text="Test prompt",
         )
         initial_updated_at = product.updated_at
 

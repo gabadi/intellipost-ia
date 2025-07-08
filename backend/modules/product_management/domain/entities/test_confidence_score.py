@@ -4,8 +4,12 @@
 
 import pytest  # type: ignore[import-untyped]
 
-from modules.product_management.domain.entities.confidence_score import ConfidenceScore
 from modules.product_management.domain.exceptions import InvalidConfidenceScoreError
+
+from .confidence_score import ConfidenceScore
+
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
 
 
 class TestConfidenceScore:

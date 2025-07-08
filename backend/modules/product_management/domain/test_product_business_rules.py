@@ -2,12 +2,17 @@
 
 from uuid import uuid4
 
+import pytest
+
 from modules.product_management.domain.entities.confidence_score import ConfidenceScore
 from modules.product_management.domain.entities.product_status import ProductStatus
 from modules.product_management.domain.product_business_rules import (
     ProductBusinessRules,
 )
 from modules.product_management.domain.product_core import ProductCore
+
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
 
 
 class TestProductBusinessRules:
@@ -18,34 +23,31 @@ class TestProductBusinessRules:
         product = ProductCore(
             id=uuid4(),
             user_id=uuid4(),
-            status=ProductStatus.UPLOADING,
+            status=ProductStatus.READY,
+            prompt_text="Test prompt",
             title="Test Product",
         )
 
         assert ProductBusinessRules.is_ready_for_processing(product) is True
 
-    def test_is_ready_for_processing_false_no_title(self):
-        """Test product is not ready when title is missing."""
-        product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.UPLOADING
-        )
-
-        assert ProductBusinessRules.is_ready_for_processing(product) is False
-
-    def test_is_ready_for_processing_false_empty_title(self):
-        """Test product is not ready when title is empty."""
-        product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.UPLOADING, title="   "
-        )
-
-        assert ProductBusinessRules.is_ready_for_processing(product) is False
-
     def test_is_ready_for_processing_false_wrong_status(self):
-        """Test product is not ready when status is not UPLOADING."""
+        """Test product is not ready when status is not READY."""
+        product = ProductCore(
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.UPLOADING,
+            prompt_text="Test prompt",
+        )
+
+        assert ProductBusinessRules.is_ready_for_processing(product) is False
+
+    def test_is_ready_for_processing_false_processing_status(self):
+        """Test product is not ready when status is PROCESSING."""
         product = ProductCore(
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.PROCESSING,
+            prompt_text="Test prompt",
             title="Test Product",
         )
 
@@ -57,6 +59,7 @@ class TestProductBusinessRules:
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.PUBLISHED,
+            prompt_text="Test prompt",
             ml_listing_id="ML123456",
         )
 
@@ -65,7 +68,10 @@ class TestProductBusinessRules:
     def test_is_published_false_no_listing_id(self):
         """Test product is not published without listing ID."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.PUBLISHED
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.PUBLISHED,
+            prompt_text="Test prompt",
         )
 
         assert ProductBusinessRules.is_published(product) is False
@@ -76,6 +82,7 @@ class TestProductBusinessRules:
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.PROCESSED,
+            prompt_text="Test prompt",
             ml_listing_id="ML123456",
         )
 
@@ -87,6 +94,7 @@ class TestProductBusinessRules:
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.PROCESSED,
+            prompt_text="Test prompt",
             confidence=ConfidenceScore.high(),
         )
 
@@ -98,6 +106,7 @@ class TestProductBusinessRules:
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.PROCESSED,
+            prompt_text="Test prompt",
             confidence=ConfidenceScore.medium(),
         )
 
@@ -106,7 +115,10 @@ class TestProductBusinessRules:
     def test_has_high_confidence_false_no_confidence(self):
         """Test confidence detection when confidence is None."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.PROCESSED
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.PROCESSED,
+            prompt_text="Test prompt",
         )
 
         assert ProductBusinessRules.has_high_confidence(product) is False

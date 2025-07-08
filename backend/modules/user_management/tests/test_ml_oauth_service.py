@@ -25,6 +25,9 @@ from modules.user_management.infrastructure.services.ml_oauth_service import (
     MLOAuthService,
 )
 
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
+
 
 class TestMLOAuthService:
     """Test suite for ML OAuth service."""

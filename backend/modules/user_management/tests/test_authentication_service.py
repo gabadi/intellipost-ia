@@ -23,6 +23,9 @@ from modules.user_management.domain.exceptions import (
 )
 from modules.user_management.domain.services.authentication import AuthenticationService
 
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
+
 
 class TestAuthenticationService:
     """Test cases for AuthenticationService."""

@@ -22,6 +22,9 @@ from modules.user_management.infrastructure.services.jose_jwt_service import (
     JoseJWTService,
 )
 
+# This file already has @pytest.mark.integration but adding pytestmark for completeness
+pytestmark = pytest.mark.integration
+
 
 class TestUserModelIntegration:
     """Test User entity and SQLAlchemy model integration."""

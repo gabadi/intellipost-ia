@@ -23,6 +23,10 @@ MOCK_USER_ID = "550e8400-e29b-41d4-a716-446655440000"
 MOCK_AUTH_TOKEN = "mock_jwt_token"
 
 
+# Mark all tests in this module as integration tests
+pytestmark = pytest.mark.integration
+
+
 @pytest.fixture
 def test_app():
     """Create test FastAPI app with ML OAuth router."""

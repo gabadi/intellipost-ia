@@ -14,11 +14,9 @@ class ProductBusinessRules:
     @staticmethod
     def is_ready_for_processing(product: ProductCore) -> bool:
         """Check if product is ready for AI processing."""
-        return (
-            product.status == ProductStatus.UPLOADING
-            and product.title is not None
-            and len(product.title.strip()) > 0
-        )
+        # A product is ready for processing when it's in READY status
+        # READY means images uploaded and content ready for AI processing
+        return product.status == ProductStatus.READY
 
     @staticmethod
     def is_published(product: ProductCore) -> bool:

@@ -100,7 +100,7 @@ class FileStorageService:
         elif suffix in [".webp"]:
             return "webp"
         else:
-            return "jpg"  # Default fallback
+            return "unknown"  # Unknown format - will fail validation
 
     def _generate_s3_key(self, user_id: UUID, product_id: UUID, filename: str) -> str:
         """Generate S3 key for the file."""
@@ -191,6 +191,108 @@ class FileStorageService:
             # AWS S3
             return f"https://{self.bucket_name}.s3.{self.settings.s3_region}.amazonaws.com/{s3_key}"
 
+    async def generate_presigned_url(
+        self,
+        s3_key: str,
+        expiration: int = 3600,
+        http_method: str = "GET",
+    ) -> str:
+        """
+        Generate a presigned URL for secure access to the file.
+
+        Args:
+            s3_key: The S3 object key
+            expiration: URL expiration time in seconds (default: 1 hour)
+            http_method: HTTP method for the presigned URL (GET, PUT, POST, etc.)
+
+        Returns:
+            str: Presigned URL for the file
+
+        Raises:
+            ValueError: If URL generation fails
+        """
+        try:
+            # Generate presigned URL
+            generate_url_func = functools.partial(
+                self.s3_client.generate_presigned_url,
+                ClientMethod="get_object",
+                Params={"Bucket": self.bucket_name, "Key": s3_key},
+                ExpiresIn=expiration,
+                HttpMethod=http_method,
+            )
+
+            presigned_url = await asyncio.get_event_loop().run_in_executor(
+                None, generate_url_func
+            )
+
+            logger.info(
+                f"Generated presigned URL for {s3_key}, expires in {expiration}s"
+            )
+            return presigned_url
+
+        except ClientError as e:
+            logger.error(f"Failed to generate presigned URL for {s3_key}: {e}")
+            raise ValueError(f"Failed to generate presigned URL: {e}") from e
+        except Exception as e:
+            logger.error(f"Unexpected error generating presigned URL for {s3_key}: {e}")
+            raise ValueError(f"Presigned URL generation failed: {e}") from e
+
+    async def generate_presigned_upload_url(
+        self,
+        s3_key: str,
+        expiration: int = 3600,
+        content_type: str | None = None,
+        max_content_length: int | None = None,
+    ) -> dict:
+        """
+        Generate a presigned URL for direct file upload.
+
+        Args:
+            s3_key: The S3 object key for the upload
+            expiration: URL expiration time in seconds (default: 1 hour)
+            content_type: Expected content type for the upload
+            max_content_length: Maximum file size in bytes
+
+        Returns:
+            dict: Contains 'url' and 'fields' for the presigned POST
+
+        Raises:
+            ValueError: If URL generation fails
+        """
+        try:
+            conditions = []
+            if content_type:
+                conditions.append({"Content-Type": content_type})
+            if max_content_length:
+                conditions.append(["content-length-range", 1, max_content_length])
+
+            # Generate presigned POST URL
+            generate_post_func = functools.partial(
+                self.s3_client.generate_presigned_post,
+                Bucket=self.bucket_name,
+                Key=s3_key,
+                ExpiresIn=expiration,
+                Conditions=conditions if conditions else None,
+            )
+
+            presigned_post = await asyncio.get_event_loop().run_in_executor(
+                None, generate_post_func
+            )
+
+            logger.info(
+                f"Generated presigned upload URL for {s3_key}, expires in {expiration}s"
+            )
+            return presigned_post
+
+        except ClientError as e:
+            logger.error(f"Failed to generate presigned upload URL for {s3_key}: {e}")
+            raise ValueError(f"Failed to generate presigned upload URL: {e}") from e
+        except Exception as e:
+            logger.error(
+                f"Unexpected error generating presigned upload URL for {s3_key}: {e}"
+            )
+            raise ValueError(f"Presigned upload URL generation failed: {e}") from e
+
     async def delete_file(self, s3_key: str) -> bool:
         """Delete a file from S3."""
         try:
@@ -278,3 +380,141 @@ class FileStorageService:
                 "error_message": f"Error validating image: {e}",
                 "file_info": None,
             }
+
+    async def list_files_by_prefix(self, prefix: str) -> list[dict]:
+        """
+        List files in the bucket with a specific prefix.
+
+        Args:
+            prefix: S3 key prefix to filter files
+
+        Returns:
+            list[dict]: List of file metadata
+        """
+        try:
+            list_objects_func = functools.partial(
+                self.s3_client.list_objects_v2,
+                Bucket=self.bucket_name,
+                Prefix=prefix,
+            )
+
+            response = await asyncio.get_event_loop().run_in_executor(
+                None, list_objects_func
+            )
+
+            files = []
+            for obj in response.get("Contents", []):
+                files.append(
+                    {
+                        "key": obj["Key"],
+                        "size": obj["Size"],
+                        "last_modified": obj["LastModified"].isoformat(),
+                        "etag": obj["ETag"].strip('"'),
+                    }
+                )
+
+            logger.info(f"Found {len(files)} files with prefix {prefix}")
+            return files
+
+        except ClientError as e:
+            logger.error(f"Failed to list files with prefix {prefix}: {e}")
+            raise ValueError(f"Failed to list files: {e}") from e
+
+    async def get_file_metadata(self, s3_key: str) -> dict | None:
+        """
+        Get metadata for a specific file.
+
+        Args:
+            s3_key: S3 object key
+
+        Returns:
+            dict | None: File metadata or None if not found
+        """
+        try:
+            head_object_func = functools.partial(
+                self.s3_client.head_object,
+                Bucket=self.bucket_name,
+                Key=s3_key,
+            )
+
+            response = await asyncio.get_event_loop().run_in_executor(
+                None, head_object_func
+            )
+
+            return {
+                "key": s3_key,
+                "size": response["ContentLength"],
+                "last_modified": response["LastModified"].isoformat(),
+                "etag": response["ETag"].strip('"'),
+                "content_type": response.get("ContentType", ""),
+                "metadata": response.get("Metadata", {}),
+            }
+
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "NoSuchKey":
+                return None
+            logger.error(f"Failed to get metadata for {s3_key}: {e}")
+            raise ValueError(f"Failed to get file metadata: {e}") from e
+
+    async def copy_file(self, source_key: str, destination_key: str) -> bool:
+        """
+        Copy a file within the bucket.
+
+        Args:
+            source_key: Source S3 object key
+            destination_key: Destination S3 object key
+
+        Returns:
+            bool: True if successful
+        """
+        try:
+            copy_source = {"Bucket": self.bucket_name, "Key": source_key}
+            copy_object_func = functools.partial(
+                self.s3_client.copy_object,
+                CopySource=copy_source,
+                Bucket=self.bucket_name,
+                Key=destination_key,
+            )
+
+            await asyncio.get_event_loop().run_in_executor(None, copy_object_func)
+            logger.info(f"Successfully copied {source_key} to {destination_key}")
+            return True
+
+        except ClientError as e:
+            logger.error(f"Failed to copy {source_key} to {destination_key}: {e}")
+            raise ValueError(f"Failed to copy file: {e}") from e
+
+    async def get_bucket_usage(self) -> dict:
+        """
+        Get bucket usage statistics.
+
+        Returns:
+            dict: Bucket usage information
+        """
+        try:
+            list_objects_func = functools.partial(
+                self.s3_client.list_objects_v2,
+                Bucket=self.bucket_name,
+            )
+
+            response = await asyncio.get_event_loop().run_in_executor(
+                None, list_objects_func
+            )
+
+            total_size = 0
+            file_count = 0
+
+            for obj in response.get("Contents", []):
+                total_size += obj["Size"]
+                file_count += 1
+
+            return {
+                "bucket_name": self.bucket_name,
+                "total_files": file_count,
+                "total_size_bytes": total_size,
+                "total_size_mb": round(total_size / (1024 * 1024), 2),
+            }
+
+        except ClientError as e:
+            logger.error(f"Failed to get bucket usage: {e}")
+            raise ValueError(f"Failed to get bucket usage: {e}") from e

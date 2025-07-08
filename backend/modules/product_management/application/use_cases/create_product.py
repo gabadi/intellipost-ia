@@ -68,8 +68,8 @@ class CreateProductUseCase:
         product = Product(
             id=product_id,
             user_id=user_id,
-            status=ProductStatus.PENDING,
-            description=prompt_text.strip(),
+            status=ProductStatus.UPLOADING,
+            prompt_text=prompt_text.strip(),
         )
 
         try:
@@ -173,9 +173,14 @@ class CreateProductUseCase:
                 else None,
             }
 
+        except ValueError as e:
+            # ValueError means validation or business logic failure
+            # The specific error cases handle their own cleanup
+            logger.error(f"Failed to create product: {e}")
+            raise e
         except Exception as e:
             logger.error(f"Failed to create product: {e}")
-            # Attempt to clean up if product was created
+            # Attempt to clean up if product was created (for unexpected errors only)
             with contextlib.suppress(Exception):
                 await self.product_repository.delete(product_id)
 
@@ -213,7 +218,10 @@ class GetProductsUseCase:
                 "id": str(product.id),
                 "user_id": str(product.user_id),
                 "status": product.status.value,
-                "confidence": product.confidence.value if product.confidence else None,
+                "confidence": str(product.confidence.score)
+                if product.confidence
+                else None,
+                "prompt_text": product.prompt_text,
                 "title": product.title,
                 "description": product.description,
                 "price": product.price,
@@ -223,6 +231,13 @@ class GetProductsUseCase:
                 "ai_tags": product.ai_tags,
                 "ml_listing_id": product.ml_listing_id,
                 "ml_category_id": product.ml_category_id,
+                "processing_started_at": product.processing_started_at.isoformat()
+                if product.processing_started_at
+                else None,
+                "processing_completed_at": product.processing_completed_at.isoformat()
+                if product.processing_completed_at
+                else None,
+                "processing_error": product.processing_error,
                 "created_at": product.created_at.isoformat()
                 if product.created_at
                 else None,

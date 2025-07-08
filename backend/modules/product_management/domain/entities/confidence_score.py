@@ -71,3 +71,41 @@ class ConfidenceScore:
     def low(cls) -> "ConfidenceScore":
         """Create a low confidence score (0.3)."""
         return cls(0.3)
+
+    def __lt__(self, other: object) -> bool:
+        """Less than comparison."""
+        if not isinstance(other, ConfidenceScore):
+            return NotImplemented
+        return self.score < other.score
+
+    def __le__(self, other: object) -> bool:
+        """Less than or equal comparison."""
+        if not isinstance(other, ConfidenceScore):
+            return NotImplemented
+        return self.score <= other.score
+
+    def __gt__(self, other: object) -> bool:
+        """Greater than comparison."""
+        if not isinstance(other, ConfidenceScore):
+            return NotImplemented
+        return self.score > other.score
+
+    def __ge__(self, other: object) -> bool:
+        """Greater than or equal comparison."""
+        if not isinstance(other, ConfidenceScore):
+            return NotImplemented
+        return self.score >= other.score
+
+    def __eq__(self, other: object) -> bool:
+        """Equality comparison."""
+        if not isinstance(other, ConfidenceScore):
+            return NotImplemented
+        return self.score == other.score
+
+    def __str__(self) -> str:
+        """String representation."""
+        return str(self.score)
+
+    def __repr__(self) -> str:
+        """Detailed string representation."""
+        return f"ConfidenceScore({self.score})"
