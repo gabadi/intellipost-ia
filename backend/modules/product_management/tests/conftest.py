@@ -10,8 +10,6 @@ import contextlib
 import pytest
 from testcontainers.minio import MinioContainer
 
-from infrastructure.database import Base
-
 
 @pytest.fixture(scope="session")
 def event_loop():
