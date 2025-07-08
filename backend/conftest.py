@@ -11,35 +11,34 @@ sys.path.insert(0, str(main_tests_dir))
 # This allows backend tests to access the centralized fixtures
 try:
     from conftest import (
-        event_loop,
-        postgres_container,
-        database_url,
-        test_engine,
         async_session,
-        test_settings,
-        unit_test_settings,
+        database_url,
+        event_loop,
+        image_data_factory,
+        postgres_container,
+        product_factory,
         sample_image_bytes,
         sample_upload_files,
-        product_factory,
-        image_data_factory,
+        test_engine,
+        test_settings,
+        unit_test_settings,
     )
-    
+
     # Re-export all fixtures so they're available to backend tests
     __all__ = [
-        "event_loop",
-        "postgres_container", 
-        "database_url",
-        "test_engine",
         "async_session",
+        "database_url",
+        "event_loop",
+        "image_data_factory",
+        "postgres_container",
+        "product_factory",
+        "sample_image_bytes",
+        "sample_upload_files",
+        "test_engine",
         "test_settings",
         "unit_test_settings",
-        "sample_image_bytes",
-        "sample_upload_files", 
-        "product_factory",
-        "image_data_factory",
     ]
-    
-except ImportError as e:
+except ImportError:
     # Fallback: define minimal fixtures locally if import fails
     import asyncio
     import pytest
@@ -50,7 +49,7 @@ except ImportError as e:
         loop = asyncio.new_event_loop()
         yield loop
         loop.close()
-        
+
     @pytest.fixture
     def sample_image_bytes():
         """Fallback sample image bytes for testing."""
