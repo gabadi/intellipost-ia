@@ -1,67 +1,45 @@
-"""Backend test configuration that imports from main conftest."""
+"""
+Pytest configuration for enforcing test marks.
 
-import sys
-from pathlib import Path
+This ensures all tests are properly categorized as unit or integration.
+"""
 
-# Add the main tests directory to Python path
-main_tests_dir = Path(__file__).parent.parent / "tests"
-sys.path.insert(0, str(main_tests_dir))
+import pytest
 
-# Import all fixtures from main conftest
-# This allows backend tests to access the centralized fixtures
-try:
-    from conftest import (
-        async_session,
-        database_url,
-        event_loop,  # type: ignore[assignment]
-        image_data_factory,
-        postgres_container,
-        product_factory,
-        sample_image_bytes,  # type: ignore[assignment]
-        sample_upload_files,
-        test_engine,
-        test_settings,
-        unit_test_settings,
-    )
 
-    # Re-export all fixtures so they're available to backend tests
-    __all__ = [
-        "async_session",
-        "database_url",
-        "event_loop",
-        "image_data_factory",
-        "postgres_container",
-        "product_factory",
-        "sample_image_bytes",
-        "sample_upload_files",
-        "test_engine",
-        "test_settings",
-        "unit_test_settings",
-    ]
-except ImportError:
-    # Fallback: define minimal fixtures locally if import fails
-    import asyncio
+def pytest_collection_modifyitems(config, items):  # noqa: ARG001
+    """
+    Enforce that all tests have either 'unit' or 'integration' marks.
 
-    import pytest
+    This hook runs after test collection and validates that every collected
+    test has the required marks. If any test is missing marks, pytest will
+    fail with a clear error message.
+    """
+    required_marks = {"unit", "integration"}
+    unmarked_tests = []
 
-    @pytest.fixture(scope="session")
-    def event_loop():
-        """Fallback event loop fixture."""
-        loop = asyncio.new_event_loop()
-        yield loop
-        loop.close()
+    for item in items:
+        # Get all marks for this test item
+        test_marks = {mark.name for mark in item.iter_markers()}
 
-    @pytest.fixture
-    def sample_image_bytes():
-        """Fallback sample image bytes for testing."""
-        return (
-            b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00"
-            b"\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t"
-            b"\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a"
-            b"\x1f\x1e\x1d\x1a\x1c\x1c $.' \",#\x1c\x1c(7),01444\x1f'9=82<.342"
-            b"\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x01\x01\x11\x00\x02\x11\x01"
-            b"\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00"
-            b"\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xc4\x00\x14\x10\x01\x00"
-            b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff"
-            b"\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00\xaa\xff\xd9"
+        # Check if test has at least one required mark
+        if not test_marks.intersection(required_marks):
+            unmarked_tests.append(item.nodeid)
+
+    if unmarked_tests:
+        error_msg = (
+            f"\n\nERROR: {len(unmarked_tests)} tests found without required marks!\n"
+            f"All tests must have either @pytest.mark.unit or @pytest.mark.integration\n\n"
+            f"Unmarked tests:\n"
         )
+        for test in unmarked_tests:
+            error_msg += f"  - {test}\n"
+
+        error_msg += (
+            "\nTo fix this:\n"
+            "1. Add 'pytestmark = pytest.mark.unit' for unit tests\n"
+            "2. Add 'pytestmark = pytest.mark.integration' for integration tests\n"
+            "3. Or use @pytest.mark.unit/@pytest.mark.integration decorators\n"
+        )
+
+        pytest.exit(error_msg, returncode=1)

@@ -10,13 +10,13 @@ from uuid import uuid4
 
 import pytest
 from fastapi import FastAPI, status
-
-# Mark all tests in this module as integration tests
-pytestmark = pytest.mark.integration
 from fastapi.testclient import TestClient
 
 from modules.product_management.api.routers.product_router import create_product_router
 from modules.user_management.domain.entities.user import User
+
+# Mark all tests in this module as integration tests
+pytestmark = pytest.mark.integration
 
 
 @pytest.fixture

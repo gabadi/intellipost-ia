@@ -167,8 +167,6 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "-v",
-    # Fail if tests don't have required marks
-    "-m", "unit or integration",
 ]
 testpaths = ["../tests", "modules", "infrastructure/tests"]
 filterwarnings = [

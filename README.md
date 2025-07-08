@@ -91,12 +91,24 @@ cd frontend && npx playwright test                     # E2E tests
 
 ### Quality & Validation
 ```bash
+# Quality Checks
 npm run ci                                             # Complete CI pipeline
 npm run quality                                        # All quality checks
 npm run lint:backend                                   # Ruff linting
 npm run typecheck:backend                              # Pyright type checking
 npm run arch-check                                     # Architecture boundary validation
 npm run lint:frontend                                  # ESLint + Prettier
+
+# Auto-fix Code Quality Issues (NEVER fix manually!)
+cd backend && uvx ruff check --fix .                   # Fix linting issues automatically
+cd backend && uvx ruff format .                        # Format code automatically
+cd frontend && npm run lint:fix                        # Fix frontend linting & formatting
+
+# Test Categorization Enforcement
+cd backend && uv run pytest -m unit                    # Run only unit tests (178 tests)
+cd backend && uv run pytest -m integration             # Run only integration tests (77 tests)
+# ⚠️ All tests MUST have @pytest.mark.unit or @pytest.mark.integration marks
+# ⚠️ Tests without marks will cause CI to fail immediately
 ```
 
 ### Database Operations
@@ -151,6 +163,37 @@ The application uses hierarchical environment configuration:
 - **Development workflow**: Docker-based development with hot reloading
 - **API documentation**: Auto-generated OpenAPI/Swagger docs
 - **Structured logging**: JSON-formatted logs with correlation IDs
+
+## 🔄 Development Workflow
+
+### Before Committing Changes
+Always run the complete CI pipeline locally to ensure your changes pass all checks:
+
+```bash
+# 1. Fix any code quality issues automatically
+cd backend && uvx ruff check --fix .
+cd backend && uvx ruff format .
+
+# 2. Run all quality checks
+cd backend && uvx ruff check .                         # Should show "All checks passed!"
+cd backend && uv run pyright                           # Should show "0 errors, 0 warnings"
+cd backend && uvx tach check                           # Should show "✅ All modules validated!"
+cd backend && uvx bandit -r modules/ infrastructure/ api/ --exclude='*/tests/*,*/test_*.py,*/fixtures/*' --skip=B101,B601,B105,B106,B110
+
+# 3. Run tests
+cd backend && uv run pytest -m unit -q                 # Should pass 178 unit tests
+cd backend && uv run pytest -m integration -q          # Should recognize 77 integration tests
+
+# 4. Only commit if ALL checks pass
+git add . && git commit -m "your message"
+```
+
+### Code Quality Standards
+- **Formatting**: Use `uvx ruff format .` - NEVER format manually
+- **Linting**: Use `uvx ruff check --fix .` - NEVER fix linting issues manually
+- **Test Marks**: ALL tests MUST have `pytestmark = pytest.mark.unit` or `pytestmark = pytest.mark.integration`
+- **Type Safety**: All code must pass Pyright type checking
+- **Architecture**: Module boundaries enforced by Tach
 
 ## 🚨 Common Issues & Solutions
 

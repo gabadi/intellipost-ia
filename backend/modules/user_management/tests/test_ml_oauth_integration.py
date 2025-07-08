@@ -10,9 +10,6 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi import FastAPI
-
-# Mark all tests in this module as integration tests
-pytestmark = pytest.mark.integration
 from fastapi.testclient import TestClient
 
 from modules.user_management.api.routers.ml_oauth_router import router
@@ -24,6 +21,10 @@ from modules.user_management.infrastructure.services.mercadolibre_api_client imp
 # Test data
 MOCK_USER_ID = "550e8400-e29b-41d4-a716-446655440000"
 MOCK_AUTH_TOKEN = "mock_jwt_token"
+
+
+# Mark all tests in this module as integration tests
+pytestmark = pytest.mark.integration
 
 
 @pytest.fixture

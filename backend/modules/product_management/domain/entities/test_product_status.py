@@ -2,10 +2,10 @@
 
 import pytest
 
+from .product_status import ProductStatus
+
 # Mark all tests in this module as unit tests
 pytestmark = pytest.mark.unit
-
-from .product_status import ProductStatus
 
 
 class TestProductStatus:

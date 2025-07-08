@@ -4,7 +4,7 @@
 
 # Test commands
 alias test-unit="uv run pytest -m unit -v"
-alias test-integration="uv run pytest -m integration -v" 
+alias test-integration="uv run pytest -m integration -v"
 alias test-all="uv run pytest -v"
 alias test-unit-fast="uv run pytest -m unit -q"
 alias test-integration-fast="uv run pytest -m integration -q"

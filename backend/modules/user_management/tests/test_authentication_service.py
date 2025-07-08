@@ -14,9 +14,6 @@ from uuid import uuid4
 
 import pytest  # type: ignore[import-untyped]
 
-# Mark all tests in this module as unit tests
-pytestmark = pytest.mark.unit
-
 from modules.user_management.domain.entities.user import User, UserStatus
 from modules.user_management.domain.exceptions import (
     AccountInactiveError,
@@ -25,6 +22,9 @@ from modules.user_management.domain.exceptions import (
     WeakPasswordError,
 )
 from modules.user_management.domain.services.authentication import AuthenticationService
+
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
 
 
 class TestAuthenticationService:

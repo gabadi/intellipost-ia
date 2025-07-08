@@ -8,15 +8,15 @@ from uuid import uuid4
 
 import pytest
 
-# Mark all tests in this module as integration tests
-pytestmark = pytest.mark.integration
-
 from modules.product_management.domain.entities.confidence_score import ConfidenceScore
 from modules.product_management.domain.entities.product import Product
 from modules.product_management.domain.entities.product_status import ProductStatus
 from modules.product_management.infrastructure.repositories.product_repository import (
     SQLAlchemyProductRepository,
 )
+
+# Mark all tests in this module as integration tests
+pytestmark = pytest.mark.integration
 
 
 @pytest.mark.asyncio

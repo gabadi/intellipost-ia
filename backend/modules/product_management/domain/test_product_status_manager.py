@@ -4,15 +4,15 @@ from uuid import uuid4
 
 import pytest
 
-# Mark all tests in this module as unit tests
-pytestmark = pytest.mark.unit
-
 from modules.product_management.domain.entities.confidence_score import ConfidenceScore
 from modules.product_management.domain.entities.product_status import ProductStatus
 from modules.product_management.domain.product_core import ProductCore
 from modules.product_management.domain.product_status_manager import (
     ProductStatusManager,
 )
+
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
 
 
 class TestProductStatusManager:
