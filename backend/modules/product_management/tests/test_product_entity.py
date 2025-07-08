@@ -9,10 +9,10 @@ from uuid import uuid4
 
 import pytest
 
-from ..domain.entities.confidence_score import ConfidenceScore
-from ..domain.entities.product import Product
-from ..domain.entities.product_status import ProductStatus
-from ..domain.exceptions import InvalidConfidenceScoreError
+from modules.product_management.domain.entities.confidence_score import ConfidenceScore
+from modules.product_management.domain.entities.product import Product
+from modules.product_management.domain.entities.product_status import ProductStatus
+from modules.product_management.domain.exceptions import InvalidConfidenceScoreError
 
 
 class TestProduct:

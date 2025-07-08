@@ -13,11 +13,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.config.logging import get_logger
-
-from ..models.product_model import (
+from modules.product_management.infrastructure.models.product_model import (
     ProductImageModel,
 )
-from .file_storage_service import (
+from modules.product_management.infrastructure.services.file_storage_service import (
     FileStorageService,
 )
 
@@ -114,7 +113,9 @@ class FileCleanupService:
             stmt = select(ProductImageModel.s3_key)
             if user_id:
                 # Join with products to filter by user
-                from ..models.product_model import ProductModel
+                from modules.product_management.infrastructure.models.product_model import (
+                    ProductModel,
+                )
 
                 stmt = stmt.join(
                     ProductModel, ProductImageModel.product_id == ProductModel.id
@@ -316,7 +317,9 @@ class FileCleanupService:
             )
 
             if user_id:
-                from ..models.product_model import ProductModel
+                from modules.product_management.infrastructure.models.product_model import (
+                    ProductModel,
+                )
 
                 stmt = stmt.join(
                     ProductModel, ProductImageModel.product_id == ProductModel.id
@@ -370,7 +373,9 @@ class FileCleanupService:
             )
 
             if user_id:
-                from ..models.product_model import ProductModel
+                from modules.product_management.infrastructure.models.product_model import (
+                    ProductModel,
+                )
 
                 stmt = stmt.join(
                     ProductModel, ProductImageModel.product_id == ProductModel.id

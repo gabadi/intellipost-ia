@@ -22,10 +22,9 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from infrastructure.database import Base
-
-from ...domain.entities.confidence_score import ConfidenceScore
-from ...domain.entities.product import Product
-from ...domain.entities.product_status import ProductStatus
+from modules.product_management.domain.entities.confidence_score import ConfidenceScore
+from modules.product_management.domain.entities.product import Product
+from modules.product_management.domain.entities.product_status import ProductStatus
 
 
 class ProductModel(Base):

@@ -5,13 +5,14 @@ This module contains the Product entity representing a MercadoLibre product
 listing with AI-generated content capabilities.
 """
 
-from ..product_business_rules import (
+from modules.product_management.domain.product_business_rules import (
     ProductBusinessRules,
 )
-from ..product_core import ProductCore
-from ..product_status_manager import (
+from modules.product_management.domain.product_core import ProductCore
+from modules.product_management.domain.product_status_manager import (
     ProductStatusManager,
 )
+
 from .confidence_score import ConfidenceScore
 
 

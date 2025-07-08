@@ -8,7 +8,7 @@ Based on PR feedback, implementing numeric confidence scores instead of enum.
 from dataclasses import dataclass
 from typing import ClassVar
 
-from ..exceptions import InvalidConfidenceScoreError
+from modules.product_management.domain.exceptions import InvalidConfidenceScoreError
 
 
 @dataclass(frozen=True)

@@ -8,10 +8,10 @@ from uuid import uuid4
 
 import pytest
 
-from ..domain.entities.confidence_score import ConfidenceScore
-from ..domain.entities.product import Product
-from ..domain.entities.product_status import ProductStatus
-from ..infrastructure.repositories.product_repository import (
+from modules.product_management.domain.entities.confidence_score import ConfidenceScore
+from modules.product_management.domain.entities.product import Product
+from modules.product_management.domain.entities.product_status import ProductStatus
+from modules.product_management.infrastructure.repositories.product_repository import (
     SQLAlchemyProductRepository,
 )
 

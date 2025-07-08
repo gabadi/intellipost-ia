@@ -5,6 +5,7 @@ This module provides shared fixtures and configuration for testing.
 """
 
 import asyncio
+import contextlib
 from collections.abc import AsyncGenerator
 
 import pytest
@@ -211,8 +212,8 @@ def product_factory():
     """Factory for creating test Product entities."""
     from uuid import uuid4
 
-    from ..domain.entities.product import Product
-    from ..domain.entities.product_status import ProductStatus
+    from modules.product_management.domain.entities.product import Product
+    from modules.product_management.domain.entities.product_status import ProductStatus
 
     def create_product(**kwargs):
         defaults = {
@@ -268,10 +269,8 @@ async def cleanup_temp_files():
 
     # Cleanup
     for temp_dir in temp_dirs:
-        try:
+        with contextlib.suppress(Exception):
             shutil.rmtree(temp_dir)
-        except Exception:
-            pass  # Ignore cleanup errors in tests
 
 
 # Async context managers for testing

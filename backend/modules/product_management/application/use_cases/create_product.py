@@ -11,13 +11,12 @@ from uuid import UUID, uuid4
 from fastapi import UploadFile
 
 from infrastructure.config.logging import get_logger
-
-from ...domain.entities.product import Product
-from ...domain.entities.product_status import ProductStatus
-from ...domain.ports.product_repository_protocol import (
+from modules.product_management.domain.entities.product import Product
+from modules.product_management.domain.entities.product_status import ProductStatus
+from modules.product_management.domain.ports.product_repository_protocol import (
     ProductRepositoryProtocol,
 )
-from ...infrastructure.services.file_storage_service import (
+from modules.product_management.infrastructure.services.file_storage_service import (
     FileStorageService,
 )
 

@@ -10,12 +10,12 @@ from uuid import uuid4
 import pytest
 from fastapi import UploadFile
 
-from ..application.use_cases.create_product import (
+from modules.product_management.application.use_cases.create_product import (
     CreateProductUseCase,
     GetProductsUseCase,
 )
-from ..domain.entities.product import Product
-from ..domain.entities.product_status import ProductStatus
+from modules.product_management.domain.entities.product import Product
+from modules.product_management.domain.entities.product_status import ProductStatus
 
 
 @pytest.fixture
@@ -239,7 +239,7 @@ class TestCreateProductUseCase:
         )
         mock_product_repository.create.return_value = created_product
 
-        def validate_side_effect(content, filename):
+        def validate_side_effect(_content, filename):
             if filename == "valid.jpg":
                 return {
                     "is_valid": True,
@@ -450,7 +450,9 @@ class TestGetProductsUseCase:
         """Test that all product fields are included in response."""
         from datetime import UTC, datetime
 
-        from ..domain.entities.confidence_score import ConfidenceScore
+        from modules.product_management.domain.entities.confidence_score import (
+            ConfidenceScore,
+        )
 
         user_id = uuid4()
         created_at = datetime.now(UTC)

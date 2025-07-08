@@ -12,13 +12,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from fastapi.security import HTTPBearer
 
 from infrastructure.config.logging import get_logger
-
-from ....user_management.domain.entities.user import User
-from ...application.use_cases.create_product import (
-    CreateProductUseCase,
-    GetProductsUseCase,
-)
-from ..schemas.product_schemas import (
+from modules.product_management.api.schemas.product_schemas import (
     CreateProductResponse,
     ErrorResponse,
     ProductImageResponse,
@@ -26,6 +20,11 @@ from ..schemas.product_schemas import (
     ProductResponse,
     ValidationErrorResponse,
 )
+from modules.product_management.application.use_cases.create_product import (
+    CreateProductUseCase,
+    GetProductsUseCase,
+)
+from modules.user_management.domain.entities.user import User
 
 logger = get_logger(__name__)
 security = HTTPBearer()

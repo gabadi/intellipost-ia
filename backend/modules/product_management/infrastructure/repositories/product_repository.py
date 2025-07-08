@@ -10,8 +10,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ...domain.entities.product import Product
-from ..models.product_model import (
+from modules.product_management.domain.entities.product import Product
+from modules.product_management.infrastructure.models.product_model import (
     ProductImageModel,
     ProductModel,
 )

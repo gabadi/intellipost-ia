@@ -11,8 +11,7 @@ from uuid import uuid4
 import pytest
 
 from infrastructure.config.settings import Settings
-
-from ..infrastructure.services.file_storage_service import (
+from modules.product_management.infrastructure.services.file_storage_service import (
     FileStorageService,
 )
 

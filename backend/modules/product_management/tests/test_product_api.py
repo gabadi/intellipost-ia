@@ -12,8 +12,8 @@ import pytest
 from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 
-from ...user_management.domain.entities.user import User
-from ..api.routers.product_router import create_product_router
+from modules.product_management.api.routers.product_router import create_product_router
+from modules.user_management.domain.entities.user import User
 
 
 @pytest.fixture
