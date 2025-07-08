@@ -1,10 +1,5 @@
 import type { ProductImageData } from '../types/product';
 
-interface CreateProductRequest {
-  prompt_text: string;
-  images: File[];
-}
-
 interface CreateProductResponse {
   id: string;
   user_id: string;
@@ -43,7 +38,7 @@ interface ProductListResponse {
       resolution_width: number;
       resolution_height: number;
       is_primary: boolean;
-      processing_metadata?: any;
+      processing_metadata?: Record<string, unknown>;
       created_at: string;
       updated_at: string;
     }>;
@@ -56,7 +51,7 @@ interface ProductListResponse {
 interface ApiError {
   error_code: string;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 // Get API base URL from environment or default

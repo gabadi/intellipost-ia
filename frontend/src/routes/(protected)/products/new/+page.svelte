@@ -60,7 +60,6 @@
       }
 
       productCreationStore.addError(errorMessage);
-      console.error('Product creation failed:', error);
     } finally {
       isLoading = false;
       productCreationStore.setUploading(false);

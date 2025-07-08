@@ -18,6 +18,7 @@ class TestProductStatus:
     def test_status_enum_members(self):
         """Test that all expected enum members exist."""
         expected_statuses = {
+            "PENDING",
             "UPLOADING",
             "PROCESSING",
             "PROCESSED",
@@ -30,4 +31,4 @@ class TestProductStatus:
 
     def test_status_enum_count(self):
         """Test that we have the expected number of statuses."""
-        assert len(ProductStatus) == 6
+        assert len(ProductStatus) == 7
