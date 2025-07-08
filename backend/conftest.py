@@ -13,11 +13,11 @@ try:
     from conftest import (
         async_session,
         database_url,
-        event_loop,
+        event_loop,  # type: ignore[assignment]
         image_data_factory,
         postgres_container,
         product_factory,
-        sample_image_bytes,
+        sample_image_bytes,  # type: ignore[assignment]
         sample_upload_files,
         test_engine,
         test_settings,
