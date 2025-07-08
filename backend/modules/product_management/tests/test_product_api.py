@@ -35,10 +35,13 @@ def mock_get_products_use_case():
 @pytest.fixture
 def mock_current_user():
     """Mock current user."""
+    from datetime import UTC, datetime
+
     return User(
         id=uuid4(),
         email="test@example.com",
-        username="testuser",
+        password_hash="hashed_password",
+        created_at=datetime.now(UTC),
         first_name="Test",
         last_name="User",
         is_active=True,

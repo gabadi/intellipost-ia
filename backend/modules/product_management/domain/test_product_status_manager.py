@@ -16,7 +16,10 @@ class TestProductStatusManager:
     def test_mark_as_processed(self):
         """Test marking product as processed."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.UPLOADING
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.UPLOADING,
+            prompt_text="Test prompt",
         )
         initial_updated_at = product.updated_at
 
@@ -33,7 +36,10 @@ class TestProductStatusManager:
     def test_mark_as_published(self):
         """Test marking product as published."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.PROCESSED
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.PROCESSED,
+            prompt_text="Test prompt",
         )
         initial_updated_at = product.updated_at
         listing_id = "ML123456"
@@ -52,7 +58,10 @@ class TestProductStatusManager:
     def test_mark_as_failed(self):
         """Test marking product processing as failed."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.PROCESSING
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.PROCESSING,
+            prompt_text="Test prompt",
         )
         initial_updated_at = product.updated_at
 

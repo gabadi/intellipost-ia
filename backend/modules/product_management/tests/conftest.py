@@ -10,7 +10,6 @@ from collections.abc import AsyncGenerator
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 from testcontainers.minio import MinioContainer
 from testcontainers.postgres import PostgresContainer
 
@@ -70,9 +69,9 @@ async def test_engine(postgres_container):
 @pytest.fixture
 async def async_session(test_engine) -> AsyncGenerator[AsyncSession]:
     """Create async database session for tests."""
-    async_session_maker = sessionmaker(
-        test_engine, class_=AsyncSession, expire_on_commit=False
-    )
+    from sqlalchemy.ext.asyncio import async_sessionmaker
+
+    async_session_maker = async_sessionmaker(test_engine, expire_on_commit=False)
 
     async with async_session_maker() as session:
         yield session
@@ -115,9 +114,7 @@ def sample_upload_files(sample_image_bytes):
     files = []
     for i in range(3):
         file_like = BytesIO(sample_image_bytes)
-        upload_file = UploadFile(
-            filename=f"test_image_{i}.jpg", file=file_like, content_type="image/jpeg"
-        )
+        upload_file = UploadFile(filename=f"test_image_{i}.jpg", file=file_like)
         files.append(upload_file)
 
     return files

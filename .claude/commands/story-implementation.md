@@ -96,8 +96,19 @@ When executing Git operations, generate realistic commit messages:
 
 Each phase has specific quality thresholds:
 - **PO Validation**: ≥ 90/100 (template compliance, requirements clarity)
-- **QA Review**: ≥ 90/100 (code quality, test coverage, functionality)
-- **SM DOD**: ≥ 90/100 (acceptance criteria fulfillment, quality standards)
+- **QA Review**: ≥ 90/100 (code quality, test coverage, functionality AS SPECIFIED in original story)
+- **SM DOD**: ≥ 90/100 (acceptance criteria fulfillment, quality standards AS DEFINED in original story)
+
+## Anti-Hallucination Enforcement
+
+**CRITICAL**: All agents must adhere to the original story scope. Common hallucination patterns to prevent:
+
+1. **Dev Agent**: Adding security features not specified in AC
+2. **QA Agent**: Requesting improvements beyond story scope
+3. **SM Agent**: Failing stories for missing features not originally required
+4. **All Agents**: Interpreting "best practices" as new requirements
+
+**Validation**: Orchestrator must verify all agent outputs stay within original story boundaries.
 
 ## Orchestration Rules
 
@@ -108,6 +119,7 @@ Each phase has specific quality thresholds:
 5. **Iteration Control**: You decide when to continue/stop dev-QA cycles
 6. **Progress Monitoring**: Track todos, evaluate deliverables, manage flow
 7. **Failure Handling**: Coordinate retries, manage fallbacks
+8. **Requirement Enforcement**: Prevent requirement hallucination - agents must ONLY implement what's specified in the original story
 
 ## Exact Task Execution Commands
 
@@ -117,13 +129,13 @@ Each phase has specific quality thresholds:
 Task: description="PO story validation", prompt="Execute PO task: validate-next-story for story file $ARGUMENTS"
 
 # Phase 2a: Dev Implementation
-Task: description="Dev implementation", prompt="Execute Dev workflow: implement story $ARGUMENTS with all tasks/subtasks completion"
+Task: description="Dev implementation", prompt="Execute Dev workflow: implement story $ARGUMENTS with all tasks/subtasks completion. CRITICAL: Only implement what is explicitly specified in the story acceptance criteria and tasks. Do NOT add extra features, security measures, or optimizations not mentioned in the original story."
 
 # Phase 2b: QA Review
-Task: description="QA review", prompt="Execute QA task: review-story for implemented story $ARGUMENTS"
+Task: description="QA review", prompt="Execute QA task: review-story for implemented story $ARGUMENTS. CRITICAL: Only review against what was originally specified in the story. Do NOT add new requirements or suggest improvements beyond the original story scope. Focus on validating the acceptance criteria are met as written."
 
 # Phase 3: SM DOD
-Task: description="SM DOD validation", prompt="Execute SM task: execute-checklist story-dod-checklist for $ARGUMENTS and update story status to Done"
+Task: description="SM DOD validation", prompt="Execute SM task: execute-checklist story-dod-checklist for $ARGUMENTS and update story status to Done. CRITICAL: Validate only against the original story requirements. Do NOT fail the story for missing features that weren't originally specified."
 ```
 
 ### Direct Orchestrator Commands:

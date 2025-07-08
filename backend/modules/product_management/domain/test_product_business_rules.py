@@ -19,6 +19,7 @@ class TestProductBusinessRules:
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.UPLOADING,
+            prompt_text="Test prompt",
             title="Test Product",
         )
 
@@ -27,7 +28,10 @@ class TestProductBusinessRules:
     def test_is_ready_for_processing_false_no_title(self):
         """Test product is not ready when title is missing."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.UPLOADING
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.UPLOADING,
+            prompt_text="Test prompt",
         )
 
         assert ProductBusinessRules.is_ready_for_processing(product) is False
@@ -35,7 +39,11 @@ class TestProductBusinessRules:
     def test_is_ready_for_processing_false_empty_title(self):
         """Test product is not ready when title is empty."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.UPLOADING, title="   "
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.UPLOADING,
+            prompt_text="Test prompt",
+            title="   ",
         )
 
         assert ProductBusinessRules.is_ready_for_processing(product) is False
@@ -46,6 +54,7 @@ class TestProductBusinessRules:
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.PROCESSING,
+            prompt_text="Test prompt",
             title="Test Product",
         )
 
@@ -57,6 +66,7 @@ class TestProductBusinessRules:
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.PUBLISHED,
+            prompt_text="Test prompt",
             ml_listing_id="ML123456",
         )
 
@@ -65,7 +75,10 @@ class TestProductBusinessRules:
     def test_is_published_false_no_listing_id(self):
         """Test product is not published without listing ID."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.PUBLISHED
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.PUBLISHED,
+            prompt_text="Test prompt",
         )
 
         assert ProductBusinessRules.is_published(product) is False
@@ -76,6 +89,7 @@ class TestProductBusinessRules:
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.PROCESSED,
+            prompt_text="Test prompt",
             ml_listing_id="ML123456",
         )
 
@@ -87,6 +101,7 @@ class TestProductBusinessRules:
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.PROCESSED,
+            prompt_text="Test prompt",
             confidence=ConfidenceScore.high(),
         )
 
@@ -98,6 +113,7 @@ class TestProductBusinessRules:
             id=uuid4(),
             user_id=uuid4(),
             status=ProductStatus.PROCESSED,
+            prompt_text="Test prompt",
             confidence=ConfidenceScore.medium(),
         )
 
@@ -106,7 +122,10 @@ class TestProductBusinessRules:
     def test_has_high_confidence_false_no_confidence(self):
         """Test confidence detection when confidence is None."""
         product = ProductCore(
-            id=uuid4(), user_id=uuid4(), status=ProductStatus.PROCESSED
+            id=uuid4(),
+            user_id=uuid4(),
+            status=ProductStatus.PROCESSED,
+            prompt_text="Test prompt",
         )
 
         assert ProductBusinessRules.has_high_confidence(product) is False

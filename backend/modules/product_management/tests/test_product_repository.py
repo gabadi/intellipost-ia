@@ -135,6 +135,7 @@ class TestSQLAlchemyProductRepository:
 
         assert updated_product.status == ProductStatus.READY
         assert updated_product.title == "Updated Title"
+        assert updated_product.confidence is not None
         assert updated_product.confidence.score == 0.85
 
     async def test_delete_product(self, async_session):
@@ -429,6 +430,7 @@ class TestSQLAlchemyProductRepository:
         )
         await async_session.commit()
 
+        assert updated_product is not None
         assert updated_product.status == ProductStatus.PROCESSING
         assert updated_product.processing_started_at is not None
 
@@ -438,6 +440,7 @@ class TestSQLAlchemyProductRepository:
         )
         await async_session.commit()
 
+        assert failed_product is not None
         assert failed_product.status == ProductStatus.FAILED
         assert (
             failed_product.processing_error == "Processing failed due to invalid image"
