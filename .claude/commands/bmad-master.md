@@ -97,8 +97,6 @@ dependencies:
     - technical-preferences.md
   utils:
     - plan-management.md
-    - template-format.md
-    - workflow-management.md
   workflows:
     - brownfield-fullstack.md
     - brownfield-service.md

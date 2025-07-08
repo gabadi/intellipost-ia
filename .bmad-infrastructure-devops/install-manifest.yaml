@@ -1,5 +1,5 @@
 version: 1.7.0
-installed_at: '2025-07-07T00:59:56.193Z'
+installed_at: '2025-07-08T02:15:11.222Z'
 install_type: expansion-pack
 expansion_pack_id: bmad-infrastructure-devops
 expansion_pack_name: bmad-infrastructure-devops
@@ -14,9 +14,6 @@ files:
     modified: false
   - path: .bmad-infrastructure-devops/utils/workflow-management.md
     hash: b148df3ebb1f9c61
-    modified: false
-  - path: .bmad-infrastructure-devops/utils/template-format.md
-    hash: d6a05251186e36b6
     modified: false
   - path: .bmad-infrastructure-devops/utils/bmad-doc-template.md
     hash: 4b2f7c4408835b9e
@@ -42,7 +39,7 @@ files:
     hash: b4a2ae357e575669
     modified: false
   - path: .bmad-infrastructure-devops/data/bmad-kb.md
-    hash: ab414992de0d141a
+    hash: a608321f9b01bc5d
     modified: false
   - path: .bmad-infrastructure-devops/checklists/infrastructure-checklist.md
     hash: 354d52a34c3eb5aa
