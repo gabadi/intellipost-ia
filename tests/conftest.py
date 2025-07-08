@@ -96,7 +96,7 @@ def postgres_container() -> Generator[PostgresContainer, None, None]:
     """
     with PostgresContainer(
         "postgres:15-alpine",
-        user="test_user",
+        username="test_user",
         password="test_password",
         dbname="test_db",
     ) as postgres:
