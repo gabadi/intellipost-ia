@@ -20,7 +20,7 @@ from modules.product_management.infrastructure.models.product_model import (
 )
 
 
-class SQLAlchemyProductRepository(ProductRepositoryProtocol):
+class SQLAlchemyProductRepository:
     """SQLAlchemy implementation of ProductRepositoryProtocol."""
 
     def __init__(self, session: AsyncSession):
