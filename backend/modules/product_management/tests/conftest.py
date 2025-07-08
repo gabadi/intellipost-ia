@@ -207,20 +207,24 @@ def s3_error_simulator():
 @pytest.fixture
 def product_factory():
     """Factory for creating test Product entities."""
+    from typing import Any
     from uuid import uuid4
 
     from modules.product_management.domain.entities.product import Product
     from modules.product_management.domain.entities.product_status import ProductStatus
 
-    def create_product(**kwargs):
-        defaults = {
-            "id": uuid4(),
-            "user_id": uuid4(),
-            "status": ProductStatus.UPLOADING,
-            "prompt_text": "Test product description",
-        }
-        defaults.update(kwargs)
-        return Product(**defaults)
+    def create_product(**kwargs: Any) -> Product:
+        return Product(
+            id=kwargs.get("id", uuid4()),
+            user_id=kwargs.get("user_id", uuid4()),
+            status=kwargs.get("status", ProductStatus.UPLOADING),
+            prompt_text=kwargs.get("prompt_text", "Test product description"),
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k not in ["id", "user_id", "status", "prompt_text"]
+            },
+        )
 
     return create_product
 
