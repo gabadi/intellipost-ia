@@ -10,8 +10,11 @@ from datetime import datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
-import boto3
-from botocore.exceptions import ClientError, NoCredentialsError
+import boto3  # type: ignore[import-untyped]
+from botocore.exceptions import (  # type: ignore[import-untyped]
+    ClientError,
+    NoCredentialsError,
+)
 from PIL import Image
 
 from infrastructure.config.logging import get_logger
@@ -168,15 +171,15 @@ class FileStorageService:
                 "resolution_height": height,
             }
 
-        except NoCredentialsError:
+        except NoCredentialsError as e:
             logger.error("AWS credentials not found")
-            raise ValueError("File storage service not properly configured")
+            raise ValueError("File storage service not properly configured") from e
         except ClientError as e:
             logger.error(f"S3 client error: {e}")
-            raise ValueError(f"Failed to upload file: {e}")
+            raise ValueError(f"Failed to upload file: {e}") from e
         except Exception as e:
             logger.error(f"Unexpected error during file upload: {e}")
-            raise ValueError(f"File upload failed: {e}")
+            raise ValueError(f"File upload failed: {e}") from e
 
     def _generate_public_url(self, s3_key: str) -> str:
         """Generate public URL for the uploaded file."""

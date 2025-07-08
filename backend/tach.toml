@@ -23,7 +23,7 @@ depends_on = [
     "modules.user_management.domain",
     "modules.user_management.application",
     "modules.user_management.infrastructure",
-    "modules.user_management.api",
+    "modules.user_management.api", "modules.product_management.infrastructure", "modules.product_management.api", "modules.product_management.application",
 ]
 
 # ========================================
@@ -68,17 +68,17 @@ depends_on = []
 # Product Management - Application Layer (Use cases, can only depend on domain)
 [[modules]]
 path = "modules.product_management.application"
-depends_on = []
+depends_on = ["infrastructure", "modules.product_management.domain", "modules.product_management.infrastructure"]
 
 # Product Management - Infrastructure Layer (External concerns, depends on domain for contracts)
 [[modules]]
 path = "modules.product_management.infrastructure"
-depends_on = []
+depends_on = ["infrastructure", "modules.product_management.domain"]
 
 # Product Management - API Layer (Controllers, depends on application, infrastructure, and domain)
 [[modules]]
 path = "modules.product_management.api"
-depends_on = []
+depends_on = ["infrastructure", "modules.user_management.domain", "modules.product_management.application"]
 
 # Content Generation module - TRUE INDEPENDENCE
 [[modules]]

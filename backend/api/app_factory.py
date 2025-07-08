@@ -14,7 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.dependencies import (
     get_authenticate_user_use_case,
     get_create_product_use_case,
-    get_current_user_factory,
     get_get_products_use_case,
     get_password_service,
     get_refresh_token_use_case,
@@ -127,7 +126,7 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
     user_router = create_user_router(
         user_repository=get_user_repository,
         password_service=get_password_service,
-        current_user_provider=get_current_user_factory(),
+        current_user_provider=None,
     )
     app.include_router(user_router)
 
@@ -139,7 +138,7 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
     product_router = create_product_router(
         create_product_use_case_factory=get_create_product_use_case,
         get_products_use_case_factory=get_get_products_use_case,
-        current_user_provider=get_current_user_factory(),
+        current_user_provider=None,
     )
     app.include_router(product_router)
 

@@ -88,7 +88,7 @@ class ProductModel(Base):
         """Convert SQLAlchemy model to domain entity."""
         confidence_score = None
         if self.confidence:
-            confidence_score = ConfidenceScore(self.confidence)
+            confidence_score = ConfidenceScore(float(self.confidence))
 
         return Product(
             id=self.id,
@@ -112,7 +112,7 @@ class ProductModel(Base):
     @classmethod
     def from_domain(cls, product: Product) -> "ProductModel":
         """Create SQLAlchemy model from domain entity."""
-        confidence_value = product.confidence.value if product.confidence else None
+        confidence_value = str(product.confidence.score) if product.confidence else None
 
         return cls(
             id=product.id,
@@ -135,7 +135,7 @@ class ProductModel(Base):
 
     def update_from_domain(self, product: Product) -> None:
         """Update SQLAlchemy model from domain entity."""
-        confidence_value = product.confidence.value if product.confidence else None
+        confidence_value = str(product.confidence.score) if product.confidence else None
 
         self.user_id = product.user_id
         self.status = product.status.value
@@ -149,7 +149,7 @@ class ProductModel(Base):
         self.ai_tags = product.ai_tags
         self.ml_listing_id = product.ml_listing_id
         self.ml_category_id = product.ml_category_id
-        self.updated_at = product.updated_at
+        self.updated_at = product.updated_at or datetime.now(UTC)
         self.published_at = product.published_at
 
 

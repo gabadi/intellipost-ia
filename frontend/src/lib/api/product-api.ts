@@ -131,7 +131,7 @@ export async function createProduct(
   formData.append('prompt_text', promptText.trim());
 
   // Add image files
-  images.forEach((imageData) => {
+  images.forEach(imageData => {
     if (imageData.file) {
       formData.append('images', imageData.file);
     }
@@ -191,7 +191,7 @@ export function simulateUploadProgress(
   onProgress: (progress: number) => void,
   duration: number = 2000
 ): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     let progress = 0;
     const increment = 100 / (duration / 50); // Update every 50ms
 

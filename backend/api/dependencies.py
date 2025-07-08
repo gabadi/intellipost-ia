@@ -134,7 +134,7 @@ async def get_current_user(
 
 def get_current_user_factory():
     """Factory function for current user dependency - matches old DI pattern."""
-    return get_current_user
+    return Depends(get_current_user)
 
 
 # Type aliases for convenience

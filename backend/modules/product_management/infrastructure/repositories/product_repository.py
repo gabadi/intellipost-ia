@@ -11,9 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from modules.product_management.domain.entities.product import Product
-from modules.product_management.domain.ports.product_repository_protocol import (
-    ProductRepositoryProtocol,
-)
 from modules.product_management.infrastructure.models.product_model import (
     ProductImageModel,
     ProductModel,

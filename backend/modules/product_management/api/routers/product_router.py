@@ -15,6 +15,7 @@ from infrastructure.config.logging import get_logger
 from modules.product_management.api.schemas.product_schemas import (
     CreateProductResponse,
     ErrorResponse,
+    ProductImageResponse,
     ProductListResponse,
     ProductResponse,
     ValidationErrorResponse,
@@ -204,20 +205,20 @@ def create_product_router(
             for product_data in products_data:
                 # Convert images to response format
                 images = [
-                    {
-                        "id": img["id"],
-                        "product_id": img["product_id"],
-                        "original_filename": img["original_filename"],
-                        "s3_url": img["s3_url"],
-                        "file_size_bytes": img["file_size_bytes"],
-                        "file_format": img["file_format"],
-                        "resolution_width": img["resolution_width"],
-                        "resolution_height": img["resolution_height"],
-                        "is_primary": img["is_primary"],
-                        "processing_metadata": img["processing_metadata"],
-                        "created_at": img["created_at"],
-                        "updated_at": img["updated_at"],
-                    }
+                    ProductImageResponse(
+                        id=img["id"],
+                        product_id=img["product_id"],
+                        original_filename=img["original_filename"],
+                        s3_url=img["s3_url"],
+                        file_size_bytes=img["file_size_bytes"],
+                        file_format=img["file_format"],
+                        resolution_width=img["resolution_width"],
+                        resolution_height=img["resolution_height"],
+                        is_primary=img["is_primary"],
+                        processing_metadata=img["processing_metadata"],
+                        created_at=img["created_at"],
+                        updated_at=img["updated_at"],
+                    )
                     for img in product_data["images"]
                 ]
 
@@ -297,20 +298,20 @@ def create_product_router(
 
             # Convert images to response format
             images = [
-                {
-                    "id": img["id"],
-                    "product_id": img["product_id"],
-                    "original_filename": img["original_filename"],
-                    "s3_url": img["s3_url"],
-                    "file_size_bytes": img["file_size_bytes"],
-                    "file_format": img["file_format"],
-                    "resolution_width": img["resolution_width"],
-                    "resolution_height": img["resolution_height"],
-                    "is_primary": img["is_primary"],
-                    "processing_metadata": img["processing_metadata"],
-                    "created_at": img["created_at"],
-                    "updated_at": img["updated_at"],
-                }
+                ProductImageResponse(
+                    id=img["id"],
+                    product_id=img["product_id"],
+                    original_filename=img["original_filename"],
+                    s3_url=img["s3_url"],
+                    file_size_bytes=img["file_size_bytes"],
+                    file_format=img["file_format"],
+                    resolution_width=img["resolution_width"],
+                    resolution_height=img["resolution_height"],
+                    is_primary=img["is_primary"],
+                    processing_metadata=img["processing_metadata"],
+                    created_at=img["created_at"],
+                    updated_at=img["updated_at"],
+                )
                 for img in product_data["images"]
             ]
 

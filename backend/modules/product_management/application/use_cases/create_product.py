@@ -4,6 +4,7 @@ Create product use case.
 This module contains the business logic for creating a new product with images.
 """
 
+import contextlib
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -175,10 +176,8 @@ class CreateProductUseCase:
         except Exception as e:
             logger.error(f"Failed to create product: {e}")
             # Attempt to clean up if product was created
-            try:
+            with contextlib.suppress(Exception):
                 await self.product_repository.delete(product_id)
-            except Exception:
-                pass  # If cleanup fails, log it but don't mask the original error
 
             raise e
 

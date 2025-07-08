@@ -4,7 +4,7 @@ Product API schemas for request and response models.
 This module contains Pydantic models for product API endpoints.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class ProductImageResponse(BaseModel):
@@ -66,7 +66,8 @@ class CreateProductRequest(BaseModel):
         description="Product description prompt for AI generation",
     )
 
-    @validator("prompt_text")
+    @field_validator("prompt_text")
+    @classmethod
     def validate_prompt_text(cls, v):
         """Validate prompt text."""
         if not v or not v.strip():

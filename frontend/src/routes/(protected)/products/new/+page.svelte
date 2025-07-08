@@ -32,7 +32,7 @@
       const { createProduct, simulateUploadProgress } = await import('$lib/api/product-api');
 
       // Simulate upload progress for better UX
-      const progressPromise = simulateUploadProgress((progress) => {
+      const progressPromise = simulateUploadProgress(progress => {
         // Update progress for all images
         $productCreationStore.images.forEach(img => {
           productCreationStore.setUploadProgress(img.id, progress);
