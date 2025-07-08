@@ -6,12 +6,9 @@ This module provides shared fixtures and configuration for testing.
 
 import asyncio
 import contextlib
-from collections.abc import AsyncGenerator
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from testcontainers.minio import MinioContainer
-from testcontainers.postgres import PostgresContainer
 
 from infrastructure.database import Base
 
@@ -24,12 +21,8 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope="session")
-async def postgres_container():
-    """Start PostgreSQL test container."""
-    with PostgresContainer("postgres:15-alpine") as postgres:
-        postgres.start()
-        yield postgres
+# Removed duplicate postgres_container fixture - using the one from main conftest.py
+# which properly manages the PostgreSQL test container
 
 
 @pytest.fixture(scope="session")
@@ -40,42 +33,26 @@ async def minio_container():
         yield minio
 
 
-@pytest.fixture(scope="session")
-async def test_engine(postgres_container):
-    """Create test database engine."""
-    connection_url = postgres_container.get_connection_url().replace(
-        "psycopg2", "asyncpg"
-    )
+# Removed duplicate test_engine fixture - using the one from main conftest.py
+# which properly manages the database engine and table creation
 
-    engine = create_async_engine(
-        connection_url,
-        echo=False,  # Set to True for SQL debugging
-        future=True,
-    )
 
+@pytest.fixture(scope="session", autouse=True)
+async def setup_database_tables(test_engine):
+    """Ensure database tables are created for product management tests."""
     # Create all tables
-    async with engine.begin() as conn:
+    async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    yield engine
+    yield
 
-    # Cleanup
-    async with engine.begin() as conn:
+    # Cleanup tables after all tests
+    async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
-    await engine.dispose()
 
-
-@pytest.fixture
-async def async_session(test_engine) -> AsyncGenerator[AsyncSession]:
-    """Create async database session for tests."""
-    from sqlalchemy.ext.asyncio import async_sessionmaker
-
-    async_session_maker = async_sessionmaker(test_engine, expire_on_commit=False)
-
-    async with async_session_maker() as session:
-        yield session
-        await session.rollback()
+# Removed duplicate async_session fixture - using the one from main conftest.py
+# which properly handles transactions and prevents concurrent operation errors
 
 
 @pytest.fixture
