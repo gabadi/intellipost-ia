@@ -24,6 +24,7 @@ class ProductCore:
     id: UUID
     user_id: UUID
     status: ProductStatus
+    prompt_text: str  # Required user input
     confidence: ConfidenceScore | None = None
 
     # Product information
@@ -40,6 +41,11 @@ class ProductCore:
     # MercadoLibre integration
     ml_listing_id: str | None = None
     ml_category_id: str | None = None
+
+    # Processing tracking
+    processing_started_at: datetime | None = None
+    processing_completed_at: datetime | None = None
+    processing_error: str | None = None
 
     # Timestamps
     created_at: datetime | None = None

@@ -4,8 +4,8 @@
 
 import pytest  # type: ignore[import-untyped]
 
-from modules.product_management.domain.entities.confidence_score import ConfidenceScore
-from modules.product_management.domain.exceptions import InvalidConfidenceScoreError
+from ..exceptions import InvalidConfidenceScoreError
+from .confidence_score import ConfidenceScore
 
 
 class TestConfidenceScore:

@@ -22,9 +22,10 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from infrastructure.database import Base
-from modules.product_management.domain.entities.confidence_score import ConfidenceScore
-from modules.product_management.domain.entities.product import Product
-from modules.product_management.domain.entities.product_status import ProductStatus
+
+from ...domain.entities.confidence_score import ConfidenceScore
+from ...domain.entities.product import Product
+from ...domain.entities.product_status import ProductStatus
 
 
 class ProductModel(Base):
@@ -45,6 +46,9 @@ class ProductModel(Base):
     status: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     confidence: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
+    # Required user input
+    prompt_text: Mapped[str] = mapped_column(Text, nullable=False)
+
     # Product information
     title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -61,6 +65,15 @@ class ProductModel(Base):
     # MercadoLibre integration
     ml_listing_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     ml_category_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    # Processing tracking
+    processing_started_at: Mapped[datetime | None] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=True
+    )
+    processing_completed_at: Mapped[datetime | None] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=True
+    )
+    processing_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
@@ -95,6 +108,7 @@ class ProductModel(Base):
             user_id=self.user_id,
             status=ProductStatus(self.status),
             confidence=confidence_score,
+            prompt_text=self.prompt_text,
             title=self.title,
             description=self.description,
             price=float(self.price) if self.price else None,
@@ -104,6 +118,9 @@ class ProductModel(Base):
             ai_tags=self.ai_tags,
             ml_listing_id=self.ml_listing_id,
             ml_category_id=self.ml_category_id,
+            processing_started_at=self.processing_started_at,
+            processing_completed_at=self.processing_completed_at,
+            processing_error=self.processing_error,
             created_at=self.created_at,
             updated_at=self.updated_at,
             published_at=self.published_at,
@@ -119,6 +136,7 @@ class ProductModel(Base):
             user_id=product.user_id,
             status=product.status.value,
             confidence=confidence_value,
+            prompt_text=product.prompt_text,
             title=product.title,
             description=product.description,
             price=product.price,
@@ -128,6 +146,9 @@ class ProductModel(Base):
             ai_tags=product.ai_tags,
             ml_listing_id=product.ml_listing_id,
             ml_category_id=product.ml_category_id,
+            processing_started_at=product.processing_started_at,
+            processing_completed_at=product.processing_completed_at,
+            processing_error=product.processing_error,
             created_at=product.created_at,
             updated_at=product.updated_at,
             published_at=product.published_at,
@@ -140,6 +161,7 @@ class ProductModel(Base):
         self.user_id = product.user_id
         self.status = product.status.value
         self.confidence = confidence_value
+        self.prompt_text = product.prompt_text
         self.title = product.title
         self.description = product.description
         self.price = product.price
@@ -149,6 +171,9 @@ class ProductModel(Base):
         self.ai_tags = product.ai_tags
         self.ml_listing_id = product.ml_listing_id
         self.ml_category_id = product.ml_category_id
+        self.processing_started_at = product.processing_started_at
+        self.processing_completed_at = product.processing_completed_at
+        self.processing_error = product.processing_error
         self.updated_at = product.updated_at or datetime.now(UTC)
         self.published_at = product.published_at
 
@@ -173,6 +198,8 @@ class ProductImageModel(Base):
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     s3_key: Mapped[str] = mapped_column(String(500), nullable=False)
     s3_url: Mapped[str] = mapped_column(String(1000), nullable=False)
+    original_s3_url: Mapped[str] = mapped_column(String(1000), nullable=False)
+    processed_s3_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     file_size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     file_format: Mapped[str] = mapped_column(String(10), nullable=False)
     resolution_width: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -194,6 +221,12 @@ class ProductImageModel(Base):
         onupdate=lambda: datetime.now(UTC),
         nullable=False,
     )
+    uploaded_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    processed_at: Mapped[datetime | None] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=True
+    )
 
     # Relationships
     product: Mapped[ProductModel] = relationship(
@@ -208,6 +241,8 @@ class ProductImageModel(Base):
             "original_filename": self.original_filename,
             "s3_key": self.s3_key,
             "s3_url": self.s3_url,
+            "original_s3_url": self.original_s3_url,
+            "processed_s3_url": self.processed_s3_url,
             "file_size_bytes": self.file_size_bytes,
             "file_format": self.file_format,
             "resolution_width": self.resolution_width,
@@ -216,6 +251,10 @@ class ProductImageModel(Base):
             "processing_metadata": self.processing_metadata,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
+            "uploaded_at": self.uploaded_at.isoformat(),
+            "processed_at": self.processed_at.isoformat()
+            if self.processed_at
+            else None,
         }
 
     @classmethod
@@ -238,6 +277,7 @@ class ProductImageModel(Base):
             original_filename=original_filename,
             s3_key=s3_key,
             s3_url=s3_url,
+            original_s3_url=s3_url,  # Use s3_url as original_s3_url initially
             file_size_bytes=file_size_bytes,
             file_format=file_format,
             resolution_width=resolution_width,

@@ -17,8 +17,9 @@ class ProductStatusManager:
     @staticmethod
     def mark_as_processed(product: ProductCore, confidence: ConfidenceScore) -> None:
         """Mark product as processed with confidence score."""
-        product.status = ProductStatus.PROCESSED
+        product.status = ProductStatus.READY
         product.confidence = confidence
+        product.processing_completed_at = datetime.now(UTC)
         product.updated_at = datetime.now(UTC)
 
     @staticmethod

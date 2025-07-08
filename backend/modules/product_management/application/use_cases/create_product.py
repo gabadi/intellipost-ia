@@ -11,12 +11,13 @@ from uuid import UUID, uuid4
 from fastapi import UploadFile
 
 from infrastructure.config.logging import get_logger
-from modules.product_management.domain.entities.product import Product
-from modules.product_management.domain.entities.product_status import ProductStatus
-from modules.product_management.domain.ports.product_repository_protocol import (
+
+from ...domain.entities.product import Product
+from ...domain.entities.product_status import ProductStatus
+from ...domain.ports.product_repository_protocol import (
     ProductRepositoryProtocol,
 )
-from modules.product_management.infrastructure.services.file_storage_service import (
+from ...infrastructure.services.file_storage_service import (
     FileStorageService,
 )
 
@@ -68,8 +69,8 @@ class CreateProductUseCase:
         product = Product(
             id=product_id,
             user_id=user_id,
-            status=ProductStatus.PENDING,
-            description=prompt_text.strip(),
+            status=ProductStatus.UPLOADING,
+            prompt_text=prompt_text.strip(),
         )
 
         try:
@@ -213,7 +214,10 @@ class GetProductsUseCase:
                 "id": str(product.id),
                 "user_id": str(product.user_id),
                 "status": product.status.value,
-                "confidence": product.confidence.value if product.confidence else None,
+                "confidence": str(product.confidence.score)
+                if product.confidence
+                else None,
+                "prompt_text": product.prompt_text,
                 "title": product.title,
                 "description": product.description,
                 "price": product.price,
@@ -223,6 +227,13 @@ class GetProductsUseCase:
                 "ai_tags": product.ai_tags,
                 "ml_listing_id": product.ml_listing_id,
                 "ml_category_id": product.ml_category_id,
+                "processing_started_at": product.processing_started_at.isoformat()
+                if product.processing_started_at
+                else None,
+                "processing_completed_at": product.processing_completed_at.isoformat()
+                if product.processing_completed_at
+                else None,
+                "processing_error": product.processing_error,
                 "created_at": product.created_at.isoformat()
                 if product.created_at
                 else None,

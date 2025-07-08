@@ -12,7 +12,13 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from fastapi.security import HTTPBearer
 
 from infrastructure.config.logging import get_logger
-from modules.product_management.api.schemas.product_schemas import (
+
+from ....user_management.domain.entities.user import User
+from ...application.use_cases.create_product import (
+    CreateProductUseCase,
+    GetProductsUseCase,
+)
+from ..schemas.product_schemas import (
     CreateProductResponse,
     ErrorResponse,
     ProductImageResponse,
@@ -20,11 +26,6 @@ from modules.product_management.api.schemas.product_schemas import (
     ProductResponse,
     ValidationErrorResponse,
 )
-from modules.product_management.application.use_cases.create_product import (
-    CreateProductUseCase,
-    GetProductsUseCase,
-)
-from modules.user_management.domain.entities.user import User
 
 logger = get_logger(__name__)
 security = HTTPBearer()
@@ -210,6 +211,8 @@ def create_product_router(
                         product_id=img["product_id"],
                         original_filename=img["original_filename"],
                         s3_url=img["s3_url"],
+                        original_s3_url=img["original_s3_url"],
+                        processed_s3_url=img["processed_s3_url"],
                         file_size_bytes=img["file_size_bytes"],
                         file_format=img["file_format"],
                         resolution_width=img["resolution_width"],
@@ -218,6 +221,8 @@ def create_product_router(
                         processing_metadata=img["processing_metadata"],
                         created_at=img["created_at"],
                         updated_at=img["updated_at"],
+                        uploaded_at=img["uploaded_at"],
+                        processed_at=img["processed_at"],
                     )
                     for img in product_data["images"]
                 ]
@@ -227,6 +232,7 @@ def create_product_router(
                     user_id=product_data["user_id"],
                     status=product_data["status"],
                     confidence=product_data["confidence"],
+                    prompt_text=product_data["prompt_text"],
                     title=product_data["title"],
                     description=product_data["description"],
                     price=product_data["price"],
@@ -236,6 +242,9 @@ def create_product_router(
                     ai_tags=product_data["ai_tags"],
                     ml_listing_id=product_data["ml_listing_id"],
                     ml_category_id=product_data["ml_category_id"],
+                    processing_started_at=product_data["processing_started_at"],
+                    processing_completed_at=product_data["processing_completed_at"],
+                    processing_error=product_data["processing_error"],
                     created_at=product_data["created_at"],
                     updated_at=product_data["updated_at"],
                     published_at=product_data["published_at"],
@@ -303,6 +312,8 @@ def create_product_router(
                     product_id=img["product_id"],
                     original_filename=img["original_filename"],
                     s3_url=img["s3_url"],
+                    original_s3_url=img["original_s3_url"],
+                    processed_s3_url=img["processed_s3_url"],
                     file_size_bytes=img["file_size_bytes"],
                     file_format=img["file_format"],
                     resolution_width=img["resolution_width"],
@@ -311,6 +322,8 @@ def create_product_router(
                     processing_metadata=img["processing_metadata"],
                     created_at=img["created_at"],
                     updated_at=img["updated_at"],
+                    uploaded_at=img["uploaded_at"],
+                    processed_at=img["processed_at"],
                 )
                 for img in product_data["images"]
             ]
@@ -320,6 +333,7 @@ def create_product_router(
                 user_id=product_data["user_id"],
                 status=product_data["status"],
                 confidence=product_data["confidence"],
+                prompt_text=product_data["prompt_text"],
                 title=product_data["title"],
                 description=product_data["description"],
                 price=product_data["price"],
@@ -329,6 +343,9 @@ def create_product_router(
                 ai_tags=product_data["ai_tags"],
                 ml_listing_id=product_data["ml_listing_id"],
                 ml_category_id=product_data["ml_category_id"],
+                processing_started_at=product_data["processing_started_at"],
+                processing_completed_at=product_data["processing_completed_at"],
+                processing_error=product_data["processing_error"],
                 created_at=product_data["created_at"],
                 updated_at=product_data["updated_at"],
                 published_at=product_data["published_at"],

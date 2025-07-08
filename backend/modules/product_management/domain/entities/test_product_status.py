@@ -1,6 +1,6 @@
 """Tests for product status enumeration."""
 
-from modules.product_management.domain.entities.product_status import ProductStatus
+from .product_status import ProductStatus
 
 
 class TestProductStatus:
