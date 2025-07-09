@@ -403,13 +403,13 @@ class TestCompleteWorkflowIntegration:
         """Create GenerateContentUseCase with mocked dependencies."""
         # This would normally be dependency-injected
         return GenerateContentUseCase(
-            ai_service=Mock(),
-            category_service=Mock(),
-            title_service=Mock(),
-            description_service=Mock(),
-            attribute_service=Mock(),
+            ai_content_generator=Mock(),
+            ml_category_service=Mock(),
+            title_generation_service=Mock(),
+            description_generation_service=Mock(),
+            attribute_mapping_service=Mock(),
             content_repository=Mock(),
-            generation_repository=Mock(),
+            content_validation_service=Mock(),
         )
 
     @pytest.fixture

@@ -11,11 +11,14 @@ from typing import Any
 from modules.content_generation.domain.exceptions import (
     DescriptionGenerationError,
 )
+from modules.content_generation.domain.ports.ai_service_protocols import (
+    DescriptionGenerationServiceProtocol,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class DescriptionGenerationService:
+class DescriptionGenerationService(DescriptionGenerationServiceProtocol):
     """
     Description generation service for MercadoLibre optimization.
 
@@ -236,8 +239,8 @@ class DescriptionGenerationService:
         Returns:
             Dict containing validation results
         """
-        validation_errors = []
-        warnings = []
+        validation_errors: list[str] = []
+        warnings: list[str] = []
 
         # Length validation
         if len(description) < self.min_description_length:
@@ -457,7 +460,7 @@ class DescriptionGenerationService:
         self, product_features: dict[str, Any], template: dict[str, str]
     ) -> str:
         """Generate features section."""
-        features = []
+        features: list[str] = []
 
         # Extract key features
         if product_features.get("color"):
@@ -510,7 +513,7 @@ class DescriptionGenerationService:
         self, product_features: dict[str, Any], template: dict[str, str]
     ) -> str:
         """Generate benefits section."""
-        benefits = []
+        benefits: list[str] = []
 
         # Generate benefits based on features
         if product_features.get("condition") == "new":
@@ -571,7 +574,7 @@ class DescriptionGenerationService:
 
     def _combine_sections(self, sections: dict[str, str], category_type: str) -> str:
         """Combine sections into full description."""
-        combined_sections = []
+        combined_sections: list[str] = []
 
         # Order sections appropriately
         section_order = [
@@ -595,7 +598,7 @@ class DescriptionGenerationService:
         # Split into paragraphs
         paragraphs = description.split("\n\n")
 
-        formatted_paragraphs = []
+        formatted_paragraphs: list[str] = []
         for paragraph in paragraphs:
             # Format individual paragraph
             formatted_paragraph = self._format_paragraph_for_mobile(paragraph)
@@ -607,7 +610,7 @@ class DescriptionGenerationService:
         """Format individual paragraph for mobile viewing."""
         # Break long lines
         lines = paragraph.split("\n")
-        formatted_lines = []
+        formatted_lines: list[str] = []
 
         for line in lines:
             if len(line) <= self.mobile_formatting["max_line_length"]:
@@ -640,7 +643,7 @@ class DescriptionGenerationService:
 
         # Truncate at sentence boundary
         sentences = description.split(". ")
-        truncated_sentences = []
+        truncated_sentences: list[str] = []
         current_length = 0
 
         for sentence in sentences:
@@ -659,7 +662,7 @@ class DescriptionGenerationService:
 
         # If no complete sentences fit, truncate at word boundary
         words = description.split()
-        truncated_words = []
+        truncated_words: list[str] = []
         current_length = 0
 
         for word in words:
@@ -864,7 +867,7 @@ class DescriptionGenerationService:
         # Add new features to features section
         if "features" in sections and additional_features:
             current_features = sections["features"]
-            new_features = []
+            new_features: list[str] = []
 
             for feature_name, feature_value in additional_features.items():
                 if feature_value:
@@ -889,7 +892,7 @@ class DescriptionGenerationService:
             "cta",
         ]
 
-        rebuild_sections = []
+        rebuild_sections: list[str] = []
         for section_name in section_order:
             if section_name in sections and sections[section_name]:
                 rebuild_sections.append(sections[section_name])
@@ -900,7 +903,7 @@ class DescriptionGenerationService:
         self, description: str, category_id: str
     ) -> list[str]:
         """Get optimization suggestions for description."""
-        suggestions = []
+        suggestions: list[str] = []
 
         # Length suggestions
         if len(description) < 100:

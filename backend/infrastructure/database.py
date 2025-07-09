@@ -8,9 +8,16 @@ for the IntelliPost AI backend using async SQLAlchemy with PostgreSQL.
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
 from infrastructure.config.settings import settings
+
+
+class Base(DeclarativeBase):
+    """SQLAlchemy declarative base with type annotations."""
+
+    pass
+
 
 # Create the async engine
 engine = create_async_engine(
@@ -24,9 +31,6 @@ engine = create_async_engine(
 
 # Create async session factory
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
-
-# Base class for SQLAlchemy models
-Base = declarative_base()
 
 
 async def get_database_session() -> AsyncGenerator[AsyncSession]:

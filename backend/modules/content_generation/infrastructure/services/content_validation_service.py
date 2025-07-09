@@ -7,17 +7,86 @@ ensuring MercadoLibre compliance and quality standards.
 
 import logging
 import re
-from typing import Any
+from decimal import Decimal
+from typing import Any, TypedDict
 
 from modules.content_generation.domain.entities import GeneratedContent
 from modules.content_generation.domain.exceptions import (
     ContentValidationError,
 )
+from modules.content_generation.domain.ports.ai_service_protocols import (
+    ContentValidationServiceProtocol,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class ContentValidationService:
+class ValidationResult(TypedDict):
+    """Type definition for validation results."""
+
+    is_valid: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+class ContentValidationResult(TypedDict):
+    """Type definition for content validation results."""
+
+    is_valid: bool
+    errors: list[str]
+    warnings: list[str]
+    quality_score: float
+    validation_details: dict[str, Any]
+
+
+class ComplianceResult(TypedDict):
+    """Type definition for compliance results."""
+
+    is_compliant: bool
+    issues: list[str]
+    warnings: list[str]
+    policy_violations: list[str]
+
+
+class ProhibitedContentResult(TypedDict):
+    """Type definition for prohibited content check results."""
+
+    violations: list[str]
+
+
+class ContactInfoResult(TypedDict):
+    """Type definition for contact information check results."""
+
+    has_contact_info: bool
+
+
+class ExternalLinksResult(TypedDict):
+    """Type definition for external links check results."""
+
+    has_external_links: bool
+
+
+class PromotionalLanguageResult(TypedDict):
+    """Type definition for promotional language check results."""
+
+    is_excessive: bool
+    promotional_count: int
+
+
+class MisleadingClaimsResult(TypedDict):
+    """Type definition for misleading claims check results."""
+
+    has_misleading_claims: bool
+
+
+class PriceComplianceResult(TypedDict):
+    """Type definition for price compliance check results."""
+
+    is_compliant: bool
+    violations: list[str]
+
+
+class ContentValidationService(ContentValidationServiceProtocol):
     """
     Content validation service for MercadoLibre compliance.
 
@@ -151,7 +220,7 @@ class ContentValidationService:
     async def validate_content(
         self,
         content: GeneratedContent,
-    ) -> dict[str, Any]:
+    ) -> ContentValidationResult:
         """
         Validate generated content comprehensively.
 
@@ -246,7 +315,7 @@ class ContentValidationService:
     async def check_ml_compliance(
         self,
         content: GeneratedContent,
-    ) -> dict[str, Any]:
+    ) -> ComplianceResult:
         """
         Check if content complies with MercadoLibre policies.
 
@@ -408,7 +477,7 @@ class ContentValidationService:
 
         return suggestions
 
-    def _validate_title(self, title: str) -> dict[str, Any]:
+    def _validate_title(self, title: str) -> ValidationResult:
         """Validate title content."""
         validation_result = {
             "is_valid": True,
@@ -445,7 +514,7 @@ class ContentValidationService:
 
         return validation_result
 
-    def _validate_description(self, description: str) -> dict[str, Any]:
+    def _validate_description(self, description: str) -> ValidationResult:
         """Validate description content."""
         validation_result = {
             "is_valid": True,
@@ -488,7 +557,7 @@ class ContentValidationService:
 
         return validation_result
 
-    def _validate_price(self, price: float) -> dict[str, Any]:
+    def _validate_price(self, price: Decimal | float) -> ValidationResult:
         """Validate price."""
         validation_result = {
             "is_valid": True,
@@ -508,7 +577,7 @@ class ContentValidationService:
 
         return validation_result
 
-    def _validate_attributes(self, attributes: dict[str, Any]) -> dict[str, Any]:
+    def _validate_attributes(self, attributes: dict[str, Any]) -> ValidationResult:
         """Validate attributes."""
         validation_result = {
             "is_valid": True,
@@ -535,7 +604,7 @@ class ContentValidationService:
 
         return validation_result
 
-    def _validate_structure(self, content: GeneratedContent) -> dict[str, Any]:
+    def _validate_structure(self, content: GeneratedContent) -> ValidationResult:
         """Validate content structure."""
         validation_result = {
             "is_valid": True,
@@ -558,7 +627,7 @@ class ContentValidationService:
 
         return validation_result
 
-    def _check_prohibited_content(self, text: str) -> dict[str, Any]:
+    def _check_prohibited_content(self, text: str) -> ProhibitedContentResult:
         """Check for prohibited content."""
         violations = []
         text_lower = text.lower()
@@ -575,7 +644,7 @@ class ContentValidationService:
 
         return {"violations": violations}
 
-    def _check_contact_information(self, text: str) -> dict[str, Any]:
+    def _check_contact_information(self, text: str) -> ContactInfoResult:
         """Check for contact information."""
         has_contact_info = False
 
@@ -596,13 +665,13 @@ class ContentValidationService:
 
         return {"has_contact_info": has_contact_info}
 
-    def _check_external_links(self, text: str) -> dict[str, Any]:
+    def _check_external_links(self, text: str) -> ExternalLinksResult:
         """Check for external links."""
         has_external_links = bool(re.search(self.validation_patterns["url"], text))
 
         return {"has_external_links": has_external_links}
 
-    def _check_promotional_language(self, text: str) -> dict[str, Any]:
+    def _check_promotional_language(self, text: str) -> PromotionalLanguageResult:
         """Check for excessive promotional language."""
         promotional_count = 0
         text_lower = text.lower()
@@ -619,7 +688,7 @@ class ContentValidationService:
 
         return {"is_excessive": is_excessive, "promotional_count": promotional_count}
 
-    def _check_misleading_claims(self, text: str) -> dict[str, Any]:
+    def _check_misleading_claims(self, text: str) -> MisleadingClaimsResult:
         """Check for misleading claims."""
         text_lower = text.lower()
 
@@ -629,7 +698,7 @@ class ContentValidationService:
 
         return {"has_misleading_claims": False}
 
-    def _check_price_compliance(self, price: float) -> dict[str, Any]:
+    def _check_price_compliance(self, price: float) -> PriceComplianceResult:
         """Check price compliance."""
         violations = []
 

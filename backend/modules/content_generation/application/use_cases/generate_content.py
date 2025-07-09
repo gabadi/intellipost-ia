@@ -47,13 +47,13 @@ class GenerateContentUseCase:
 
     def __init__(
         self,
-        ai_content_generator: AIContentGeneratorProtocol,
-        ml_category_service: MLCategoryServiceProtocol,
+        ai_service: AIContentGeneratorProtocol,
         content_repository: ContentRepositoryProtocol,
-        title_generation_service: TitleGenerationServiceProtocol,
-        description_generation_service: DescriptionGenerationServiceProtocol,
-        attribute_mapping_service: AttributeMappingServiceProtocol,
-        content_validation_service: ContentValidationServiceProtocol,
+        title_service: TitleGenerationServiceProtocol,
+        description_service: DescriptionGenerationServiceProtocol,
+        validation_service: ContentValidationServiceProtocol,
+        attribute_service: AttributeMappingServiceProtocol,
+        category_service: MLCategoryServiceProtocol,
         quality_threshold: float = 0.7,
         max_retry_attempts: int = 3,
     ):
@@ -61,23 +61,23 @@ class GenerateContentUseCase:
         Initialize the generate content use case.
 
         Args:
-            ai_content_generator: AI content generation service
-            ml_category_service: MercadoLibre category service
-            content_repository: Content repository
-            title_generation_service: Title generation service
-            description_generation_service: Description generation service
-            attribute_mapping_service: Attribute mapping service
-            content_validation_service: Content validation service
+            ai_service: AI content generation service protocol
+            content_repository: Content repository protocol
+            title_service: Title generation service protocol
+            description_service: Description generation service protocol
+            validation_service: Content validation service protocol
+            attribute_service: Attribute mapping service protocol
+            category_service: MercadoLibre category service protocol
             quality_threshold: Minimum quality threshold
             max_retry_attempts: Maximum retry attempts
         """
-        self.ai_content_generator = ai_content_generator
-        self.ml_category_service = ml_category_service
+        self.ai_service = ai_service
         self.content_repository = content_repository
-        self.title_generation_service = title_generation_service
-        self.description_generation_service = description_generation_service
-        self.attribute_mapping_service = attribute_mapping_service
-        self.content_validation_service = content_validation_service
+        self.title_service = title_service
+        self.description_service = description_service
+        self.validation_service = validation_service
+        self.attribute_service = attribute_service
+        self.category_service = category_service
         self.quality_threshold = quality_threshold
         self.max_retry_attempts = max_retry_attempts
 
@@ -235,24 +235,16 @@ class GenerateContentUseCase:
             raise ContentGenerationError(f"Content not found: {content_id}")
 
         # Perform comprehensive validation
-        validation_results = await self.content_validation_service.validate_content(
-            content
-        )
+        validation_results = await self.validation_service.validate_content(content)
 
         # Check MercadoLibre compliance
-        compliance_results = await self.content_validation_service.check_ml_compliance(
-            content
-        )
+        compliance_results = await self.validation_service.check_ml_compliance(content)
 
         # Calculate quality score
-        quality_score = await self.content_validation_service.calculate_quality_score(
-            content
-        )
+        quality_score = await self.validation_service.calculate_quality_score(content)
 
         # Get improvement suggestions
-        suggestions = await self.content_validation_service.get_improvement_suggestions(
-            content
-        )
+        suggestions = await self.validation_service.get_improvement_suggestions(content)
 
         return {
             "content_id": str(content_id),
@@ -385,7 +377,7 @@ class GenerateContentUseCase:
         )
 
         # Validate content
-        validation_results = await self.content_validation_service.validate_content(
+        validation_results = await self.validation_service.validate_content(
             generated_content
         )
 
@@ -430,7 +422,7 @@ class GenerateContentUseCase:
         """Extract product features from images and prompt."""
         try:
             # Use AI service to extract features
-            features = await self.ai_content_generator.extract_product_features(
+            features = await self.ai_service.extract_product_features(
                 list(images), prompt
             )
 
@@ -455,12 +447,12 @@ class GenerateContentUseCase:
     ) -> dict[str, Any]:
         """Detect MercadoLibre category."""
         try:
-            category_prediction = await self.ml_category_service.predict_category(
+            category_prediction = await self.category_service.predict_category(
                 product_features, category_hint
             )
 
             # Validate category
-            validation_results = await self.ml_category_service.validate_category(
+            validation_results = await self.category_service.validate_category(
                 category_prediction["category_id"], product_features
             )
 
@@ -493,17 +485,17 @@ class GenerateContentUseCase:
     ) -> dict[str, Any]:
         """Generate optimized title."""
         try:
-            title = await self.title_generation_service.generate_optimized_title(
+            title = await self.title_service.generate_optimized_title(
                 product_features, category_id
             )
 
             # Validate title
-            validation_results = await self.title_generation_service.validate_title(
+            validation_results = await self.title_service.validate_title(
                 title, category_id
             )
 
             # Calculate confidence
-            confidence = await self.title_generation_service.calculate_title_confidence(
+            confidence = await self.title_service.calculate_title_confidence(
                 title, product_features
             )
 
@@ -533,22 +525,20 @@ class GenerateContentUseCase:
     ) -> dict[str, Any]:
         """Generate comprehensive description."""
         try:
-            description = (
-                await self.description_generation_service.generate_description(
-                    product_features, category_id
-                )
+            description = await self.description_service.generate_description(
+                product_features, category_id
             )
 
             # Validate description
-            validation_results = (
-                await self.description_generation_service.validate_description(
-                    description, category_id
-                )
+            validation_results = await self.description_service.validate_description(
+                description, category_id
             )
 
             # Calculate confidence
-            confidence = await self.description_generation_service.calculate_description_confidence(
-                description, product_features
+            confidence = (
+                await self.description_service.calculate_description_confidence(
+                    description, product_features
+                )
             )
 
             return {
@@ -580,22 +570,18 @@ class GenerateContentUseCase:
     ) -> dict[str, Any]:
         """Map product attributes."""
         try:
-            attributes = await self.attribute_mapping_service.map_attributes(
+            attributes = await self.attribute_service.map_attributes(
                 product_features, category_id
             )
 
             # Validate attributes
-            validation_results = (
-                await self.attribute_mapping_service.validate_attributes(
-                    attributes, category_id
-                )
+            validation_results = await self.attribute_service.validate_attributes(
+                attributes, category_id
             )
 
             # Calculate confidence
-            confidence = (
-                await self.attribute_mapping_service.calculate_attribute_confidence(
-                    attributes, product_features
-                )
+            confidence = await self.attribute_service.calculate_attribute_confidence(
+                attributes, product_features
             )
 
             return {
@@ -630,7 +616,7 @@ class GenerateContentUseCase:
     ) -> dict[str, Any]:
         """Estimate product price."""
         try:
-            price_estimation = await self.ai_content_generator.estimate_price(
+            price_estimation = await self.ai_service.estimate_price(
                 product_features, category_id
             )
 
@@ -724,15 +710,13 @@ class GenerateContentUseCase:
         product_features = additional_data or {}
 
         # Generate enhanced title
-        enhanced_title = await self.title_generation_service.generate_optimized_title(
+        enhanced_title = await self.title_service.generate_optimized_title(
             product_features, content.ml_category_id
         )
 
         # Calculate new confidence
-        title_confidence = (
-            await self.title_generation_service.calculate_title_confidence(
-                enhanced_title, product_features
-            )
+        title_confidence = await self.title_service.calculate_title_confidence(
+            enhanced_title, product_features
         )
 
         # Update content
@@ -780,15 +764,13 @@ class GenerateContentUseCase:
         additional_features = additional_data or {}
 
         # Enhance description
-        enhanced_description = (
-            await self.description_generation_service.enhance_description(
-                content.description, additional_features
-            )
+        enhanced_description = await self.description_service.enhance_description(
+            content.description, additional_features
         )
 
         # Calculate new confidence
         description_confidence = (
-            await self.description_generation_service.calculate_description_confidence(
+            await self.description_service.calculate_description_confidence(
                 enhanced_description, additional_features
             )
         )
@@ -838,7 +820,7 @@ class GenerateContentUseCase:
         product_features = additional_data or {}
 
         # Map additional attributes
-        enhanced_attributes = await self.attribute_mapping_service.map_attributes(
+        enhanced_attributes = await self.attribute_service.map_attributes(
             product_features, content.ml_category_id
         )
 
@@ -847,7 +829,7 @@ class GenerateContentUseCase:
 
         # Calculate new confidence
         attribute_confidence = (
-            await self.attribute_mapping_service.calculate_attribute_confidence(
+            await self.attribute_service.calculate_attribute_confidence(
                 merged_attributes, product_features
             )
         )

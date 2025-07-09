@@ -6,17 +6,20 @@ ensuring proper category-specific attribute detection and validation.
 """
 
 import logging
-from typing import Any
+from typing import Any, cast
 
 from modules.content_generation.domain.exceptions import (
     AttributeMappingError,
     AttributeValidationError,
 )
+from modules.content_generation.domain.ports.ai_service_protocols import (
+    AttributeMappingServiceProtocol,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class AttributeMappingService:
+class AttributeMappingService(AttributeMappingServiceProtocol):
     """
     Attribute mapping service for MercadoLibre categories.
 
@@ -28,7 +31,7 @@ class AttributeMappingService:
         """Initialize the attribute mapping service."""
 
         # MercadoLibre category attribute mappings
-        self.category_attributes = {
+        self.category_attributes: dict[str, dict[str, Any]] = {
             "MLA1055": {  # Celulares y Teléfonos
                 "required": ["BRAND", "MODEL", "OPERATING_SYSTEM"],
                 "optional": ["COLOR", "STORAGE_CAPACITY", "RAM_MEMORY", "SCREEN_SIZE"],
@@ -106,7 +109,7 @@ class AttributeMappingService:
         }
 
         # Attribute validation rules
-        self.attribute_validation_rules = {
+        self.attribute_validation_rules: dict[str, dict[str, Any]] = {
             "BRAND": {
                 "type": "string",
                 "max_length": 50,
@@ -189,7 +192,7 @@ class AttributeMappingService:
         }
 
         # Common attribute value mappings
-        self.value_mappings = {
+        self.value_mappings: dict[str, dict[str, str]] = {
             "condition": {
                 "new": "Nuevo",
                 "used": "Usado",
@@ -269,9 +272,11 @@ class AttributeMappingService:
             mapped_attributes = {}
 
             # Map required attributes
-            for attr_id in category_config["required"]:
+            required_attrs = cast("list[str]", category_config["required"])
+            mappings = cast("dict[str, str]", category_config["mappings"])
+            for attr_id in required_attrs:
                 value = self._extract_attribute_value(
-                    attr_id, product_features, category_config["mappings"]
+                    attr_id, product_features, mappings
                 )
                 if value:
                     mapped_attributes[attr_id] = value
@@ -279,9 +284,10 @@ class AttributeMappingService:
                     logger.warning(f"Missing required attribute: {attr_id}")
 
             # Map optional attributes
-            for attr_id in category_config["optional"]:
+            optional_attrs = cast("list[str]", category_config["optional"])
+            for attr_id in optional_attrs:
                 value = self._extract_attribute_value(
-                    attr_id, product_features, category_config["mappings"]
+                    attr_id, product_features, mappings
                 )
                 if value:
                     mapped_attributes[attr_id] = value
@@ -338,7 +344,8 @@ class AttributeMappingService:
                 }
 
             # Validate required attributes
-            for attr_id in category_config["required"]:
+            required_attrs = cast("list[str]", category_config["required"])
+            for attr_id in required_attrs:
                 if attr_id not in attributes:
                     validation_errors[attr_id] = (
                         f"Required attribute {attr_id} is missing"
@@ -352,7 +359,8 @@ class AttributeMappingService:
                         validation_errors[attr_id] = attr_validation["error"]
 
             # Validate optional attributes
-            for attr_id in category_config["optional"]:
+            optional_attrs = cast("list[str]", category_config["optional"])
+            for attr_id in optional_attrs:
                 if attr_id in attributes:
                     attr_validation = self._validate_attribute_value(
                         attr_id, attributes[attr_id]
@@ -361,13 +369,13 @@ class AttributeMappingService:
                         validation_errors[attr_id] = attr_validation["error"]
 
             # Check for unknown attributes
-            known_attributes = set(
-                category_config["required"] + category_config["optional"]
-            )
+            required_attrs = cast("list[str]", category_config["required"])
+            optional_attrs = cast("list[str]", category_config["optional"])
+            known_attributes = set(required_attrs + optional_attrs)
             unknown_attributes = set(attributes.keys()) - known_attributes
 
             if unknown_attributes:
-                warnings.append(f"Unknown attributes: {', '.join(unknown_attributes)}")
+                warnings.append(f"Unknown attributes: {', '.join(list(unknown_attributes))}")
 
             return {
                 "is_valid": len(validation_errors) == 0,
@@ -375,10 +383,10 @@ class AttributeMappingService:
                 "warnings": warnings,
                 "validated_attributes": len(attributes),
                 "required_attributes_present": len(
-                    [attr for attr in category_config["required"] if attr in attributes]
+                    [attr for attr in required_attrs if attr in attributes]
                 ),
                 "optional_attributes_present": len(
-                    [attr for attr in category_config["optional"] if attr in attributes]
+                    [attr for attr in optional_attrs if attr in attributes]
                 ),
             }
 
@@ -387,6 +395,8 @@ class AttributeMappingService:
             raise AttributeValidationError(
                 f"Failed to validate attributes: {str(e)}",
                 category_id=category_id,
+                attribute_name="unknown",
+                attribute_value="unknown",
                 error_code="ATTRIBUTE_VALIDATION_FAILED",
             ) from e
 
@@ -407,7 +417,7 @@ class AttributeMappingService:
         if not category_config:
             return []
 
-        return category_config["required"]
+        return cast("list[str]", category_config["required"])
 
     async def get_optional_attributes(
         self,
@@ -426,7 +436,7 @@ class AttributeMappingService:
         if not category_config:
             return []
 
-        return category_config["optional"]
+        return cast("list[str]", category_config["optional"])
 
     async def calculate_attribute_confidence(
         self,
@@ -678,7 +688,7 @@ class AttributeMappingService:
             "optional_attributes": category_config["optional"],
             "attribute_mappings": category_config["mappings"],
             "total_attributes": len(
-                category_config["required"] + category_config["optional"]
+                cast("list[str]", category_config["required"]) + cast("list[str]", category_config["optional"])
             ),
         }
 
@@ -696,11 +706,13 @@ class AttributeMappingService:
             return suggestions
 
         # Check for missing required attributes
-        for attr_id in category_config["required"]:
+        required_attrs = cast("list[str]", category_config["required"])
+        for attr_id in required_attrs:
             if attr_id not in current_attributes:
                 # Try to extract from product features
+                mappings = cast("dict[str, str]", category_config["mappings"])
                 potential_value = self._extract_attribute_value(
-                    attr_id, product_features, category_config["mappings"]
+                    attr_id, product_features, mappings
                 )
 
                 suggestions.append(
@@ -713,10 +725,12 @@ class AttributeMappingService:
                 )
 
         # Check for missing optional attributes
-        for attr_id in category_config["optional"]:
+        optional_attrs = cast("list[str]", category_config["optional"])
+        mappings = cast("dict[str, str]", category_config["mappings"])
+        for attr_id in optional_attrs:
             if attr_id not in current_attributes:
                 potential_value = self._extract_attribute_value(
-                    attr_id, product_features, category_config["mappings"]
+                    attr_id, product_features, mappings
                 )
 
                 if potential_value:

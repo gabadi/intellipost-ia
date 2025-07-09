@@ -20,11 +20,14 @@ from modules.content_generation.domain.exceptions import (
     ExternalServiceError,
     MercadoLibreAPIError,
 )
+from modules.content_generation.domain.ports.ai_service_protocols import (
+    MLCategoryServiceProtocol,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class MLCategoryService:
+class MLCategoryService(MLCategoryServiceProtocol):
     """
     MercadoLibre category service implementation.
 

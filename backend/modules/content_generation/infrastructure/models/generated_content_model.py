@@ -4,13 +4,15 @@ Generated Content database model.
 This module defines the SQLAlchemy models for the generated content tables.
 """
 
+from datetime import datetime
+from decimal import Decimal
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import (
     JSON,
     TIMESTAMP,
     CheckConstraint,
-    Column,
     ForeignKey,
     Integer,
     Numeric,
@@ -18,10 +20,10 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
-Base = declarative_base()
+from infrastructure.database import Base
 
 
 class GeneratedContentModel(Base):
@@ -30,12 +32,12 @@ class GeneratedContentModel(Base):
     __tablename__ = "generated_content"
 
     # Primary key
-    id = Column(
+    id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid()
     )
 
     # Foreign keys
-    product_id = Column(
+    product_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("products.id", ondelete="CASCADE"),
         nullable=False,
@@ -43,45 +45,65 @@ class GeneratedContentModel(Base):
     )
 
     # AI Generated content
-    title = Column(String(255), nullable=False)
-    description = Column(Text, nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
 
     # MercadoLibre specific fields
-    ml_category_id = Column(String(50), nullable=False, index=True)
-    ml_category_name = Column(String(200), nullable=False)
-    ml_title = Column(String(60), nullable=False)
-    ml_price = Column(Numeric(10, 2), nullable=False)
-    ml_currency_id = Column(String(3), nullable=False, default="ARS")
-    ml_available_quantity = Column(Integer, nullable=False, default=1)
-    ml_buying_mode = Column(String(20), nullable=False, default="buy_it_now")
-    ml_condition = Column(String(20), nullable=False, default="new")
-    ml_listing_type_id = Column(String(50), nullable=False, default="gold_special")
+    ml_category_id: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    ml_category_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    ml_title: Mapped[str] = mapped_column(String(60), nullable=False)
+    ml_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    ml_currency_id: Mapped[str] = mapped_column(
+        String(3), nullable=False, default="ARS"
+    )
+    ml_available_quantity: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=1
+    )
+    ml_buying_mode: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="buy_it_now"
+    )
+    ml_condition: Mapped[str] = mapped_column(String(20), nullable=False, default="new")
+    ml_listing_type_id: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="gold_special"
+    )
 
     # MercadoLibre flexible attributes and terms
-    ml_attributes = Column(JSON, nullable=False, default={})
-    ml_sale_terms = Column(JSON, nullable=False, default={})
-    ml_shipping = Column(JSON, nullable=False, default={})
+    ml_attributes: Mapped[dict[str, Any]] = mapped_column(
+        JSON, nullable=False, default={}
+    )
+    ml_sale_terms: Mapped[dict[str, Any]] = mapped_column(
+        JSON, nullable=False, default={}
+    )
+    ml_shipping: Mapped[dict[str, Any]] = mapped_column(
+        JSON, nullable=False, default={}
+    )
 
     # AI confidence scoring
-    confidence_overall = Column(Numeric(3, 2), nullable=False, index=True)
-    confidence_breakdown = Column(JSON, nullable=False, default={})
+    confidence_overall: Mapped[Decimal] = mapped_column(
+        Numeric(3, 2), nullable=False, index=True
+    )
+    confidence_breakdown: Mapped[dict[str, Any]] = mapped_column(
+        JSON, nullable=False, default={}
+    )
 
     # AI provider metadata
-    ai_provider = Column(String(50), nullable=False, default="gemini", index=True)
-    ai_model_version = Column(String(100), nullable=False)
-    generation_time_ms = Column(Integer, nullable=True)
+    ai_provider: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="gemini", index=True
+    )
+    ai_model_version: Mapped[str] = mapped_column(String(100), nullable=False)
+    generation_time_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Version control for regeneration
-    version = Column(Integer, nullable=False, default=1, index=True)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1, index=True)
 
     # Timestamps
-    generated_at = Column(
+    generated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
         nullable=False,
         server_default=func.now(),
         index=True,
     )
-    updated_at = Column(
+    updated_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True),
         nullable=True,
         onupdate=func.now(),
@@ -156,67 +178,75 @@ class AIGenerationModel(Base):
     __tablename__ = "ai_generation"
 
     # Primary key
-    id = Column(
+    id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid()
     )
 
     # Foreign keys
-    product_id = Column(
+    product_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("products.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    generated_content_id = Column(
+    generated_content_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("generated_content.id", ondelete="SET NULL"),
         nullable=True,
     )
 
     # Processing status
-    status = Column(String(20), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
 
     # Processing metadata
-    current_step = Column(String(50), nullable=True)
-    progress_percentage = Column(Numeric(5, 2), nullable=False, default=0.0)
-    estimated_completion_seconds = Column(Integer, nullable=True)
+    current_step: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    progress_percentage: Mapped[Decimal] = mapped_column(
+        Numeric(5, 2), nullable=False, default=0.0
+    )
+    estimated_completion_seconds: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
 
     # Input data
-    input_images = Column(JSON, nullable=False, default=[])
-    input_prompt = Column(Text, nullable=True)
-    category_hint = Column(String(100), nullable=True)
-    price_range = Column(JSON, nullable=False, default={})
-    target_audience = Column(String(100), nullable=True)
+    input_images: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=[])
+    input_prompt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    category_hint: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    price_range: Mapped[dict[str, Any]] = mapped_column(
+        JSON, nullable=False, default={}
+    )
+    target_audience: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # Processing results
-    error_message = Column(Text, nullable=True)
-    error_code = Column(String(50), nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     # AI provider metadata
-    ai_provider = Column(String(50), nullable=False, default="gemini", index=True)
-    ai_model_version = Column(String(100), nullable=True)
-    processing_time_ms = Column(Integer, nullable=True)
+    ai_provider: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="gemini", index=True
+    )
+    ai_model_version: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    processing_time_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Processing steps tracking
-    completed_steps = Column(JSON, nullable=False, default=[])
-    failed_step = Column(String(50), nullable=True)
+    completed_steps: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=[])
+    failed_step: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     # Timestamps
-    created_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
         nullable=False,
         server_default=func.now(),
         index=True,
     )
-    started_at = Column(
+    started_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True),
         nullable=True,
     )
-    completed_at = Column(
+    completed_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True),
         nullable=True,
     )
-    updated_at = Column(
+    updated_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True),
         nullable=True,
         onupdate=func.now(),

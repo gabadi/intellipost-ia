@@ -154,10 +154,10 @@ class TestGeneratedContent:
                 id=uuid4(),
                 product_id=uuid4(),
                 title="",  # Empty title
-                description="Valid description",
+                description="Valid description that is at least 50 characters long to pass validation",
                 ml_category_id="MLA1055",
                 ml_category_name="Celulares y Smartphones",
-                ml_title="Valid title",
+                ml_title="Valid title for ML",
                 ml_price=Decimal("100.00"),
                 ml_currency_id="ARS",
                 ml_available_quantity=1,
@@ -182,11 +182,11 @@ class TestGeneratedContent:
             GeneratedContent(
                 id=uuid4(),
                 product_id=uuid4(),
-                title="Valid title",
-                description="Valid description",
+                title="Valid title that is at least 10 characters long",
+                description="Valid description that is at least 50 characters long to pass validation",
                 ml_category_id="MLA1055",
                 ml_category_name="Celulares y Smartphones",
-                ml_title="Valid title",
+                ml_title="Valid title for ML",
                 ml_price=Decimal("-100.00"),  # Negative price
                 ml_currency_id="ARS",
                 ml_available_quantity=1,
@@ -213,11 +213,11 @@ class TestGeneratedContent:
             GeneratedContent(
                 id=uuid4(),
                 product_id=uuid4(),
-                title="Valid title",
-                description="Valid description",
+                title="Valid title that is at least 10 characters long",
+                description="Valid description that is at least 50 characters long to pass validation",
                 ml_category_id="MLA1055",
                 ml_category_name="Celulares y Smartphones",
-                ml_title="Valid title",
+                ml_title="Valid title for ML",
                 ml_price=Decimal("100.00"),
                 ml_currency_id="ARS",
                 ml_available_quantity=0,  # Invalid quantity
@@ -241,11 +241,11 @@ class TestGeneratedContent:
         content = GeneratedContent(
             id=uuid4(),
             product_id=uuid4(),
-            title="Valid title",
-            description="Valid description",
+            title="Valid title that is at least 10 characters long",
+            description="Valid description that is at least 50 characters long to pass validation",
             ml_category_id="MLA1055",
             ml_category_name="Celulares y Smartphones",
-            ml_title="Valid title",
+            ml_title="Valid title for ML",
             ml_price=Decimal("100.00"),
             ml_currency_id="ARS",
             ml_available_quantity=1,
@@ -271,11 +271,11 @@ class TestGeneratedContent:
         content = GeneratedContent(
             id=uuid4(),
             product_id=uuid4(),
-            title="Valid title",
-            description="Valid description",
+            title="Valid title that is at least 10 characters long",
+            description="Valid description that is at least 50 characters long to pass validation",
             ml_category_id="MLA1055",
             ml_category_name="Celulares y Smartphones",
-            ml_title="Valid title",
+            ml_title="Valid title for ML",
             ml_price=Decimal("100.00"),
             ml_currency_id="ARS",
             ml_available_quantity=1,
@@ -421,11 +421,11 @@ class TestAIGeneration:
             updated_at=None,
         )
 
-        generation.start_processing()
+        generation.start_processing("gemini-2.5-flash")
 
         assert generation.status == GenerationStatus.PROCESSING
         assert generation.current_step == ProcessingStep.IMAGE_ANALYSIS
-        assert generation.progress_percentage == 10.0
+        assert generation.progress_percentage == 0.0
         assert generation.updated_at is not None
 
     def test_update_progress_success(self):
@@ -464,7 +464,7 @@ class TestAIGeneration:
             updated_at=None,
         )
 
-        generation.complete()
+        generation.complete_processing(uuid4(), 2500)
 
         assert generation.status == GenerationStatus.COMPLETED
         assert generation.progress_percentage == 100.0
@@ -485,7 +485,7 @@ class TestAIGeneration:
             updated_at=None,
         )
 
-        generation.fail("AI service unavailable", "AI_SERVICE_ERROR")
+        generation.fail_processing("AI service unavailable", "AI_SERVICE_ERROR")
 
         assert generation.status == GenerationStatus.FAILED
         assert generation.error_message == "AI service unavailable"

@@ -23,7 +23,13 @@ depends_on = [
     "modules.user_management.domain",
     "modules.user_management.application",
     "modules.user_management.infrastructure",
-    "modules.user_management.api", "modules.product_management.infrastructure", "modules.product_management.api", "modules.product_management.application",
+    "modules.user_management.api",
+    "modules.product_management.infrastructure",
+    "modules.product_management.api",
+    "modules.product_management.application",
+    "modules.content_generation.domain",
+    "modules.content_generation.application",
+    "modules.content_generation.infrastructure",
 ]
 
 # ========================================

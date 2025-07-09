@@ -14,6 +14,32 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.config.settings import Settings
 from infrastructure.database import get_database_session
 
+# Content generation imports
+from modules.content_generation.application.use_cases.generate_content import (
+    GenerateContentUseCase,
+)
+from modules.content_generation.infrastructure.repositories.sqlalchemy_content_repository import (
+    SQLAlchemyContentRepository,
+)
+from modules.content_generation.infrastructure.services.attribute_mapping_service import (
+    AttributeMappingService,
+)
+from modules.content_generation.infrastructure.services.content_validation_service import (
+    ContentValidationService,
+)
+from modules.content_generation.infrastructure.services.description_generation_service import (
+    DescriptionGenerationService,
+)
+from modules.content_generation.infrastructure.services.gemini_ai_service import (
+    GeminiAIService,
+)
+from modules.content_generation.infrastructure.services.ml_category_service import (
+    MLCategoryService,
+)
+from modules.content_generation.infrastructure.services.title_generation_service import (
+    TitleGenerationService,
+)
+
 # Product management imports
 from modules.product_management.application.use_cases.create_product import (
     CreateProductUseCase,
@@ -192,4 +218,115 @@ CreateProductUseCaseDep = Annotated[
 ]
 GetProductsUseCaseDep = Annotated[
     GetProductsUseCase, Depends(get_get_products_use_case)
+]
+
+
+# Content generation dependencies
+def get_content_repository(
+    session: AsyncSession = Depends(get_database_session),
+) -> SQLAlchemyContentRepository:
+    """Get content repository instance."""
+    return SQLAlchemyContentRepository(session)
+
+
+def get_gemini_ai_service(
+    settings: Settings = Depends(get_settings),
+) -> GeminiAIService:
+    """Get Gemini AI service instance."""
+    return GeminiAIService(
+        api_key=settings.ai_content_gemini_api_key,
+        model_name=settings.ai_content_gemini_model,
+        temperature=0.7,
+        max_tokens=2048,
+        timeout_seconds=60,
+        max_retries=3,
+    )
+
+
+def get_title_generation_service() -> TitleGenerationService:
+    """Get title generation service instance."""
+    return TitleGenerationService(
+        max_title_length=60,
+        min_title_length=10,
+    )
+
+
+def get_description_generation_service() -> DescriptionGenerationService:
+    """Get description generation service instance."""
+    return DescriptionGenerationService(
+        min_description_length=50,
+        max_description_length=2000,
+        target_description_length=500,
+    )
+
+
+def get_content_validation_service() -> ContentValidationService:
+    """Get content validation service instance."""
+    return ContentValidationService(
+        quality_threshold=0.7,
+        enable_strict_validation=True,
+    )
+
+
+def get_attribute_mapping_service() -> AttributeMappingService:
+    """Get attribute mapping service instance."""
+    return AttributeMappingService()
+
+
+def get_ml_category_service() -> MLCategoryService:
+    """Get ML category service instance."""
+    return MLCategoryService(
+        site_id="MLA",  # Argentina
+        timeout_seconds=30,
+        max_retries=3,
+        cache_ttl_seconds=3600,
+        cache_max_size=1000,
+    )
+
+
+def get_generate_content_use_case(
+    ai_service: GeminiAIService = Depends(get_gemini_ai_service),
+    content_repository: SQLAlchemyContentRepository = Depends(get_content_repository),
+    title_service: TitleGenerationService = Depends(get_title_generation_service),
+    description_service: DescriptionGenerationService = Depends(
+        get_description_generation_service
+    ),
+    validation_service: ContentValidationService = Depends(
+        get_content_validation_service
+    ),
+    attribute_service: AttributeMappingService = Depends(get_attribute_mapping_service),
+    category_service: MLCategoryService = Depends(get_ml_category_service),
+) -> GenerateContentUseCase:
+    """Get content generation use case instance."""
+    return GenerateContentUseCase(
+        ai_service=ai_service,
+        content_repository=content_repository,
+        title_service=title_service,
+        description_service=description_service,
+        validation_service=validation_service,
+        attribute_service=attribute_service,
+        category_service=category_service,
+    )
+
+
+# Content generation type aliases
+ContentRepositoryDep = Annotated[
+    SQLAlchemyContentRepository, Depends(get_content_repository)
+]
+GeminiAIServiceDep = Annotated[GeminiAIService, Depends(get_gemini_ai_service)]
+TitleGenerationServiceDep = Annotated[
+    TitleGenerationService, Depends(get_title_generation_service)
+]
+DescriptionGenerationServiceDep = Annotated[
+    DescriptionGenerationService, Depends(get_description_generation_service)
+]
+ContentValidationServiceDep = Annotated[
+    ContentValidationService, Depends(get_content_validation_service)
+]
+AttributeMappingServiceDep = Annotated[
+    AttributeMappingService, Depends(get_attribute_mapping_service)
+]
+MLCategoryServiceDep = Annotated[MLCategoryService, Depends(get_ml_category_service)]
+GenerateContentUseCaseDep = Annotated[
+    GenerateContentUseCase, Depends(get_generate_content_use_case)
 ]

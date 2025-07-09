@@ -10,6 +10,7 @@ import time
 from datetime import UTC, datetime
 from decimal import Decimal
 from statistics import mean, median, stdev
+from typing import NamedTuple
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -25,13 +26,23 @@ from modules.content_generation.domain.entities.ai_generation import (
 from modules.content_generation.domain.entities.generated_content import (
     GeneratedContent,
 )
-from modules.content_generation.domain.ports.ai_service_protocols import ImageData
 from modules.content_generation.infrastructure.services.gemini_ai_service import (
     GeminiAIService,
 )
 from modules.content_generation.infrastructure.services.ml_category_service import (
     MLCategoryService,
 )
+
+
+class MockImageData(NamedTuple):
+    """Mock implementation of ImageData protocol for testing."""
+
+    s3_key: str
+    s3_url: str
+    file_format: str
+    resolution_width: int
+    resolution_height: int
+
 
 pytestmark = [pytest.mark.integration, pytest.mark.performance]
 
@@ -99,20 +110,20 @@ class TestContentGenerationPerformance:
     def use_case(self, mock_ai_service, mock_category_service):
         """Create use case with mocked services."""
         return GenerateContentUseCase(
-            ai_service=mock_ai_service,
-            category_service=mock_category_service,
-            title_service=Mock(),
-            description_service=Mock(),
-            attribute_service=Mock(),
+            ai_content_generator=mock_ai_service,
+            ml_category_service=mock_category_service,
+            title_generation_service=Mock(),
+            description_generation_service=Mock(),
+            attribute_mapping_service=Mock(),
             content_repository=Mock(),
-            generation_repository=Mock(),
+            content_validation_service=Mock(),
         )
 
     @pytest.fixture
     def sample_images(self):
         """Sample image data for testing."""
         return [
-            ImageData(
+            MockImageData(
                 s3_key="test/image1.jpg",
                 s3_url="https://example.com/image1.jpg",
                 file_format="jpeg",
@@ -125,15 +136,23 @@ class TestContentGenerationPerformance:
     async def test_single_content_generation_performance(self, use_case, sample_images):
         """Test performance of single content generation."""
         # Configure additional mocks
-        use_case.title_service.generate_title.return_value = {
-            "title": "Test Title",
-            "confidence": 0.9,
+        use_case.title_generation_service.generate_optimized_title.return_value = (
+            "Test Title"
+        )
+        use_case.title_generation_service.validate_title.return_value = {
+            "is_valid": True
         }
-        use_case.description_service.generate_description.return_value = {
-            "description": "Test Description",
-            "confidence": 0.85,
+        use_case.title_generation_service.calculate_title_confidence.return_value = 0.9
+
+        use_case.description_generation_service.generate_description.return_value = (
+            "Test Description"
+        )
+        use_case.description_generation_service.validate_description.return_value = {
+            "is_valid": True
         }
-        use_case.attribute_service.map_attributes.return_value = {
+        use_case.description_generation_service.calculate_description_confidence.return_value = 0.85
+
+        use_case.attribute_mapping_service.map_attributes.return_value = {
             "attributes": {},
             "confidence": 0.8,
         }

@@ -89,7 +89,7 @@ class AIServiceRateLimitError(AIServiceError):
 class AIServiceQuotaExceededError(AIServiceError):
     """Raised when AI service quota is exceeded."""
 
-    def __init__(self, message: str, provider: str, quota_type: str, **kwargs):
+    def __init__(self, message: str, provider: str, quota_type: str, **kwargs: Any):
         super().__init__(message, provider, **kwargs)
         self.quota_type = quota_type
         self.details.update(
@@ -103,7 +103,10 @@ class CategoryDetectionError(ContentGenerationError):
     """Raised when category detection fails."""
 
     def __init__(
-        self, message: str, product_features: dict[str, Any] | None = None, **kwargs
+        self,
+        message: str,
+        product_features: dict[str, Any] | None = None,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.product_features = product_features or {}
@@ -159,7 +162,7 @@ class InvalidContentError(ContentGenerationError):
 class TitleGenerationError(InvalidContentError):
     """Raised when title generation fails quality checks."""
 
-    def __init__(self, message: str, generated_title: str | None = None, **kwargs):
+    def __init__(self, message: str, generated_title: str | None = None, **kwargs: Any):
         super().__init__(message, "title", **kwargs)
         self.generated_title = generated_title
         self.details.update(
@@ -173,7 +176,7 @@ class DescriptionGenerationError(InvalidContentError):
     """Raised when description generation fails quality checks."""
 
     def __init__(
-        self, message: str, generated_description: str | None = None, **kwargs
+        self, message: str, generated_description: str | None = None, **kwargs: Any
     ):
         super().__init__(message, "description", **kwargs)
         self.generated_description = generated_description
@@ -230,7 +233,9 @@ class AttributeValidationError(AttributeMappingError):
 class PriceEstimationError(ContentGenerationError):
     """Raised when price estimation fails."""
 
-    def __init__(self, message: str, estimated_price: float | None = None, **kwargs):
+    def __init__(
+        self, message: str, estimated_price: float | None = None, **kwargs: Any
+    ):
         super().__init__(message, **kwargs)
         self.estimated_price = estimated_price
         self.details.update(
@@ -265,7 +270,10 @@ class ContentValidationError(ContentGenerationError):
     """Raised when content validation fails."""
 
     def __init__(
-        self, message: str, validation_rules: dict[str, Any] | None = None, **kwargs
+        self,
+        message: str,
+        validation_rules: dict[str, Any] | None = None,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.validation_rules = validation_rules or {}
@@ -300,7 +308,7 @@ class ProcessingTimeoutError(ContentGenerationError):
 class ConfigurationError(ContentGenerationError):
     """Raised when configuration is invalid or missing."""
 
-    def __init__(self, message: str, config_key: str, **kwargs):
+    def __init__(self, message: str, config_key: str, **kwargs: Any):
         super().__init__(message, **kwargs)
         self.config_key = config_key
         self.details.update(
@@ -314,7 +322,11 @@ class ExternalServiceError(ContentGenerationError):
     """Raised when external service integration fails."""
 
     def __init__(
-        self, message: str, service_name: str, service_url: str | None = None, **kwargs
+        self,
+        message: str,
+        service_name: str,
+        service_url: str | None = None,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.service_name = service_name
@@ -331,7 +343,11 @@ class MercadoLibreAPIError(ExternalServiceError):
     """Raised when MercadoLibre API integration fails."""
 
     def __init__(
-        self, message: str, api_endpoint: str, status_code: int | None = None, **kwargs
+        self,
+        message: str,
+        api_endpoint: str,
+        status_code: int | None = None,
+        **kwargs: Any,
     ):
         super().__init__(message, "MercadoLibre API", **kwargs)
         self.api_endpoint = api_endpoint
@@ -347,7 +363,7 @@ class MercadoLibreAPIError(ExternalServiceError):
 class ContentGenerationCancelledError(ContentGenerationError):
     """Raised when content generation is cancelled."""
 
-    def __init__(self, message: str, reason: str | None = None, **kwargs):
+    def __init__(self, message: str, reason: str | None = None, **kwargs: Any):
         super().__init__(message, **kwargs)
         self.reason = reason
         self.details.update(
@@ -381,7 +397,9 @@ class MaxRetriesExceededError(ContentGenerationError):
 class InsufficientDataError(ContentGenerationError):
     """Raised when insufficient data is provided for content generation."""
 
-    def __init__(self, message: str, required_fields: list | None = None, **kwargs):
+    def __init__(
+        self, message: str, required_fields: list[str] | None = None, **kwargs: Any
+    ):
         super().__init__(message, **kwargs)
         self.required_fields = required_fields or []
         self.details.update(
@@ -394,7 +412,9 @@ class InsufficientDataError(ContentGenerationError):
 class QualityThresholdError(ContentGenerationError):
     """Raised when generated content doesn't meet quality thresholds."""
 
-    def __init__(self, message: str, quality_score: float, threshold: float, **kwargs):
+    def __init__(
+        self, message: str, quality_score: float, threshold: float, **kwargs: Any
+    ):
         super().__init__(message, **kwargs)
         self.quality_score = quality_score
         self.threshold = threshold
@@ -410,7 +430,11 @@ class RepositoryError(ContentGenerationError):
     """Raised when repository operations fail."""
 
     def __init__(
-        self, message: str, operation: str, entity_type: str | None = None, **kwargs
+        self,
+        message: str,
+        operation: str,
+        entity_type: str | None = None,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.operation = operation
@@ -426,7 +450,7 @@ class RepositoryError(ContentGenerationError):
 class EntityNotFoundError(RepositoryError):
     """Raised when requested entity is not found."""
 
-    def __init__(self, message: str, entity_type: str, entity_id: str, **kwargs):
+    def __init__(self, message: str, entity_type: str, entity_id: str, **kwargs: Any):
         super().__init__(message, "find", entity_type, **kwargs)
         self.entity_id = entity_id
         self.details.update(
@@ -439,7 +463,7 @@ class EntityNotFoundError(RepositoryError):
 class EntityAlreadyExistsError(RepositoryError):
     """Raised when entity already exists."""
 
-    def __init__(self, message: str, entity_type: str, entity_id: str, **kwargs):
+    def __init__(self, message: str, entity_type: str, entity_id: str, **kwargs: Any):
         super().__init__(message, "create", entity_type, **kwargs)
         self.entity_id = entity_id
         self.details.update(

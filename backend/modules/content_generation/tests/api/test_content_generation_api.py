@@ -7,7 +7,7 @@ request/response validation, WebSocket functionality, and error handling.
 
 from datetime import UTC, datetime
 from decimal import Decimal
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
 
 import pytest
@@ -56,7 +56,11 @@ def client(app):
 @pytest.fixture
 def mock_use_case():
     """Create mock use case for testing."""
-    return Mock()
+    use_case = Mock()
+    use_case.execute = AsyncMock()
+    use_case.validate_generated_content = AsyncMock()
+    use_case.regenerate_content = AsyncMock()
+    return use_case
 
 
 @pytest.fixture
@@ -123,107 +127,146 @@ pytestmark = [pytest.mark.integration, pytest.mark.api]
 class TestContentGenerationEndpoints:
     """Test cases for content generation API endpoints."""
 
-    def test_generate_content_success(self, client, mock_use_case, mock_ai_generation):
+    def test_generate_content_success(self, app, mock_use_case, mock_ai_generation):
         """Test successful content generation request."""
         product_id = uuid4()
+        mock_use_case.execute.return_value = mock_ai_generation
 
-        # Mock the use case dependency
-        with patch(
-            "modules.content_generation.api.routers.content_generation_router.get_generate_content_use_case"
-        ) as mock_get_use_case:
-            mock_get_use_case.return_value = mock_use_case
-            mock_use_case.execute.return_value = mock_ai_generation
+        # Override FastAPI dependencies
+        from modules.content_generation.api.routers.content_generation_router import (
+            get_current_user,
+            get_generate_content_use_case,
+        )
 
-            # Mock authentication
-            with patch(
-                "modules.content_generation.api.routers.content_generation_router.get_current_user"
-            ) as mock_get_user:
-                mock_get_user.return_value = {
-                    "user_id": "test_user",
-                    "email": "test@example.com",
-                }
+        app.dependency_overrides[get_generate_content_use_case] = lambda: mock_use_case
+        app.dependency_overrides[get_current_user] = lambda: {
+            "user_id": "test_user",
+            "email": "test@example.com",
+        }
 
-                request_data = {
-                    "regenerate": False,
-                    "category_hint": "celulares",
-                    "price_range": {"min": 400000, "max": 500000},
-                    "target_audience": "usuarios premium",
-                }
+        client = TestClient(app)
 
-                response = client.post(
-                    f"/api/v1/content-generation/products/{product_id}/generate",
-                    json=request_data,
-                    headers={"Authorization": "Bearer test_token"},
-                )
+        try:
+            request_data = {
+                "regenerate": False,
+                "category_hint": "celulares",
+                "price_range": {"min": 400000, "max": 500000},
+                "target_audience": "usuarios premium",
+            }
 
-                assert response.status_code == status.HTTP_202_ACCEPTED
-                response_data = response.json()
+            response = client.post(
+                f"/api/v1/content-generation/products/{product_id}/generate",
+                json=request_data,
+                headers={"Authorization": "Bearer test_token"},
+            )
 
-                assert "processing_id" in response_data
-                assert response_data["status"] == "processing"
-                assert response_data["progress"]["current_step"] == "title_generation"
-                assert response_data["progress"]["percentage"] == 45.0
-                assert response_data["estimated_completion_seconds"] == 15
+            assert response.status_code == status.HTTP_202_ACCEPTED
+            response_data = response.json()
 
-    def test_generate_content_invalid_request(self, client):
+            assert "processing_id" in response_data
+            assert response_data["status"] == "processing"
+            assert response_data["progress"]["current_step"] == "title_generation"
+            assert response_data["progress"]["percentage"] == 45.0
+            assert response_data["estimated_completion_seconds"] == 15
+
+        finally:
+            # Clean up dependency overrides
+            app.dependency_overrides.clear()
+
+    def test_generate_content_invalid_request(self, app):
         """Test content generation with invalid request data."""
         product_id = uuid4()
 
-        # Invalid request data (missing required fields, invalid types)
-        request_data = {
-            "regenerate": "invalid",  # Should be boolean
-            "price_range": {"min": "invalid"},  # Should be number
-        }
-
-        response = client.post(
-            f"/api/v1/content-generation/products/{product_id}/generate",
-            json=request_data,
-            headers={"Authorization": "Bearer test_token"},
+        # Override FastAPI dependencies
+        from modules.content_generation.api.routers.content_generation_router import (
+            get_current_user,
+            get_generate_content_use_case,
         )
 
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        app.dependency_overrides[get_generate_content_use_case] = lambda: Mock()
+        app.dependency_overrides[get_current_user] = lambda: {
+            "user_id": "test_user",
+            "email": "test@example.com",
+        }
 
-    def test_generate_content_unauthorized(self, client):
+        client = TestClient(app)
+
+        try:
+            # Invalid request data (missing required fields, invalid types)
+            request_data = {
+                "regenerate": "invalid",  # Should be boolean
+                "price_range": {"min": "invalid"},  # Should be number
+            }
+
+            response = client.post(
+                f"/api/v1/content-generation/products/{product_id}/generate",
+                json=request_data,
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_generate_content_unauthorized(self, app):
         """Test content generation without authentication."""
         product_id = uuid4()
 
-        request_data = {"regenerate": False, "category_hint": "celulares"}
-
-        response = client.post(
-            f"/api/v1/content-generation/products/{product_id}/generate",
-            json=request_data,
+        # Override FastAPI dependencies - don't override auth to test unauthorized
+        from modules.content_generation.api.routers.content_generation_router import (
+            get_generate_content_use_case,
         )
+
+        app.dependency_overrides[get_generate_content_use_case] = lambda: Mock()
+
+        client = TestClient(app)
+
+        try:
+            request_data = {"regenerate": False, "category_hint": "celulares"}
+
+            response = client.post(
+                f"/api/v1/content-generation/products/{product_id}/generate",
+                json=request_data,
+            )
+        finally:
+            app.dependency_overrides.clear()
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_generate_content_ai_service_error(self, client, mock_use_case):
+    def test_generate_content_ai_service_error(self, app, mock_use_case):
         """Test content generation with AI service error."""
         product_id = uuid4()
+        mock_use_case.execute.side_effect = AIServiceError(
+            "AI service unavailable", "gemini"
+        )
 
-        with patch(
-            "modules.content_generation.api.routers.content_generation_router.get_generate_content_use_case"
-        ) as mock_get_use_case:
-            mock_get_use_case.return_value = mock_use_case
-            mock_use_case.execute.side_effect = AIServiceError("AI service unavailable")
+        # Override FastAPI dependencies
+        from modules.content_generation.api.routers.content_generation_router import (
+            get_current_user,
+            get_generate_content_use_case,
+        )
 
-            with patch(
-                "modules.content_generation.api.routers.content_generation_router.get_current_user"
-            ) as mock_get_user:
-                mock_get_user.return_value = {
-                    "user_id": "test_user",
-                    "email": "test@example.com",
-                }
+        app.dependency_overrides[get_generate_content_use_case] = lambda: mock_use_case
+        app.dependency_overrides[get_current_user] = lambda: {
+            "user_id": "test_user",
+            "email": "test@example.com",
+        }
 
-                request_data = {"regenerate": False}
+        client = TestClient(app)
 
-                response = client.post(
-                    f"/api/v1/content-generation/products/{product_id}/generate",
-                    json=request_data,
-                    headers={"Authorization": "Bearer test_token"},
-                )
+        try:
+            request_data = {"regenerate": False}
 
-                assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
-                assert "AI service error" in response.json()["detail"]
+            response = client.post(
+                f"/api/v1/content-generation/products/{product_id}/generate",
+                json=request_data,
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+            assert "AI service error" in response.json()["detail"]
+        finally:
+            app.dependency_overrides.clear()
 
     def test_generate_content_category_detection_error(self, client, mock_use_case):
         """Test content generation with category detection error."""

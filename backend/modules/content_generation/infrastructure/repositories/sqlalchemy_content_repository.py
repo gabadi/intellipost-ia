@@ -7,6 +7,7 @@ using SQLAlchemy ORM.
 
 import logging
 from datetime import UTC, datetime
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import and_, desc, select
@@ -17,6 +18,9 @@ from modules.content_generation.domain.exceptions import (
     EntityNotFoundError,
     RepositoryError,
 )
+from modules.content_generation.domain.ports.ai_service_protocols import (
+    ContentRepositoryProtocol,
+)
 from modules.content_generation.infrastructure.models.generated_content_model import (
     GeneratedContentModel,
 )
@@ -24,7 +28,7 @@ from modules.content_generation.infrastructure.models.generated_content_model im
 logger = logging.getLogger(__name__)
 
 
-class SQLAlchemyContentRepository:
+class SQLAlchemyContentRepository(ContentRepositoryProtocol):
     """
     SQLAlchemy implementation of the content repository.
 
@@ -466,7 +470,7 @@ class SQLAlchemyContentRepository:
             confidence_breakdown=model.confidence_breakdown,
             ai_provider=model.ai_provider,
             ai_model_version=model.ai_model_version,
-            generation_time_ms=model.generation_time_ms,
+            generation_time_ms=model.generation_time_ms or 0,
             version=model.version,
             generated_at=model.generated_at,
             updated_at=model.updated_at,
@@ -492,7 +496,7 @@ class SQLAlchemyContentRepository:
         model.ml_attributes = content.ml_attributes
         model.ml_sale_terms = content.ml_sale_terms
         model.ml_shipping = content.ml_shipping
-        model.confidence_overall = content.confidence_overall
+        model.confidence_overall = Decimal(str(content.confidence_overall))
         model.confidence_breakdown = content.confidence_breakdown
         model.ai_provider = content.ai_provider
         model.ai_model_version = content.ai_model_version
