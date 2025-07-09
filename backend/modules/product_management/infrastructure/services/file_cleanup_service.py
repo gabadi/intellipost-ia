@@ -338,7 +338,9 @@ class FileCleanupService:
                 format_counts[file_format] = format_counts.get(file_format, 0) + 1
 
             # Find orphaned files count
-            orphaned_files: list[dict[str, Any]] = await self.find_orphaned_files(user_id)
+            orphaned_files: list[dict[str, Any]] = await self.find_orphaned_files(
+                user_id
+            )
             orphaned_size = sum(cast("int", file["size"]) for file in orphaned_files)
 
             return {

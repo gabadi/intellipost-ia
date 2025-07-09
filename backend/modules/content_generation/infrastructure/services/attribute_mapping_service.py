@@ -375,7 +375,9 @@ class AttributeMappingService(AttributeMappingServiceProtocol):
             unknown_attributes = set(attributes.keys()) - known_attributes
 
             if unknown_attributes:
-                warnings.append(f"Unknown attributes: {', '.join(list(unknown_attributes))}")
+                warnings.append(
+                    f"Unknown attributes: {', '.join(list(unknown_attributes))}"
+                )
 
             return {
                 "is_valid": len(validation_errors) == 0,
@@ -688,7 +690,8 @@ class AttributeMappingService(AttributeMappingServiceProtocol):
             "optional_attributes": category_config["optional"],
             "attribute_mappings": category_config["mappings"],
             "total_attributes": len(
-                cast("list[str]", category_config["required"]) + cast("list[str]", category_config["optional"])
+                cast("list[str]", category_config["required"])
+                + cast("list[str]", category_config["optional"])
             ),
         }
 
