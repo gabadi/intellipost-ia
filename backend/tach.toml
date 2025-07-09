@@ -93,17 +93,17 @@ depends_on = []
 # Content Generation - Application Layer (Use cases, can only depend on domain)
 [[modules]]
 path = "modules.content_generation.application"
-depends_on = []
+depends_on = ["modules.content_generation.domain"]
 
 # Content Generation - Infrastructure Layer (External concerns, depends on domain for contracts)
 [[modules]]
 path = "modules.content_generation.infrastructure"
-depends_on = []
+depends_on = ["modules.content_generation.domain", "infrastructure"]
 
 # Content Generation - API Layer (Controllers, depends on application, infrastructure, and domain)
 [[modules]]
 path = "modules.content_generation.api"
-depends_on = []
+depends_on = ["modules.content_generation.application", "modules.content_generation.domain", "modules.content_generation.infrastructure", "api"]
 
 # Marketplace Integration module - TRUE INDEPENDENCE
 [[modules]]
