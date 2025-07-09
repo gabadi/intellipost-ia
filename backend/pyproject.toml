@@ -210,14 +210,11 @@ include = ["*"]
 
 # Tach configuration moved to separate tach.toml file
 
-# Dev dependencies now managed by uvx and package.json
-# Use: uvx ruff, uvx pyright, uvx tach, uvx pre-commit
+# Dev dependencies now managed by uvx
+# Use: uvx ruff, uvx pyright, uvx tach, uvx bandit
 [dependency-groups]
 dev = [
-    "bandit>=1.8.6",
     "pre-commit>=4.2.0",
-    "pyright>=1.1.400",
-    "tach>=0.29.0",
 ]
 test = [
     "pytest>=8.4.1",
