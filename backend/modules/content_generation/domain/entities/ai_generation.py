@@ -6,7 +6,7 @@ the processing state and metadata of AI content generation.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 from uuid import UUID
@@ -55,7 +55,7 @@ class AIGeneration:
     estimated_completion_seconds: int | None = None
 
     # Input data
-    input_images: list[str] = None  # S3 keys
+    input_images: list[str] | None = None  # S3 keys
     input_prompt: str | None = None
     category_hint: str | None = None
     price_range: dict[str, float] | None = None
@@ -72,11 +72,11 @@ class AIGeneration:
     processing_time_ms: int | None = None
 
     # Processing steps tracking
-    completed_steps: list[ProcessingStep] = None
+    completed_steps: list[ProcessingStep] | None = None
     failed_step: ProcessingStep | None = None
 
     # Timestamps
-    created_at: datetime = None
+    created_at: datetime | None = None
     started_at: datetime | None = None
     completed_at: datetime | None = None
     updated_at: datetime | None = None
@@ -88,7 +88,7 @@ class AIGeneration:
         if self.completed_steps is None:
             self.completed_steps = []
         if self.created_at is None:
-            self.created_at = datetime.utcnow()
+            self.created_at = datetime.now(UTC)
         if self.price_range is None:
             self.price_range = {}
 
@@ -111,8 +111,8 @@ class AIGeneration:
     def start_processing(self, ai_model_version: str):
         """Start the processing and update status."""
         self.status = GenerationStatus.PROCESSING
-        self.started_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+        self.started_at = datetime.now(UTC)
+        self.updated_at = datetime.now(UTC)
         self.ai_model_version = ai_model_version
         self.current_step = ProcessingStep.IMAGE_ANALYSIS
         self.progress_percentage = 0.0
@@ -121,10 +121,10 @@ class AIGeneration:
         """Update the current processing step and progress."""
         self.current_step = step
         self.progress_percentage = percentage
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
         # Add to completed steps if not already there
-        if step not in self.completed_steps:
+        if self.completed_steps is not None and step not in self.completed_steps:
             # Only mark as completed if we're moving to next step
             if percentage >= 100.0 or step != self.current_step:
                 self.completed_steps.append(step)
@@ -135,8 +135,8 @@ class AIGeneration:
         self.generated_content_id = generated_content_id
         self.processing_time_ms = processing_time_ms
         self.progress_percentage = 100.0
-        self.completed_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+        self.completed_at = datetime.now(UTC)
+        self.updated_at = datetime.now(UTC)
         self.current_step = None
 
     def fail_processing(
@@ -150,14 +150,14 @@ class AIGeneration:
         self.error_message = error_message
         self.error_code = error_code
         self.failed_step = failed_step or self.current_step
-        self.completed_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+        self.completed_at = datetime.now(UTC)
+        self.updated_at = datetime.now(UTC)
 
     def cancel_processing(self):
         """Cancel the processing."""
         self.status = GenerationStatus.CANCELLED
-        self.completed_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+        self.completed_at = datetime.now(UTC)
+        self.updated_at = datetime.now(UTC)
 
     def get_progress_info(self) -> dict[str, Any]:
         """Get progress information for client updates."""
@@ -167,7 +167,9 @@ class AIGeneration:
             "current_step": self.current_step.value if self.current_step else None,
             "progress_percentage": self.progress_percentage,
             "estimated_completion_seconds": self.estimated_completion_seconds,
-            "completed_steps": [step.value for step in self.completed_steps],
+            "completed_steps": [step.value for step in self.completed_steps]
+            if self.completed_steps
+            else [],
             "total_steps": len(ProcessingStep),
         }
 
@@ -186,7 +188,7 @@ class AIGeneration:
             "error_message": self.error_message,
             "error_code": self.error_code,
             "failed_step": self.failed_step.value if self.failed_step else None,
-            "created_at": self.created_at.isoformat(),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "completed_at": self.completed_at.isoformat()
             if self.completed_at
@@ -242,9 +244,11 @@ class AIGeneration:
             "ai_provider": self.ai_provider,
             "ai_model_version": self.ai_model_version,
             "processing_time_ms": self.processing_time_ms,
-            "completed_steps": [step.value for step in self.completed_steps],
+            "completed_steps": [step.value for step in self.completed_steps]
+            if self.completed_steps
+            else [],
             "failed_step": self.failed_step.value if self.failed_step else None,
-            "created_at": self.created_at.isoformat(),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "completed_at": self.completed_at.isoformat()
             if self.completed_at

@@ -153,13 +153,9 @@ reportConstantRedefinition = true
 reportIncompatibleMethodOverride = true
 reportIncompatibleVariableOverride = true
 reportOverlappingOverload = true
-# Temporarily disable some strict mode checks to make transition manageable
-reportUnknownMemberType = false
-reportUnknownVariableType = false
-reportUnknownParameterType = false
-reportUnknownArgumentType = false
-reportMissingParameterType = false
-reportMissingTypeArgument = false
+# Only disable genuinely safe/cosmetic issues
+reportPrivateImportUsage = false  # google.generativeai imports are safe
+reportUnnecessaryIsInstance = false  # isinstance optimizations don't affect functionality
 
 # Pytest configuration
 [tool.pytest.ini_options]
@@ -218,8 +214,10 @@ include = ["*"]
 # Use: uvx ruff, uvx pyright, uvx tach, uvx pre-commit
 [dependency-groups]
 dev = [
+    "bandit>=1.8.6",
     "pre-commit>=4.2.0",
     "pyright>=1.1.400",
+    "tach>=0.29.0",
 ]
 test = [
     "pytest>=8.4.1",

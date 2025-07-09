@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page as pageStore } from '$app/stores';
+  import { derived } from 'svelte/store';
   import type { NavItem } from '$types/navigation.js';
   import { theme, type Theme } from '$stores/theme.js';
   import { authStore } from '$lib/stores/auth';
@@ -12,7 +13,9 @@
     { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 
-  $: currentPath = $page.url.pathname;
+  const currentPathStore = derived(pageStore, page => page?.url?.pathname || '/');
+  let currentPath: string;
+  $: currentPath = $currentPathStore;
 
   function isActive(path: string): boolean {
     if (path === '/dashboard') {

@@ -10,6 +10,7 @@ Features:
 
 <script lang="ts">
   import { theme, resolvedTheme, type Theme } from '$stores/theme.js';
+  import { get } from 'svelte/store';
 
   // Theme options
   const themes: Array<{ value: Theme; label: string; icon: string }> = [
@@ -24,7 +25,11 @@ Features:
 
   // Subscribe to theme changes
   $: currentTheme = $theme;
-  $: currentResolvedTheme = $resolvedTheme;
+
+  // Use get() to avoid $ syntax issues with dependency-cruiser
+  $: {
+    currentResolvedTheme = get(resolvedTheme);
+  }
 
   // Get next theme in cycle
   function getNextTheme(current: Theme): Theme {

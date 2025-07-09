@@ -126,6 +126,7 @@ class AIContentModuleConfig(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
         env_prefix="INTELLIPOST_AI_CONTENT_",
+        extra="ignore",
     )
 
     def get_module_specific_settings(self) -> dict[str, Any]:

@@ -6,6 +6,9 @@ the confidence levels for different aspects of AI-generated content.
 """
 
 from dataclasses import dataclass
+from typing import Any
+
+from modules.content_generation.domain.exceptions import InvalidContentError
 
 
 @dataclass(frozen=True)
@@ -28,14 +31,17 @@ class ConfidenceScore:
     def _validate_overall_score(self):
         """Validate overall confidence score."""
         if not (0.0 <= self.overall <= 1.0):
-            raise ValueError("Overall confidence must be between 0.0 and 1.0")
+            raise InvalidContentError(
+                "Overall confidence must be between 0.0 and 1.0", "confidence"
+            )
 
     def _validate_breakdown_scores(self):
         """Validate breakdown confidence scores."""
-        for component, score in self.breakdown.items():
+        for _component, score in self.breakdown.items():
             if not (0.0 <= score <= 1.0):
-                raise ValueError(
-                    f"Confidence score for {component} must be between 0.0 and 1.0"
+                raise InvalidContentError(
+                    "Breakdown confidence scores must be between 0.0 and 1.0",
+                    "confidence",
                 )
 
     def is_high_confidence(self, threshold: float = 0.8) -> bool:
@@ -74,18 +80,26 @@ class ConfidenceScore:
 
         return weighted_sum / total_weight
 
-    def to_dict(self) -> dict[str, any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the confidence score to a dictionary representation."""
         return {
             "overall": self.overall,
             "breakdown": self.breakdown.copy(),
         }
 
+    def meets_threshold(self, threshold: float = 0.7) -> bool:
+        """Check if the overall confidence meets the threshold."""
+        return self.overall >= threshold
+
+    def has_low_component_confidence(self, threshold: float = 0.5) -> bool:
+        """Check if any component has low confidence."""
+        return any(score < threshold for score in self.breakdown.values())
+
     @classmethod
     def from_breakdown(cls, breakdown: dict[str, float]) -> "ConfidenceScore":
         """Create a ConfidenceScore from a breakdown dictionary."""
         if not breakdown:
-            raise ValueError("Breakdown cannot be empty")
+            raise InvalidContentError("Breakdown cannot be empty", "confidence")
 
         overall = sum(breakdown.values()) / len(breakdown)
         return cls(overall=overall, breakdown=breakdown)

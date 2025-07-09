@@ -12,6 +12,7 @@ from typing import Any
 from uuid import UUID
 
 from modules.content_generation.domain.entities.confidence_score import ConfidenceScore
+from modules.content_generation.domain.exceptions import InvalidContentError
 
 
 @dataclass(frozen=True)
@@ -72,40 +73,57 @@ class GeneratedContent:
 
     def _validate_title(self):
         """Validate title constraints."""
-        if not self.title or len(self.title.strip()) < 10:
-            raise ValueError("Title must be at least 10 characters long")
+        if not self.title or len(self.title.strip()) == 0:
+            raise InvalidContentError("Title cannot be empty", "title")
+
+        if len(self.title.strip()) < 10:
+            raise InvalidContentError(
+                "Title must be at least 10 characters long", "title"
+            )
 
         if len(self.ml_title) > 60:
-            raise ValueError("MercadoLibre title cannot exceed 60 characters")
+            raise InvalidContentError("Title must be 60 characters or less", "title")
 
     def _validate_description(self):
         """Validate description constraints."""
         if not self.description or len(self.description.strip()) < 50:
-            raise ValueError("Description must be at least 50 characters long")
+            raise InvalidContentError(
+                "Description must be at least 50 characters long", "description"
+            )
 
     def _validate_price(self):
         """Validate price constraints."""
         if self.ml_price <= 0:
-            raise ValueError("Price must be greater than 0")
+            raise InvalidContentError("Price must be positive", "price")
 
     def _validate_confidence_scores(self):
         """Validate confidence score constraints."""
         if not (0.0 <= self.confidence_overall <= 1.0):
-            raise ValueError("Overall confidence must be between 0.0 and 1.0")
+            raise InvalidContentError(
+                "Overall confidence must be between 0.0 and 1.0", "confidence"
+            )
 
         for component, score in self.confidence_breakdown.items():
             if not (0.0 <= score <= 1.0):
-                raise ValueError(
-                    f"Confidence score for {component} must be between 0.0 and 1.0"
+                raise InvalidContentError(
+                    f"Confidence score for {component} must be between 0.0 and 1.0",
+                    "confidence",
                 )
 
     def _validate_ml_attributes(self):
         """Validate MercadoLibre attributes."""
         if not self.ml_category_id:
-            raise ValueError("MercadoLibre category ID is required")
+            raise InvalidContentError(
+                "MercadoLibre category ID is required", "category"
+            )
 
         if not self.ml_category_name:
-            raise ValueError("MercadoLibre category name is required")
+            raise InvalidContentError(
+                "MercadoLibre category name is required", "category"
+            )
+
+        if self.ml_available_quantity <= 0:
+            raise InvalidContentError("Available quantity must be positive", "quantity")
 
     def get_confidence_score(self) -> ConfidenceScore:
         """Get the confidence score as a domain entity."""
@@ -127,6 +145,10 @@ class GeneratedContent:
             "high_confidence": self.is_high_confidence(),
             "category_detected": bool(self.ml_category_id),
         }
+
+    def meets_quality_threshold(self, threshold: float = 0.7) -> bool:
+        """Check if the generated content meets the quality threshold."""
+        return self.confidence_overall >= threshold
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the entity to a dictionary representation."""

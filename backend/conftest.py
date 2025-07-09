@@ -4,10 +4,12 @@ Pytest configuration for enforcing test marks.
 This ensures all tests are properly categorized as unit or integration.
 """
 
+from typing import Any
+
 import pytest
 
 
-def pytest_collection_modifyitems(config, items):  # noqa: ARG001
+def pytest_collection_modifyitems(config: Any, items: list[Any]) -> None:  # noqa: ARG001
     """
     Enforce that all tests have either 'unit' or 'integration' marks.
 
@@ -16,7 +18,7 @@ def pytest_collection_modifyitems(config, items):  # noqa: ARG001
     fail with a clear error message.
     """
     required_marks = {"unit", "integration"}
-    unmarked_tests = []
+    unmarked_tests: list[str] = []
 
     for item in items:
         # Get all marks for this test item

@@ -9,6 +9,7 @@ import asyncio
 import contextlib
 import logging
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from modules.user_management.domain.entities.ml_credentials import MLCredentials
 from modules.user_management.domain.ports.ml_credentials_repository_protocol import (
@@ -47,7 +48,7 @@ class TokenRefreshScheduler:
         self._credentials_repository = credentials_repository
         self._refresh_interval = refresh_interval_minutes * 60  # Convert to seconds
         self._running = False
-        self._task: asyncio.Task | None = None
+        self._task: asyncio.Task[Any] | None = None
 
     async def start(self) -> None:
         """Start the token refresh scheduler."""
@@ -205,7 +206,7 @@ class TokenRefreshScheduler:
         """
         return await self._oauth_service.process_expired_tokens()
 
-    async def get_refresh_status(self) -> dict:
+    async def get_refresh_status(self) -> dict[str, Any]:
         """
         Get status information about token refresh.
 
@@ -284,6 +285,6 @@ class TokenRefreshScheduler:
         await self.start()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
         """Async context manager exit."""
         await self.stop()

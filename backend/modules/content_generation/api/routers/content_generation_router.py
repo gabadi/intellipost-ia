@@ -7,6 +7,7 @@ This module provides the FastAPI router for content generation endpoints.
 import asyncio
 import logging
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 from fastapi import (
@@ -69,7 +70,7 @@ class WebSocketManager:
 
     def __init__(self):
         self.active_connections: dict[UUID, list[WebSocket]] = {}
-        self.connection_tasks: dict[UUID, asyncio.Task] = {}
+        self.connection_tasks: dict[UUID, asyncio.Task[Any]] = {}
 
     async def connect(self, websocket: WebSocket, processing_id: UUID):
         """Connect a WebSocket client."""
@@ -107,8 +108,8 @@ class WebSocketManager:
         logger.info(f"WebSocket disconnected for processing: {processing_id}")
 
     async def send_personal_message(
-        self, processing_id: UUID, websocket: WebSocket, message: dict
-    ):
+        self, processing_id: UUID, websocket: WebSocket, message: dict[str, Any]
+    ) -> None:
         """Send a message to a specific WebSocket connection."""
         try:
             await websocket.send_json(message)
@@ -116,12 +117,14 @@ class WebSocketManager:
             logger.error(f"Error sending WebSocket message: {e}")
             self.disconnect(websocket, processing_id)
 
-    async def broadcast_to_processing(self, processing_id: UUID, message: dict):
+    async def broadcast_to_processing(
+        self, processing_id: UUID, message: dict[str, Any]
+    ) -> None:
         """Broadcast a message to all connections for a processing ID."""
         if processing_id not in self.active_connections:
             return
 
-        disconnected_connections = []
+        disconnected_connections: list[WebSocket] = []
 
         for websocket in self.active_connections[processing_id]:
             try:
@@ -185,7 +188,7 @@ async def generate_content(
     product_id: UUID,
     request: ContentGenerationRequest,
     use_case: GenerateContentUseCase = Depends(get_generate_content_use_case),
-    current_user: dict = Depends(get_current_user),  # noqa: ARG001
+    current_user: dict[str, Any] = Depends(get_current_user),  # noqa: ARG001
 ):
     """
     Generate AI-optimized content for a product listing.
@@ -273,7 +276,7 @@ async def generate_content(
 async def get_processing_status(
     processing_id: UUID,
     use_case: GenerateContentUseCase = Depends(get_generate_content_use_case),  # noqa: ARG001
-    current_user: dict = Depends(get_current_user),  # noqa: ARG001
+    current_user: dict[str, Any] = Depends(get_current_user),  # noqa: ARG001
 ):
     """Get the current status of a content generation process."""
     try:
@@ -307,7 +310,7 @@ async def get_processing_status(
 async def get_generated_content(
     content_id: UUID,
     use_case: GenerateContentUseCase = Depends(get_generate_content_use_case),  # noqa: ARG001
-    current_user: dict = Depends(get_current_user),  # noqa: ARG001
+    current_user: dict[str, Any] = Depends(get_current_user),  # noqa: ARG001
 ):
     """Get generated content by ID."""
     try:
@@ -334,7 +337,7 @@ async def get_generated_content(
 async def validate_generated_content(
     content_id: UUID,
     use_case: GenerateContentUseCase = Depends(get_generate_content_use_case),
-    current_user: dict = Depends(get_current_user),  # noqa: ARG001
+    current_user: dict[str, Any] = Depends(get_current_user),  # noqa: ARG001
 ):
     """Validate generated content against quality standards."""
     try:
@@ -370,7 +373,7 @@ async def enhance_generated_content(
     content_id: UUID,
     request: ContentEnhancementRequest,
     use_case: GenerateContentUseCase = Depends(get_generate_content_use_case),
-    current_user: dict = Depends(get_current_user),  # noqa: ARG001
+    current_user: dict[str, Any] = Depends(get_current_user),  # noqa: ARG001
 ):
     """Enhance existing generated content."""
     try:
@@ -423,7 +426,7 @@ async def enhance_generated_content(
 async def get_content_versions(
     product_id: UUID,
     use_case: GenerateContentUseCase = Depends(get_generate_content_use_case),
-    current_user: dict = Depends(get_current_user),  # noqa: ARG001
+    current_user: dict[str, Any] = Depends(get_current_user),  # noqa: ARG001
 ):
     """Get all versions of generated content for a product."""
     try:
@@ -484,7 +487,7 @@ async def regenerate_content(
     product_id: UUID,
     request: ContentGenerationRequest,
     use_case: GenerateContentUseCase = Depends(get_generate_content_use_case),
-    current_user: dict = Depends(get_current_user),
+    current_user: dict[str, Any] = Depends(get_current_user),
 ):
     """Regenerate content for a product (creates new version)."""
     # Force regeneration

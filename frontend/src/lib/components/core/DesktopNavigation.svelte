@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page as pageStore } from '$app/stores';
   import type { NavItem } from '$types/navigation.js';
   import ThemeToggle from '$components/ui/ThemeToggle.svelte';
   import { authStore } from '$lib/stores/auth';
@@ -12,7 +12,14 @@
     { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 
-  $: currentPath = $page.url.pathname;
+  let currentPath: string;
+
+  // Use derived store to avoid dependency cruiser issue
+  import { derived } from 'svelte/store';
+
+  const currentPathStore = derived(pageStore, page => page?.url?.pathname || '/');
+
+  $: currentPath = $currentPathStore;
   $: authState = $authStore;
 
   function isActive(path: string): boolean {

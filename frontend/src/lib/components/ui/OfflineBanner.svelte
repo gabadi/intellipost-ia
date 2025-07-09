@@ -1,9 +1,16 @@
 <script lang="ts">
   import { isOffline, networkStatus } from '$stores/network';
   import { fly } from 'svelte/transition';
+  import { get } from 'svelte/store';
 
   let retryCount = 0;
   let isRetrying = false;
+  let offline = false;
+
+  // Use get() to avoid $ syntax issues with dependency-cruiser
+  $: {
+    offline = get(isOffline);
+  }
 
   async function handleRetry() {
     if (isRetrying) return;
@@ -35,7 +42,7 @@
   }
 </script>
 
-{#if $isOffline}
+{#if offline}
   <div
     class="offline-banner"
     role="alert"

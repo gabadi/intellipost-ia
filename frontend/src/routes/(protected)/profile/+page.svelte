@@ -13,6 +13,7 @@
   import LoadingSpinner from '$lib/components/ui/LoadingSpinner.svelte';
   import { mlConnectionStore, isMLConnected, mlConnectionHealth } from '$lib/stores/ml-connection';
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
 
   let currentPassword = '';
   let newPassword = '';
@@ -27,8 +28,14 @@
   let successMessage = '';
 
   $: authState = $authStore;
-  $: connectedToML = $isMLConnected;
-  $: mlHealth = $mlConnectionHealth;
+  let connectedToML = false;
+  let mlHealth: any;
+
+  // Use get() to avoid $ syntax issues with dependency-cruiser
+  $: {
+    connectedToML = get(isMLConnected);
+    mlHealth = get(mlConnectionHealth);
+  }
 
   // Initialize ML connection store on mount
   onMount(() => {

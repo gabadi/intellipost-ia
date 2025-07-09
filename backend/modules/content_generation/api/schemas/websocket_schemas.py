@@ -36,13 +36,15 @@ class ProgressUpdateMessage(WebSocketMessage):
 
     data: dict[str, Any] = Field(
         description="Progress data",
-        example={
-            "processing_id": "550e8400-e29b-41d4-a716-446655440000",
-            "status": "processing",
-            "current_step": "category_detection",
-            "progress_percentage": 60,
-            "estimated_remaining_seconds": 4,
-        },
+        examples=[
+            {
+                "processing_id": "550e8400-e29b-41d4-a716-446655440000",
+                "status": "processing",
+                "current_step": "category_detection",
+                "progress_percentage": 60,
+                "estimated_remaining_seconds": 4,
+            }
+        ],
     )
 
 
@@ -53,23 +55,25 @@ class CompletionMessage(WebSocketMessage):
 
     data: dict[str, Any] = Field(
         description="Completion data",
-        example={
-            "processing_id": "550e8400-e29b-41d4-a716-446655440000",
-            "status": "completed",
-            "generated_content": {
-                "id": "content_123",
-                "title": "iPhone 13 Pro 128GB Usado Excelente Estado",
-                "description": "...",
-                "confidence_overall": 0.87,
-                "confidence_breakdown": {
-                    "title": 0.92,
-                    "description": 0.85,
-                    "category": 0.88,
-                    "price": 0.75,
-                    "attributes": 0.90,
+        examples=[
+            {
+                "processing_id": "550e8400-e29b-41d4-a716-446655440000",
+                "status": "completed",
+                "generated_content": {
+                    "id": "content_123",
+                    "title": "iPhone 13 Pro 128GB Usado Excelente Estado",
+                    "description": "...",
+                    "confidence_overall": 0.87,
+                    "confidence_breakdown": {
+                        "title": 0.92,
+                        "description": 0.85,
+                        "category": 0.88,
+                        "price": 0.75,
+                        "attributes": 0.90,
+                    },
                 },
-            },
-        },
+            }
+        ],
     )
 
 
@@ -80,13 +84,15 @@ class ErrorMessage(WebSocketMessage):
 
     data: dict[str, Any] = Field(
         description="Error data",
-        example={
-            "processing_id": "550e8400-e29b-41d4-a716-446655440000",
-            "status": "failed",
-            "error_message": "AI service temporarily unavailable",
-            "error_code": "AI_SERVICE_ERROR",
-            "retry_after_seconds": 60,
-        },
+        examples=[
+            {
+                "processing_id": "550e8400-e29b-41d4-a716-446655440000",
+                "status": "failed",
+                "error_message": "AI service temporarily unavailable",
+                "error_code": "AI_SERVICE_ERROR",
+                "retry_after_seconds": 60,
+            }
+        ],
     )
 
 
@@ -138,13 +144,15 @@ class StatusMessage(WebSocketMessage):
 
     data: dict[str, Any] = Field(
         description="Status data",
-        example={
-            "processing_id": "550e8400-e29b-41d4-a716-446655440000",
-            "status": "processing",
-            "current_step": "title_generation",
-            "progress_percentage": 35,
-            "estimated_completion_seconds": 8,
-            "completed_steps": ["image_analysis", "content_extraction"],
-            "total_steps": 9,
-        },
+        examples=[
+            {
+                "processing_id": "550e8400-e29b-41d4-a716-446655440000",
+                "status": "processing",
+                "current_step": "title_generation",
+                "progress_percentage": 35,
+                "estimated_completion_seconds": 8,
+                "completed_steps": ["image_analysis", "content_extraction"],
+                "total_steps": 9,
+            }
+        ],
     )

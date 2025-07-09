@@ -8,10 +8,11 @@
 
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page as pageStore } from '$app/stores';
   import { mlConnectionStore } from '$lib/stores/ml-connection';
   import { MLManagerAccountError, MLRateLimitError, mlOAuthApi } from '$lib/api/ml-oauth';
   import type { MLOAuthCallbackResponse } from '$lib/types/ml-connection';
+  import { get } from 'svelte/store';
 
   // Component state
   let callbackState: 'processing' | 'success' | 'error' = 'processing';
@@ -27,7 +28,7 @@
   onMount(async () => {
     try {
       // Get parameters from URL
-      const urlParams = $page.url.searchParams;
+      const urlParams = get(pageStore).url.searchParams;
       const code = urlParams.get('code');
       const state = urlParams.get('state');
       const errorParam = urlParams.get('error');
@@ -108,7 +109,7 @@
 MercadoLibre OAuth Error:
 ${error}
 
-URL: ${$page.url.href}
+URL: ${get(pageStore).url.href}
 Timestamp: ${new Date().toISOString()}
 		`.trim();
 

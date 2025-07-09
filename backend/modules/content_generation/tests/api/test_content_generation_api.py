@@ -117,6 +117,9 @@ def mock_generated_content():
     )
 
 
+pytestmark = [pytest.mark.integration, pytest.mark.api]
+
+
 class TestContentGenerationEndpoints:
     """Test cases for content generation API endpoints."""
 

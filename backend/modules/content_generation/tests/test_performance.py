@@ -33,6 +33,8 @@ from modules.content_generation.infrastructure.services.ml_category_service impo
     MLCategoryService,
 )
 
+pytestmark = [pytest.mark.integration, pytest.mark.performance]
+
 
 @pytest.mark.performance
 class TestContentGenerationPerformance:

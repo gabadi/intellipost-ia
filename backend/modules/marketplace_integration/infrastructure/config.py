@@ -117,6 +117,7 @@ class MercadoLibreModuleConfig(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
         env_prefix="INTELLIPOST_MERCADOLIBRE_",
+        extra="ignore",
     )
 
     def get_module_specific_settings(self) -> dict[str, Any]:

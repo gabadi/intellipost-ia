@@ -7,6 +7,7 @@ coordinating between different services to create optimized MercadoLibre listing
 
 import logging
 import time
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -98,7 +99,7 @@ class GenerateContentUseCase:
     async def execute(
         self,
         product_id: UUID,
-        images: list[ImageData],
+        images: Sequence[ImageData],
         prompt: str,
         category_hint: str | None = None,
         price_range: dict[str, float] | None = None,
@@ -164,8 +165,10 @@ class GenerateContentUseCase:
             )
 
             # Complete processing
-            processing_time_ms = int(
-                (time.time() - ai_generation.created_at.timestamp()) * 1000
+            processing_time_ms = (
+                int((time.time() - ai_generation.created_at.timestamp()) * 1000)
+                if ai_generation.created_at
+                else 0
             )
             ai_generation.complete_processing(generated_content.id, processing_time_ms)
 
@@ -184,7 +187,7 @@ class GenerateContentUseCase:
     async def regenerate_content(
         self,
         product_id: UUID,
-        images: list[ImageData],
+        images: Sequence[ImageData],
         prompt: str,
         category_hint: str | None = None,
         price_range: dict[str, float] | None = None,
@@ -323,7 +326,7 @@ class GenerateContentUseCase:
     async def _execute_processing_steps(
         self,
         ai_generation: AIGeneration,
-        images: list[ImageData],
+        images: Sequence[ImageData],
         prompt: str,
         category_hint: str | None = None,
         price_range: dict[str, float] | None = None,
@@ -405,7 +408,7 @@ class GenerateContentUseCase:
 
         return saved_content
 
-    async def _analyze_images(self, images: list[ImageData]) -> dict[str, Any]:
+    async def _analyze_images(self, images: Sequence[ImageData]) -> dict[str, Any]:
         """Analyze images to extract visual features."""
         # This would typically use computer vision services
         # For now, return basic image metadata
@@ -420,7 +423,7 @@ class GenerateContentUseCase:
 
     async def _extract_product_features(
         self,
-        images: list[ImageData],
+        images: Sequence[ImageData],
         prompt: str,
         image_features: dict[str, Any],
     ) -> dict[str, Any]:
@@ -428,7 +431,7 @@ class GenerateContentUseCase:
         try:
             # Use AI service to extract features
             features = await self.ai_content_generator.extract_product_features(
-                images, prompt
+                list(images), prompt
             )
 
             # Enhance with image analysis

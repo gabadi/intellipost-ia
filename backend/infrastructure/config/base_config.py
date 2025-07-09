@@ -34,7 +34,7 @@ class BaseModuleConfig(BaseSettings, ABC):
     log_format: str = Field(default="json", description="Log format (json/text)")
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", case_sensitive=False
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore"
     )
 
     @property

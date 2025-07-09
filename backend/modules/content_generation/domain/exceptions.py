@@ -35,7 +35,11 @@ class AIServiceError(ContentGenerationError):
     """Raised when AI service fails to generate content."""
 
     def __init__(
-        self, message: str, provider: str, model_version: str | None = None, **kwargs
+        self,
+        message: str,
+        provider: str,
+        model_version: str | None = None,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.provider = provider
@@ -51,7 +55,9 @@ class AIServiceError(ContentGenerationError):
 class AIServiceTimeoutError(AIServiceError):
     """Raised when AI service request times out."""
 
-    def __init__(self, message: str, provider: str, timeout_seconds: int, **kwargs):
+    def __init__(
+        self, message: str, provider: str, timeout_seconds: int, **kwargs: Any
+    ):
         super().__init__(message, provider, **kwargs)
         self.timeout_seconds = timeout_seconds
         self.details.update(
@@ -69,7 +75,7 @@ class AIServiceRateLimitError(AIServiceError):
         message: str,
         provider: str,
         retry_after_seconds: int | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(message, provider, **kwargs)
         self.retry_after_seconds = retry_after_seconds
@@ -116,7 +122,7 @@ class CategoryValidationError(CategoryDetectionError):
         message: str,
         category_id: str,
         validation_errors: dict[str, str] | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.category_id = category_id
@@ -137,7 +143,7 @@ class InvalidContentError(ContentGenerationError):
         message: str,
         content_type: str,
         validation_errors: dict[str, str] | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.content_type = content_type
@@ -186,7 +192,7 @@ class AttributeMappingError(ContentGenerationError):
         message: str,
         category_id: str,
         attribute_errors: dict[str, str] | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.category_id = category_id
@@ -208,7 +214,7 @@ class AttributeValidationError(AttributeMappingError):
         category_id: str,
         attribute_name: str,
         attribute_value: Any,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(message, category_id, **kwargs)
         self.attribute_name = attribute_name
@@ -242,7 +248,7 @@ class ImageProcessingError(ContentGenerationError):
         message: str,
         image_path: str,
         processing_step: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.image_path = image_path
@@ -278,7 +284,7 @@ class ProcessingTimeoutError(ContentGenerationError):
         message: str,
         timeout_seconds: int,
         current_step: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.timeout_seconds = timeout_seconds
@@ -359,7 +365,7 @@ class MaxRetriesExceededError(ContentGenerationError):
         message: str,
         max_retries: int,
         last_error: Exception | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(message, **kwargs)
         self.max_retries = max_retries

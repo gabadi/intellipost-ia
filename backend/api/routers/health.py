@@ -2,6 +2,7 @@
 
 import time
 from datetime import UTC, datetime
+from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Response
@@ -47,8 +48,8 @@ async def detailed_health_check(
     response.headers["Access-Control-Allow-Headers"] = "*"
 
     timestamp = datetime.now(UTC).isoformat()
-    services = {}
-    ml_integration = None
+    services: dict[str, Any] = {}
+    ml_integration: dict[str, Any] = {}
     overall_status = "healthy"
 
     # Check database connectivity

@@ -253,7 +253,7 @@ class MLBackgroundTasksService:
         await self.start()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
         """Async context manager exit."""
         await self.stop()
 
@@ -290,7 +290,7 @@ async def stop_ml_background_tasks() -> None:
         _background_service = None
 
 
-async def get_ml_background_status() -> dict:
+async def get_ml_background_status() -> dict[str, Any]:
     """Get status of ML background tasks."""
     service = await get_ml_background_service()
     return await service.get_status()

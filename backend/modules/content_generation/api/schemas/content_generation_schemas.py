@@ -32,7 +32,7 @@ class ContentGenerationRequest(BaseModel):
     price_range: dict[str, float] | None = Field(
         default=None,
         description="Optional price range guidance",
-        example={"min": 10000, "max": 50000},
+        examples=[{"min": 10000, "max": 50000}],
     )
 
     target_audience: str | None = Field(
@@ -64,7 +64,9 @@ class ContentGenerationResponse(BaseModel):
 
     progress: dict[str, Any] = Field(
         description="Progress information",
-        example={"current_step": "image_analysis", "total_steps": 5, "percentage": 20},
+        examples=[
+            {"current_step": "image_analysis", "total_steps": 5, "percentage": 20}
+        ],
     )
 
 
@@ -97,13 +99,15 @@ class ConfidenceScoreSchema(BaseModel):
 
     breakdown: dict[str, float] = Field(
         description="Confidence breakdown by component",
-        example={
-            "title": 0.92,
-            "description": 0.85,
-            "category": 0.88,
-            "price": 0.75,
-            "attributes": 0.90,
-        },
+        examples=[
+            {
+                "title": 0.92,
+                "description": 0.85,
+                "category": 0.88,
+                "price": 0.75,
+                "attributes": 0.90,
+            }
+        ],
     )
 
 

@@ -3,14 +3,21 @@
   import type { HealthCheckResponse } from '$types';
   import QuickActionCard from '$lib/components/dashboard/QuickActionCard.svelte';
   import { mlConnectionStore, isMLConnected, mlConnectionHealth } from '$lib/stores/ml-connection';
+  import { get } from 'svelte/store';
 
   let healthStatus: HealthCheckResponse | null = null;
   let healthError: string | null = null;
   let isLoading = true;
 
   // ML Connection reactive values
-  $: connectedToML = $isMLConnected;
-  $: mlHealth = $mlConnectionHealth;
+  let connectedToML = false;
+  let mlHealth: any;
+
+  // Use get() to avoid $ syntax issues with dependency-cruiser
+  $: {
+    connectedToML = get(isMLConnected);
+    mlHealth = get(mlConnectionHealth);
+  }
 
   async function checkBackendHealth() {
     try {

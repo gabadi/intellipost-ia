@@ -9,6 +9,7 @@ import base64
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import UUID, uuid4
 
 from modules.user_management.domain.entities.ml_credentials import MLCredentials
@@ -69,7 +70,7 @@ class MLOAuthService(MLOAuthServiceProtocol):
         self._app_secret = app_secret
 
         # State storage for CSRF protection (in production, use Redis/cache)
-        self._state_storage: dict[str, dict] = {}
+        self._state_storage: dict[str, dict[str, Any]] = {}
 
     async def initiate_oauth_flow(
         self,

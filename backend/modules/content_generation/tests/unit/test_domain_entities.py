@@ -23,6 +23,8 @@ from modules.content_generation.domain.exceptions import (
     InvalidContentError,
 )
 
+pytestmark = pytest.mark.unit
+
 
 class TestGeneratedContent:
     """Test cases for GeneratedContent entity."""
@@ -92,10 +94,10 @@ class TestGeneratedContent:
                 id=uuid4(),
                 product_id=uuid4(),
                 title="This is a very long title that exceeds the maximum allowed length of 60 characters for MercadoLibre",
-                description="Valid description",
+                description="Valid description that is long enough to meet the minimum length requirement for the description field in this test case",
                 ml_category_id="MLA1055",
                 ml_category_name="Celulares y Smartphones",
-                ml_title="Valid title",
+                ml_title="This is a very long title that exceeds the maximum allowed length of 60 characters for MercadoLibre",
                 ml_price=Decimal("100.00"),
                 ml_currency_id="ARS",
                 ml_available_quantity=1,
@@ -122,11 +124,11 @@ class TestGeneratedContent:
             GeneratedContent(
                 id=uuid4(),
                 product_id=uuid4(),
-                title="Valid title",
-                description="Valid description",
+                title="Valid title that is at least 10 characters long",
+                description="Valid description that is at least 50 characters long to pass validation",
                 ml_category_id="MLA1055",
                 ml_category_name="Celulares y Smartphones",
-                ml_title="Valid title",
+                ml_title="Valid title for ML",
                 ml_price=Decimal("100.00"),
                 ml_currency_id="ARS",
                 ml_available_quantity=1,

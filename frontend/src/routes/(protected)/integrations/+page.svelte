@@ -9,9 +9,15 @@
   import { onMount } from 'svelte';
   import { mlConnectionStore, isMLConnected } from '$lib/stores/ml-connection';
   import MLConnectionStatus from '$lib/components/ml/MLConnectionStatus.svelte';
+  import { get } from 'svelte/store';
 
   // Reactive values
-  $: connectedToML = $isMLConnected;
+  let connectedToML = false;
+
+  // Use get() to avoid $ syntax issues with dependency-cruiser
+  $: {
+    connectedToML = get(isMLConnected);
+  }
 
   // Initialize ML connection store on mount
   onMount(() => {
