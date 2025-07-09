@@ -15,7 +15,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['svelte', '@sveltejs/kit'],
+          vendor: ['svelte'],
         },
         // Optimize CSS asset organization
         assetFileNames: assetInfo => {
