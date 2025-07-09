@@ -109,8 +109,18 @@ class TestCreateProductUseCase:
             "resolution_height": 1080,
         }
 
-        mock_image_record = Mock()
-        mock_image_record.id = uuid4()
+        mock_image_record = {
+            "id": uuid4(),
+            "product_id": uuid4(),
+            "original_filename": "test.jpg",
+            "s3_key": "products/user/product/test.jpg",
+            "s3_url": "https://bucket.s3.amazonaws.com/products/user/product/test.jpg",
+            "file_size_bytes": 1024,
+            "file_format": "jpg",
+            "resolution_width": 1920,
+            "resolution_height": 1080,
+            "is_primary": True,
+        }
         mock_product_repository.create_product_image.return_value = mock_image_record
 
         # Execute use case
@@ -266,8 +276,18 @@ class TestCreateProductUseCase:
             "resolution_height": 1080,
         }
 
-        mock_image_record = Mock()
-        mock_image_record.id = uuid4()
+        mock_image_record = {
+            "id": uuid4(),
+            "product_id": uuid4(),
+            "original_filename": "valid.jpg",
+            "s3_key": "test_key",
+            "s3_url": "test_url",
+            "file_size_bytes": 1024,
+            "file_format": "jpg",
+            "resolution_width": 1920,
+            "resolution_height": 1080,
+            "is_primary": True,
+        }
         mock_product_repository.create_product_image.return_value = mock_image_record
 
         # Execute use case

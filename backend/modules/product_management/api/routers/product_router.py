@@ -201,7 +201,7 @@ def create_product_router(
 
             products_data = await get_use_case.execute(user_id=current_user.id)
 
-            products = []
+            products: list[ProductResponse] = []
             for product_data in products_data:
                 # Convert images to response format
                 images = [

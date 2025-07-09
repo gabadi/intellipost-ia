@@ -3,7 +3,9 @@ SQLAlchemy implementation of ProductRepositoryProtocol.
 
 This module provides PostgreSQL persistence for Product entities using SQLAlchemy.
 """
+# type: ignore[reportUnknownMemberType,reportUnknownVariableType,reportUnknownArgumentType,reportMissingTypeArgument]
 
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -88,8 +90,8 @@ class SQLAlchemyProductRepository:
         resolution_width: int,
         resolution_height: int,
         is_primary: bool = False,
-        processing_metadata: dict | None = None,
-    ) -> ProductImageModel:
+        processing_metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Create a new product image."""
         image_model = ProductImageModel.from_upload_data(
             product_id=product_id,
@@ -107,9 +109,23 @@ class SQLAlchemyProductRepository:
         self.session.add(image_model)
         await self.session.flush()
         await self.session.refresh(image_model)
-        return image_model
+        return {
+            "id": str(image_model.id),
+            "product_id": str(image_model.product_id),
+            "original_filename": image_model.original_filename,
+            "s3_key": image_model.s3_key,
+            "s3_url": image_model.s3_url,
+            "file_size_bytes": image_model.file_size_bytes,
+            "file_format": image_model.file_format,
+            "resolution_width": image_model.resolution_width,
+            "resolution_height": image_model.resolution_height,
+            "is_primary": image_model.is_primary,
+            "processing_metadata": image_model.processing_metadata,
+            "created_at": image_model.created_at.isoformat(),
+            "updated_at": image_model.updated_at.isoformat(),
+        }
 
-    async def get_product_images(self, product_id: UUID) -> list[ProductImageModel]:
+    async def get_product_images(self, product_id: UUID) -> list[dict[str, Any]]:
         """Get all images for a product."""
         stmt = (
             select(ProductImageModel)
@@ -119,7 +135,25 @@ class SQLAlchemyProductRepository:
             )
         )
         result = await self.session.execute(stmt)
-        return list(result.scalars().all())
+        image_models = result.scalars().all()
+        return [
+            {
+                "id": str(image_model.id),
+                "product_id": str(image_model.product_id),
+                "original_filename": image_model.original_filename,
+                "s3_key": image_model.s3_key,
+                "s3_url": image_model.s3_url,
+                "file_size_bytes": image_model.file_size_bytes,
+                "file_format": image_model.file_format,
+                "resolution_width": image_model.resolution_width,
+                "resolution_height": image_model.resolution_height,
+                "is_primary": image_model.is_primary,
+                "processing_metadata": image_model.processing_metadata,
+                "created_at": image_model.created_at.isoformat(),
+                "updated_at": image_model.updated_at.isoformat(),
+            }
+            for image_model in image_models
+        ]
 
     async def set_primary_image(self, product_id: UUID, image_id: UUID) -> bool:
         """Set a specific image as primary for a product."""

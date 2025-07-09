@@ -117,6 +117,11 @@ async def seed_database(settings: Settings) -> None:
     Args:
         settings: Application settings
     """
+    # Skip seeding during testing to avoid async event loop conflicts
+    if settings.is_testing:
+        logger.info("Skipping database seeding in testing environment")
+        return
+
     logger.info("Starting database seeding...")
 
     try:

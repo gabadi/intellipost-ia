@@ -44,6 +44,7 @@ dependencies = [
     "psutil>=6.1.0",
     "greenlet>=3.2.3",
     "google-generativeai>=0.8.5",
+    "ty>=0.0.1a14",
 ]
 
 # Dev dependencies now managed by uvx and package.json
@@ -91,6 +92,7 @@ exclude = [
     "venv",
     "../.bmad-infrastructure-devops",
     "../.bmad-core",
+    "type_checker_analysis",
 ]
 
 [tool.ruff.lint]
@@ -125,37 +127,8 @@ line-ending = "auto"
 [tool.ruff.lint.isort]
 known-first-party = ["api", "infrastructure", "modules"]
 
-# Pyright configuration
-[tool.pyright]
-include = ["."]
-exclude = ["**/__pycache__", ".venv", "../tests", "tests", "*/tests", "**/test_*.py", "*/conftest.py", "../.bmad-infrastructure-devops", "../.bmad-core"]
-venvPath = "."
-venv = ".venv"
-pythonVersion = "3.13"
-typeCheckingMode = "strict"
-useLibraryCodeForTypes = true
-reportMissingImports = true
-reportMissingTypeStubs = false
-reportUnusedImport = true
-reportUnusedClass = true
-reportUnusedFunction = true
-reportUnusedVariable = true
-reportDuplicateImport = true
-reportOptionalSubscript = true
-reportOptionalMemberAccess = true
-reportOptionalCall = true
-reportOptionalIterable = true
-reportOptionalContextManager = true
-reportOptionalOperand = true
-reportTypedDictNotRequiredAccess = false
-reportPrivateUsage = true
-reportConstantRedefinition = true
-reportIncompatibleMethodOverride = true
-reportIncompatibleVariableOverride = true
-reportOverlappingOverload = true
-# Only disable genuinely safe/cosmetic issues
-reportPrivateImportUsage = false  # google.generativeai imports are safe
-reportUnnecessaryIsInstance = false  # isinstance optimizations don't affect functionality
+# Pyright configuration managed by pyrightconfig.json
+# All type checking settings are centralized in pyrightconfig.json for consistency
 
 # Pytest configuration
 [tool.pytest.ini_options]
@@ -215,6 +188,7 @@ include = ["*"]
 [dependency-groups]
 dev = [
     "pre-commit>=4.2.0",
+    "pyright>=1.1.403",
 ]
 test = [
     "pytest>=8.4.1",

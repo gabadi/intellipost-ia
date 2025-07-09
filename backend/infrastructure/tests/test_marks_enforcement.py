@@ -119,6 +119,7 @@ def test_this_has_unit_mark():
         )
 
         # Check that it's a unit test mark
-        pytestmark = current_module.pytestmark
+        pytestmark = getattr(current_module, "pytestmark", None)
+        assert pytestmark is not None, "Test module should have pytestmark"
         assert hasattr(pytestmark, "name"), "pytestmark should be a pytest mark object"
         assert pytestmark.name == "unit", f"Expected unit mark, got: {pytestmark.name}"

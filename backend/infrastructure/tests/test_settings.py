@@ -21,7 +21,7 @@ class TestSettings:
         # These values reflect the current CI environment
         assert settings.environment == "development"
         assert settings.debug is False  # CI environment override
-        assert "test_db" in settings.database_url  # CI environment override
+        assert "intellipost_test" in settings.database_url  # CI environment override
         assert settings.api_host == "127.0.0.1"  # Default value
         assert settings.api_port == 8000
         assert settings.log_level == "INFO"
@@ -79,12 +79,16 @@ class TestSettings:
     def test_get_database_url_development(self):
         """Test get_database_url for development environment."""
         settings = Settings(environment="development")
-        assert "test_db" in settings.get_database_url()  # CI environment uses test_db
+        assert (
+            "intellipost_test" in settings.get_database_url()
+        )  # CI environment uses test database
 
     def test_get_database_url_testing(self):
         """Test get_database_url for testing environment."""
         settings = Settings(environment="testing")
-        assert "test_db" in settings.get_database_url()  # CI environment uses test_db
+        assert (
+            "intellipost_test" in settings.get_database_url()
+        )  # CI environment uses test database
 
     def test_secret_key_validation_development(self):
         """Test secret key validation allows default in development."""

@@ -22,11 +22,29 @@ from modules.content_generation.domain.entities.confidence_score import Confiden
 from modules.content_generation.domain.entities.generated_content import (
     GeneratedContent,
 )
-from modules.content_generation.domain.ports.ai_service_protocols import ImageData
+
+
+# Test data class for ImageData protocol
+class TestImageData:
+    """Test implementation of ImageData protocol."""
+
+    def __init__(
+        self,
+        s3_key: str,
+        s3_url: str,
+        file_format: str,
+        resolution_width: int,
+        resolution_height: int,
+    ):
+        self.s3_key = s3_key
+        self.s3_url = s3_url
+        self.file_format = file_format
+        self.resolution_width = resolution_width
+        self.resolution_height = resolution_height
 
 
 # Configure pytest markers
-def pytest_configure(config):
+def pytest_configure(config: pytest.Config) -> None:
     """Configure pytest markers."""
     config.addinivalue_line("markers", "unit: marks tests as unit tests")
     config.addinivalue_line("markers", "integration: marks tests as integration tests")
@@ -131,21 +149,21 @@ def sample_confidence_score():
 def sample_image_data():
     """Create sample image data for testing."""
     return [
-        ImageData(
+        TestImageData(
             s3_key="products/test/iphone13pro_front.jpg",
             s3_url="https://s3.amazonaws.com/bucket/products/test/iphone13pro_front.jpg",
             file_format="jpeg",
             resolution_width=800,
             resolution_height=600,
         ),
-        ImageData(
+        TestImageData(
             s3_key="products/test/iphone13pro_back.jpg",
             s3_url="https://s3.amazonaws.com/bucket/products/test/iphone13pro_back.jpg",
             file_format="jpeg",
             resolution_width=800,
             resolution_height=600,
         ),
-        ImageData(
+        TestImageData(
             s3_key="products/test/iphone13pro_box.jpg",
             s3_url="https://s3.amazonaws.com/bucket/products/test/iphone13pro_box.jpg",
             file_format="jpeg",
@@ -367,7 +385,7 @@ def ai_service_error():
     """Create AI service error for testing."""
     from modules.content_generation.domain.exceptions import AIServiceError
 
-    return AIServiceError("AI service temporarily unavailable")
+    return AIServiceError("AI service temporarily unavailable", provider="test")
 
 
 @pytest.fixture
@@ -383,7 +401,9 @@ def quality_threshold_error():
     """Create quality threshold error for testing."""
     from modules.content_generation.domain.exceptions import QualityThresholdError
 
-    return QualityThresholdError("Generated content quality below threshold")
+    return QualityThresholdError(
+        "Generated content quality below threshold", quality_score=0.5, threshold=0.8
+    )
 
 
 @pytest.fixture
@@ -391,7 +411,7 @@ def invalid_content_error():
     """Create invalid content error for testing."""
     from modules.content_generation.domain.exceptions import InvalidContentError
 
-    return InvalidContentError("Invalid content format")
+    return InvalidContentError("Invalid content format", content_type="test")
 
 
 @pytest.fixture
@@ -399,7 +419,7 @@ def entity_not_found_error():
     """Create entity not found error for testing."""
     from modules.content_generation.domain.exceptions import EntityNotFoundError
 
-    return EntityNotFoundError("Entity not found")
+    return EntityNotFoundError("Entity not found", entity_type="test", entity_id="123")
 
 
 # Test utilities
@@ -407,7 +427,9 @@ def entity_not_found_error():
 def assert_performance():
     """Utility fixture for performance assertions."""
 
-    def _assert_performance(execution_time, expected_max_time, operation_name):
+    def _assert_performance(
+        execution_time: float, expected_max_time: float, operation_name: str
+    ) -> None:
         """Assert that execution time is within expected bounds."""
         assert execution_time <= expected_max_time, (
             f"{operation_name} took {execution_time:.2f}s, "
@@ -422,7 +444,9 @@ def assert_performance():
 def assert_content_quality():
     """Utility fixture for content quality assertions."""
 
-    def _assert_content_quality(generated_content, min_confidence=0.7):
+    def _assert_content_quality(
+        generated_content: GeneratedContent, min_confidence: float = 0.7
+    ) -> None:
         """Assert that generated content meets quality standards."""
         assert generated_content.confidence_overall >= min_confidence, (
             f"Content confidence {generated_content.confidence_overall} "
@@ -442,7 +466,7 @@ def assert_content_quality():
 def skip_if_no_api_key():
     """Skip test if API key is not available."""
 
-    def _skip_if_no_api_key(api_key_env_var):
+    def _skip_if_no_api_key(api_key_env_var: str) -> None:
         if not os.getenv(api_key_env_var):
             pytest.skip(f"Skipping test: {api_key_env_var} not set")
 

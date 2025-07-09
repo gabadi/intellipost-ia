@@ -268,70 +268,79 @@ class TestContentGenerationEndpoints:
         finally:
             app.dependency_overrides.clear()
 
-    def test_generate_content_category_detection_error(self, client, mock_use_case):
+    def test_generate_content_category_detection_error(self, app, mock_use_case):
         """Test content generation with category detection error."""
         product_id = uuid4()
+        mock_use_case.execute.side_effect = CategoryDetectionError(
+            "Category detection failed"
+        )
 
-        with patch(
-            "modules.content_generation.api.routers.content_generation_router.get_generate_content_use_case"
-        ) as mock_get_use_case:
-            mock_get_use_case.return_value = mock_use_case
-            mock_use_case.execute.side_effect = CategoryDetectionError(
-                "Category detection failed"
+        # Override FastAPI dependencies
+        from modules.content_generation.api.routers.content_generation_router import (
+            get_current_user,
+            get_generate_content_use_case,
+        )
+
+        app.dependency_overrides[get_generate_content_use_case] = lambda: mock_use_case
+        app.dependency_overrides[get_current_user] = lambda: {
+            "user_id": "test_user",
+            "email": "test@example.com",
+        }
+
+        client = TestClient(app)
+
+        try:
+            request_data = {"regenerate": False}
+
+            response = client.post(
+                f"/api/v1/content-generation/products/{product_id}/generate",
+                json=request_data,
+                headers={"Authorization": "Bearer test_token"},
             )
 
-            with patch(
-                "modules.content_generation.api.routers.content_generation_router.get_current_user"
-            ) as mock_get_user:
-                mock_get_user.return_value = {
-                    "user_id": "test_user",
-                    "email": "test@example.com",
-                }
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            assert "Category detection failed" in response.json()["detail"]
 
-                request_data = {"regenerate": False}
+        finally:
+            # Clean up dependency overrides
+            app.dependency_overrides.clear()
 
-                response = client.post(
-                    f"/api/v1/content-generation/products/{product_id}/generate",
-                    json=request_data,
-                    headers={"Authorization": "Bearer test_token"},
-                )
-
-                assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-                assert "Category detection failed" in response.json()["detail"]
-
-    def test_generate_content_quality_threshold_error(self, client, mock_use_case):
+    def test_generate_content_quality_threshold_error(self, app, mock_use_case):
         """Test content generation with quality threshold error."""
         product_id = uuid4()
+        mock_use_case.execute.side_effect = QualityThresholdError(
+            "Content quality below threshold", quality_score=0.5, threshold=0.8
+        )
 
-        with patch(
-            "modules.content_generation.api.routers.content_generation_router.get_generate_content_use_case"
-        ) as mock_get_use_case:
-            mock_get_use_case.return_value = mock_use_case
-            mock_use_case.execute.side_effect = QualityThresholdError(
-                "Content quality below threshold"
+        # Override FastAPI dependencies
+        from modules.content_generation.api.routers.content_generation_router import (
+            get_current_user,
+            get_generate_content_use_case,
+        )
+
+        app.dependency_overrides[get_generate_content_use_case] = lambda: mock_use_case
+        app.dependency_overrides[get_current_user] = lambda: {
+            "user_id": "test_user",
+            "email": "test@example.com",
+        }
+
+        client = TestClient(app)
+
+        try:
+            request_data = {"regenerate": False}
+
+            response = client.post(
+                f"/api/v1/content-generation/products/{product_id}/generate",
+                json=request_data,
+                headers={"Authorization": "Bearer test_token"},
             )
 
-            with patch(
-                "modules.content_generation.api.routers.content_generation_router.get_current_user"
-            ) as mock_get_user:
-                mock_get_user.return_value = {
-                    "user_id": "test_user",
-                    "email": "test@example.com",
-                }
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            assert "Content quality below threshold" in response.json()["detail"]
 
-                request_data = {"regenerate": False}
-
-                response = client.post(
-                    f"/api/v1/content-generation/products/{product_id}/generate",
-                    json=request_data,
-                    headers={"Authorization": "Bearer test_token"},
-                )
-
-                assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-                assert (
-                    "Generated content quality below threshold"
-                    in response.json()["detail"]
-                )
+        finally:
+            # Clean up dependency overrides
+            app.dependency_overrides.clear()
 
     def test_get_processing_status_success(self, client, mock_use_case):
         """Test successful processing status retrieval."""
@@ -372,7 +381,9 @@ class TestContentGenerationEndpoints:
         ) as mock_get_use_case:
             mock_get_use_case.return_value = mock_use_case
             mock_use_case.get_processing_status.side_effect = EntityNotFoundError(
-                f"Processing not found: {processing_id}"
+                f"Processing not found: {processing_id}",
+                entity_type="processing",
+                entity_id=str(processing_id),
             )
 
             with patch(
@@ -471,7 +482,9 @@ class TestContentGenerationEndpoints:
         ) as mock_get_use_case:
             mock_get_use_case.return_value = mock_use_case
             mock_use_case.validate_generated_content.side_effect = EntityNotFoundError(
-                f"Generated content not found: {content_id}"
+                f"Generated content not found: {content_id}",
+                entity_type="content",
+                entity_id=str(content_id),
             )
 
             with patch(
@@ -721,7 +734,7 @@ class TestRequestResponseValidation:
 
         assert valid_request.regenerate is False
         assert valid_request.category_hint == "celulares"
-        assert valid_request.price_range["min"] == 10000
+        assert valid_request.price_range and valid_request.price_range["min"] == 10000
         assert valid_request.target_audience == "usuarios premium"
 
     def test_content_generation_request_validation_invalid(self):
@@ -865,4 +878,4 @@ class TestRequestResponseValidation:
         assert error_response.error_type == "AI_SERVICE_ERROR"
         assert error_response.message == "AI service temporarily unavailable"
         assert error_response.error_code == "AI_503"
-        assert error_response.details["retry_after"] == 60
+        assert error_response.details and error_response.details["retry_after"] == 60

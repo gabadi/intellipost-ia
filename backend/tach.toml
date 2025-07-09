@@ -15,9 +15,17 @@ depends_on = []
 path = "<root>"
 depends_on = ["api", "infrastructure"]
 
-# Global API layer - can depend on infrastructure and modules for creating dependencies
+# Global API layer - only depends on infrastructure for basic DI
 [[modules]]
 path = "api"
+depends_on = [
+    "infrastructure",
+    "api.dependencies",
+]
+
+# API Dependencies - handles all cross-module dependency injection
+[[modules]]
+path = "api.dependencies"
 depends_on = [
     "infrastructure",
     "modules.user_management.domain",
@@ -30,6 +38,7 @@ depends_on = [
     "modules.content_generation.domain",
     "modules.content_generation.application",
     "modules.content_generation.infrastructure",
+    "modules.content_generation.api",
 ]
 
 # ========================================
@@ -59,7 +68,7 @@ depends_on = ["modules.user_management.domain", "infrastructure"]
 # User Management - API Layer (Controllers, depends on application, infrastructure, and domain)
 [[modules]]
 path = "modules.user_management.api"
-depends_on = ["modules.user_management.application", "modules.user_management.domain", "modules.user_management.infrastructure", "api"]
+depends_on = ["modules.user_management.application", "modules.user_management.domain", "modules.user_management.infrastructure", "api", "api.dependencies"]
 
 # Product Management module - TRUE INDEPENDENCE
 [[modules]]
@@ -109,7 +118,7 @@ depends_on = ["modules.content_generation.domain", "infrastructure"]
 # Content Generation - API Layer (Controllers, depends on application, infrastructure, and domain)
 [[modules]]
 path = "modules.content_generation.api"
-depends_on = ["modules.content_generation.application", "modules.content_generation.domain", "modules.content_generation.infrastructure", "api"]
+depends_on = ["modules.content_generation.application", "modules.content_generation.domain", "modules.content_generation.infrastructure", "modules.user_management.domain", "api"]
 
 # Marketplace Integration module - TRUE INDEPENDENCE
 [[modules]]

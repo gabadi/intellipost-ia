@@ -7,11 +7,9 @@ including response times, throughput, and resource utilization.
 
 import asyncio
 import time
-from datetime import UTC, datetime
-from decimal import Decimal
 from statistics import mean, median, stdev
 from typing import NamedTuple
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
@@ -22,9 +20,6 @@ from modules.content_generation.application.use_cases.generate_content import (
 from modules.content_generation.domain.entities.ai_generation import (
     AIGeneration,
     GenerationStatus,
-)
-from modules.content_generation.domain.entities.generated_content import (
-    GeneratedContent,
 )
 from modules.content_generation.infrastructure.services.gemini_ai_service import (
     GeminiAIService,
@@ -56,36 +51,28 @@ class TestContentGenerationPerformance:
         """Mock AI service with realistic response times."""
         service = Mock(spec=GeminiAIService)
 
-        async def mock_generate_listing(*_args, **_kwargs):
-            # Simulate AI processing time (1-3 seconds)
-            await asyncio.sleep(1.5)
-            return GeneratedContent(
-                id=uuid4(),
-                product_id=uuid4(),
-                title="iPhone 13 Pro 128GB Negro",
-                description="iPhone description",
-                ml_category_id="MLA1055",
-                ml_category_name="Celulares y Smartphones",
-                ml_title="iPhone 13 Pro 128GB Negro",
-                ml_price=Decimal("450000"),
-                ml_currency_id="ARS",
-                ml_available_quantity=1,
-                ml_buying_mode="buy_it_now",
-                ml_condition="used",
-                ml_listing_type_id="gold_special",
-                ml_attributes={},
-                ml_sale_terms={},
-                ml_shipping={},
-                confidence_overall=0.89,
-                confidence_breakdown={},
-                ai_provider="gemini",
-                ai_model_version="2.5-flash",
-                generation_time_ms=1500,
-                version=1,
-                generated_at=datetime.now(UTC),
-            )
+        async def mock_extract_product_features(*_args, **_kwargs):
+            # Simulate AI extraction time (0.5-1 second)
+            await asyncio.sleep(0.5)
+            return {
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "condition": "used",
+                "color": "Blue",
+                "storage": "128GB",
+            }
 
-        service.generate_listing = mock_generate_listing
+        async def mock_estimate_price(*_args, **_kwargs):
+            # Simulate price estimation time (0.2-0.5 seconds)
+            await asyncio.sleep(0.3)
+            return {
+                "estimated_price": 450000.0,
+                "confidence": 0.75,
+                "reasoning": "Based on similar listings",
+            }
+
+        service.extract_product_features = mock_extract_product_features
+        service.estimate_price = mock_estimate_price
         return service
 
     @pytest.fixture
@@ -109,14 +96,46 @@ class TestContentGenerationPerformance:
     @pytest.fixture
     def use_case(self, mock_ai_service, mock_category_service):
         """Create use case with mocked services."""
+        content_repository = Mock()
+        content_repository.get_content_by_product_id = AsyncMock(return_value=None)
+        content_repository.save_generated_content = AsyncMock(return_value=Mock())
+
+        title_service = Mock()
+        title_service.generate_optimized_title = AsyncMock(return_value="Test Title")
+        title_service.validate_title = AsyncMock(return_value={"is_valid": True})
+        title_service.calculate_title_confidence = AsyncMock(return_value=0.9)
+
+        description_service = Mock()
+        description_service.generate_description = AsyncMock(
+            return_value="Test Description for the product that is long enough to meet the minimum requirements for a valid description content in the system"
+        )
+        description_service.validate_description = AsyncMock(
+            return_value={"is_valid": True}
+        )
+        description_service.calculate_description_confidence = AsyncMock(
+            return_value=0.85
+        )
+
+        validation_service = Mock()
+        validation_service.validate_content = AsyncMock(
+            return_value={"is_valid": True, "errors": []}
+        )
+
+        attribute_service = Mock()
+        attribute_service.map_attributes = AsyncMock(return_value={})
+        attribute_service.validate_attributes = AsyncMock(
+            return_value={"is_valid": True}
+        )
+        attribute_service.calculate_attribute_confidence = AsyncMock(return_value=0.8)
+
         return GenerateContentUseCase(
-            ai_content_generator=mock_ai_service,
-            ml_category_service=mock_category_service,
-            title_generation_service=Mock(),
-            description_generation_service=Mock(),
-            attribute_mapping_service=Mock(),
-            content_repository=Mock(),
-            content_validation_service=Mock(),
+            ai_service=mock_ai_service,
+            content_repository=content_repository,
+            title_service=title_service,
+            description_service=description_service,
+            validation_service=validation_service,
+            attribute_service=attribute_service,
+            category_service=mock_category_service,
         )
 
     @pytest.fixture
@@ -135,30 +154,7 @@ class TestContentGenerationPerformance:
     @pytest.mark.asyncio
     async def test_single_content_generation_performance(self, use_case, sample_images):
         """Test performance of single content generation."""
-        # Configure additional mocks
-        use_case.title_generation_service.generate_optimized_title.return_value = (
-            "Test Title"
-        )
-        use_case.title_generation_service.validate_title.return_value = {
-            "is_valid": True
-        }
-        use_case.title_generation_service.calculate_title_confidence.return_value = 0.9
-
-        use_case.description_generation_service.generate_description.return_value = (
-            "Test Description"
-        )
-        use_case.description_generation_service.validate_description.return_value = {
-            "is_valid": True
-        }
-        use_case.description_generation_service.calculate_description_confidence.return_value = 0.85
-
-        use_case.attribute_mapping_service.map_attributes.return_value = {
-            "attributes": {},
-            "confidence": 0.8,
-        }
-        use_case.content_repository.save.return_value = None
-        use_case.generation_repository.save.return_value = None
-        use_case.generation_repository.find_by_product_id.return_value = None
+        # All mocks are already configured in the fixture
 
         start_time = time.time()
 
@@ -189,22 +185,7 @@ class TestContentGenerationPerformance:
         self, use_case, sample_images
     ):
         """Test performance of concurrent content generation."""
-        # Configure additional mocks
-        use_case.title_service.generate_title.return_value = {
-            "title": "Test Title",
-            "confidence": 0.9,
-        }
-        use_case.description_service.generate_description.return_value = {
-            "description": "Test Description",
-            "confidence": 0.85,
-        }
-        use_case.attribute_service.map_attributes.return_value = {
-            "attributes": {},
-            "confidence": 0.8,
-        }
-        use_case.content_repository.save.return_value = None
-        use_case.generation_repository.save.return_value = None
-        use_case.generation_repository.find_by_product_id.return_value = None
+        # All mocks are already configured in the fixture
 
         concurrent_requests = 5
 
@@ -246,22 +227,7 @@ class TestContentGenerationPerformance:
     @pytest.mark.asyncio
     async def test_load_testing_performance(self, use_case, sample_images):
         """Test performance under load conditions."""
-        # Configure additional mocks
-        use_case.title_service.generate_title.return_value = {
-            "title": "Test Title",
-            "confidence": 0.9,
-        }
-        use_case.description_service.generate_description.return_value = {
-            "description": "Test Description",
-            "confidence": 0.85,
-        }
-        use_case.attribute_service.map_attributes.return_value = {
-            "attributes": {},
-            "confidence": 0.8,
-        }
-        use_case.content_repository.save.return_value = None
-        use_case.generation_repository.save.return_value = None
-        use_case.generation_repository.find_by_product_id.return_value = None
+        # All mocks are already configured in the fixture
 
         num_requests = 10
         response_times = []
@@ -331,22 +297,7 @@ class TestContentGenerationPerformance:
 
         import psutil
 
-        # Configure additional mocks
-        use_case.title_service.generate_title.return_value = {
-            "title": "Test Title",
-            "confidence": 0.9,
-        }
-        use_case.description_service.generate_description.return_value = {
-            "description": "Test Description",
-            "confidence": 0.85,
-        }
-        use_case.attribute_service.map_attributes.return_value = {
-            "attributes": {},
-            "confidence": 0.8,
-        }
-        use_case.content_repository.save.return_value = None
-        use_case.generation_repository.save.return_value = None
-        use_case.generation_repository.find_by_product_id.return_value = None
+        # All mocks are already configured in the fixture
 
         process = psutil.Process(os.getpid())
 
@@ -381,8 +332,8 @@ class TestContentGenerationPerformance:
         """Test performance when errors occur."""
         # Configure mocks to simulate errors
         use_case.ai_service.generate_listing.side_effect = Exception("AI service error")
-        use_case.generation_repository.save.return_value = None
-        use_case.generation_repository.find_by_product_id.return_value = None
+        use_case.content_repository.save_generated_content.return_value = Mock()
+        use_case.content_repository.get_content_by_product_id.return_value = None
 
         error_response_times = []
 
@@ -446,22 +397,7 @@ class TestContentGenerationPerformance:
     @pytest.mark.asyncio
     async def test_throughput_performance(self, use_case, sample_images):
         """Test system throughput under sustained load."""
-        # Configure additional mocks
-        use_case.title_service.generate_title.return_value = {
-            "title": "Test Title",
-            "confidence": 0.9,
-        }
-        use_case.description_service.generate_description.return_value = {
-            "description": "Test Description",
-            "confidence": 0.85,
-        }
-        use_case.attribute_service.map_attributes.return_value = {
-            "attributes": {},
-            "confidence": 0.8,
-        }
-        use_case.content_repository.save.return_value = None
-        use_case.generation_repository.save.return_value = None
-        use_case.generation_repository.find_by_product_id.return_value = None
+        # All mocks are already configured in the fixture
 
         # Test sustained throughput for 10 seconds
         test_duration = 10  # seconds
@@ -506,22 +442,7 @@ class TestContentGenerationPerformance:
     @pytest.mark.asyncio
     async def test_scalability_performance(self, use_case, sample_images):
         """Test performance scalability with increasing load."""
-        # Configure additional mocks
-        use_case.title_service.generate_title.return_value = {
-            "title": "Test Title",
-            "confidence": 0.9,
-        }
-        use_case.description_service.generate_description.return_value = {
-            "description": "Test Description",
-            "confidence": 0.85,
-        }
-        use_case.attribute_service.map_attributes.return_value = {
-            "attributes": {},
-            "confidence": 0.8,
-        }
-        use_case.content_repository.save.return_value = None
-        use_case.generation_repository.save.return_value = None
-        use_case.generation_repository.find_by_product_id.return_value = None
+        # The use_case fixture already properly mocks all async methods
 
         load_levels = [1, 2, 4, 8]  # Increasing concurrent requests
         performance_results = []

@@ -167,8 +167,8 @@ class TitleGenerationService(TitleGenerationServiceProtocol):
         Returns:
             Dict containing validation results
         """
-        validation_errors = []
-        warnings = []
+        validation_errors: list[str] = []
+        warnings: list[str] = []
 
         # Length validation
         if len(title) > self.max_title_length:
@@ -227,7 +227,7 @@ class TitleGenerationService(TitleGenerationServiceProtocol):
             List of title variations
         """
         try:
-            variations = []
+            variations: list[str] = []
 
             # Extract components from base title and features
             title_components = self._extract_title_components(product_features)
@@ -308,7 +308,7 @@ class TitleGenerationService(TitleGenerationServiceProtocol):
         self, product_features: dict[str, Any]
     ) -> dict[str, str]:
         """Extract title components from product features."""
-        components = {}
+        components: dict[str, str] = {}
 
         # Core components
         components["brand"] = product_features.get("brand", "")
@@ -339,7 +339,7 @@ class TitleGenerationService(TitleGenerationServiceProtocol):
         max_length: int,
     ) -> list[str]:
         """Generate multiple title variants using different patterns."""
-        variants = []
+        variants: list[str] = []
 
         brand = components.get("brand", "")
         model = components.get("model", "")
@@ -378,7 +378,7 @@ class TitleGenerationService(TitleGenerationServiceProtocol):
             variants.append(title)
 
         # Filter by length and return
-        valid_variants = [
+        valid_variants: list[str] = [
             v
             for v in variants
             if len(v) <= max_length and len(v) >= self.min_title_length
@@ -406,13 +406,13 @@ class TitleGenerationService(TitleGenerationServiceProtocol):
                 return category
 
         # Score each variant
-        scored_variants = []
+        scored_variants: list[tuple[str, float]] = []
         for variant in title_variants:
             score = self._score_title_variant(variant, product_features)
             scored_variants.append((variant, score))
 
         # Return highest scoring variant
-        best_variant = max(scored_variants, key=lambda x: x[1])
+        best_variant: tuple[str, float] = max(scored_variants, key=lambda x: x[1])
         return best_variant[0]
 
     def _score_title_variant(
@@ -472,7 +472,7 @@ class TitleGenerationService(TitleGenerationServiceProtocol):
     def _capitalize_title(self, title: str) -> str:
         """Capitalize title properly."""
         words = title.split()
-        capitalized_words = []
+        capitalized_words: list[str] = []
 
         for word in words:
             # Don't capitalize common stop words unless they're the first word
@@ -668,7 +668,7 @@ class TitleGenerationService(TitleGenerationServiceProtocol):
 
     def _get_optimization_suggestions(self, title: str, category_id: str) -> list[str]:
         """Get optimization suggestions for title."""
-        suggestions = []
+        suggestions: list[str] = []
 
         # Length suggestions
         if len(title) < 30:

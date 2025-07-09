@@ -9,6 +9,7 @@ import asyncio
 import json
 import logging
 import time
+from datetime import datetime
 from decimal import Decimal
 from typing import Any
 from uuid import uuid4
@@ -81,12 +82,12 @@ class GeminiAIService(AIContentGeneratorProtocol):
             )
 
         # Configure Gemini API
-        genai.configure(api_key=self.api_key)
+        genai.configure(api_key=self.api_key)  # type: ignore[reportUnknownMemberType]
 
         # Initialize model with safety settings
-        self.model = genai.GenerativeModel(
+        self.model = genai.GenerativeModel(  # type: ignore[reportPrivateImportUsage]
             model_name=self.model_name,
-            generation_config=genai.GenerationConfig(
+            generation_config=genai.GenerationConfig(  # type: ignore[reportPrivateImportUsage]
                 temperature=self.temperature,
                 max_output_tokens=self.max_tokens,
                 top_p=0.9,
@@ -170,7 +171,7 @@ class GeminiAIService(AIContentGeneratorProtocol):
                 ai_model_version=self.model_name,
                 generation_time_ms=generation_time_ms,
                 version=1,
-                generated_at=time.time(),
+                generated_at=datetime.now(),
             )
 
             logger.info(f"Generated content successfully in {generation_time_ms}ms")
@@ -238,7 +239,7 @@ class GeminiAIService(AIContentGeneratorProtocol):
         Returns:
             Dict containing validation results
         """
-        validation_errors = []
+        validation_errors: list[str] = []
 
         # Check title length
         if len(content.ml_title) > 60:
@@ -399,7 +400,7 @@ class GeminiAIService(AIContentGeneratorProtocol):
         target_audience: str | None = None,
     ) -> list[Any]:
         """Prepare multimodal input for Gemini API."""
-        input_parts = []
+        input_parts: list[Any] = []
 
         # Add images
         for image in images:
@@ -727,7 +728,9 @@ RESPONDE SOLO CON JSON VÁLIDO:
 
             for field in required_fields:
                 if field not in parsed_data:
-                    raise InvalidContentError(f"Missing required field: {field}")
+                    raise InvalidContentError(
+                        f"Missing required field: {field}", content_type="api_response"
+                    )
 
             return parsed_data
 

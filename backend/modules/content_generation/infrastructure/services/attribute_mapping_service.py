@@ -269,7 +269,7 @@ class AttributeMappingService(AttributeMappingServiceProtocol):
                 )
                 return self._create_default_attributes(product_features)
 
-            mapped_attributes = {}
+            mapped_attributes: dict[str, Any] = {}
 
             # Map required attributes
             required_attrs = cast("list[str]", category_config["required"])
@@ -328,8 +328,8 @@ class AttributeMappingService(AttributeMappingServiceProtocol):
             AttributeValidationError: If validation fails
         """
         try:
-            validation_errors = {}
-            warnings = []
+            validation_errors: dict[str, str] = {}
+            warnings: list[str] = []
 
             # Get category configuration
             category_config = self.category_attributes.get(category_id)
@@ -556,7 +556,7 @@ class AttributeMappingService(AttributeMappingServiceProtocol):
 
     def _validate_mapped_attributes(self, attributes: dict[str, Any]) -> dict[str, Any]:
         """Validate all mapped attributes."""
-        validated_attributes = {}
+        validated_attributes: dict[str, Any] = {}
 
         for attr_id, attr_value in attributes.items():
             validation_result = self._validate_attribute_value(attr_id, attr_value)
@@ -644,7 +644,7 @@ class AttributeMappingService(AttributeMappingServiceProtocol):
         self, product_features: dict[str, Any]
     ) -> dict[str, Any]:
         """Create default attributes for unknown categories."""
-        default_attributes = {}
+        default_attributes: dict[str, Any] = {}
 
         # Map common attributes
         if product_features.get("brand"):
@@ -702,7 +702,7 @@ class AttributeMappingService(AttributeMappingServiceProtocol):
         product_features: dict[str, Any],
     ) -> list[dict[str, Any]]:
         """Suggest missing attributes that could be added."""
-        suggestions = []
+        suggestions: list[dict[str, Any]] = []
 
         category_config = self.category_attributes.get(category_id)
         if not category_config:

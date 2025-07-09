@@ -84,7 +84,7 @@ class DescriptionGenerationService(DescriptionGenerationServiceProtocol):
         }
 
         # Mobile-first formatting rules
-        self.mobile_formatting = {
+        self.mobile_formatting: dict[str, Any] = {
             "max_line_length": 50,
             "paragraph_separator": "\n\n",
             "bullet_point": "• ",
@@ -394,7 +394,7 @@ class DescriptionGenerationService(DescriptionGenerationServiceProtocol):
         target_length: int,
     ) -> dict[str, str]:
         """Generate individual description sections."""
-        sections = {}
+        sections: dict[str, str] = {}
 
         # Get template for category
         template = self.description_templates.get(
@@ -837,7 +837,7 @@ class DescriptionGenerationService(DescriptionGenerationServiceProtocol):
     def _parse_description_sections(self, description: str) -> dict[str, str]:
         """Parse existing description into sections."""
         # Simple parsing - in production this would be more sophisticated
-        sections = {}
+        sections: dict[str, str] = {}
 
         paragraphs = description.split("\n\n")
         for i, paragraph in enumerate(paragraphs):

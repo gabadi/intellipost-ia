@@ -12,16 +12,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.dependencies import (
-    get_authenticate_user_use_case,
-    get_create_product_use_case,
-    get_get_products_use_case,
-    get_password_service,
-    get_refresh_token_use_case,
-    get_register_user_use_case,
-    get_user_repository,
+    create_auth_router_factory,
+    create_content_generation_router_factory,
+    create_product_router_factory,
+    create_user_router_factory,
+    get_ml_oauth_router,
+    start_ml_background_tasks,
+    stop_ml_background_tasks,
 )
 from api.routers import health
-from api.routers.auth import create_auth_router_with_dependencies
 from api.routers.config import create_config_router
 from infrastructure.config.logging import (
     StructuredRequestLoggingMiddleware,
@@ -66,10 +65,6 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
 
         # Start MercadoLibre background tasks (including token refresh scheduler)
         try:
-            from modules.user_management.infrastructure.services.ml_background_tasks import (
-                start_ml_background_tasks,
-            )
-
             await start_ml_background_tasks()
             logger.info("MercadoLibre background tasks started successfully")
 
@@ -84,10 +79,6 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
 
         # Stop MercadoLibre background tasks
         try:
-            from modules.user_management.infrastructure.services.ml_background_tasks import (
-                stop_ml_background_tasks,
-            )
-
             await stop_ml_background_tasks()
             logger.info("MercadoLibre background tasks stopped successfully")
         except Exception as e:
@@ -111,42 +102,26 @@ def create_fastapi_app(settings: Settings) -> FastAPI:
     app.include_router(config_router)
 
     # Create and include authentication router
-    auth_router = create_auth_router_with_dependencies(
-        register_use_case_factory=get_register_user_use_case,
-        authenticate_use_case_factory=get_authenticate_user_use_case,
-        refresh_token_use_case_factory=get_refresh_token_use_case,
+    auth_router = create_auth_router_factory(
         access_token_expire_minutes=settings.user_jwt_access_token_expire_minutes,
         registration_enabled=settings.user_registration_enabled,
     )
     app.include_router(auth_router)
 
     # Create and include user router
-    from modules.user_management.api.routers.user_router import create_user_router
-
-    user_router = create_user_router(
-        user_repository=get_user_repository,
-        password_service=get_password_service,
-        current_user_provider=None,
-    )
+    user_router = create_user_router_factory()
     app.include_router(user_router)
 
     # Create and include product router
-    from modules.product_management.api.routers.product_router import (
-        create_product_router,
-    )
-
-    product_router = create_product_router(
-        create_product_use_case_factory=get_create_product_use_case,
-        get_products_use_case_factory=get_get_products_use_case,
-        current_user_provider=None,
-    )
+    product_router = create_product_router_factory()
     app.include_router(product_router)
 
-    # Include MercadoLibre OAuth router
-    from modules.user_management.api.routers.ml_oauth_router import (
-        router as ml_oauth_router,
-    )
+    # Create and include content generation router
+    content_generation_router = create_content_generation_router_factory()
+    app.include_router(content_generation_router)
 
+    # Include MercadoLibre OAuth router
+    ml_oauth_router = get_ml_oauth_router()
     app.include_router(ml_oauth_router)
 
     # Configure CORS middleware with secure settings

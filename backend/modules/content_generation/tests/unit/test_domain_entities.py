@@ -518,6 +518,7 @@ class TestAIGeneration:
             current_step=ProcessingStep.CONTENT_FINALIZATION,
             progress_percentage=100.0,
             estimated_completion_seconds=30,
+            generated_content_id=uuid4(),  # Required for COMPLETED status
             error_message=None,
             error_code=None,
             created_at=datetime.now(UTC),
@@ -535,6 +536,7 @@ class TestAIGeneration:
             current_step=ProcessingStep.CONTENT_FINALIZATION,
             progress_percentage=100.0,
             estimated_completion_seconds=30,
+            generated_content_id=uuid4(),  # Required for COMPLETED status
             error_message=None,
             error_code=None,
             created_at=datetime.now(UTC),
@@ -612,7 +614,7 @@ class TestAIGeneration:
         remaining = generation.get_estimated_remaining_time()
 
         # Should be roughly half the estimated time since we're 50% done
-        assert 14 <= remaining <= 16
+        assert remaining is not None and 14 <= remaining <= 16
 
     def test_get_estimated_remaining_time_completed(self):
         """Test estimated remaining time for completed generation."""
@@ -623,6 +625,7 @@ class TestAIGeneration:
             current_step=ProcessingStep.CONTENT_FINALIZATION,
             progress_percentage=100.0,
             estimated_completion_seconds=30,
+            generated_content_id=uuid4(),  # Required for COMPLETED status
             error_message=None,
             error_code=None,
             created_at=datetime.now(UTC),

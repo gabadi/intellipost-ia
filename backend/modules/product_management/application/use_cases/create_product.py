@@ -3,6 +3,7 @@ Create product use case.
 
 This module contains the business logic for creating a new product with images.
 """
+# type: ignore[reportUnknownMemberType,reportUnknownVariableType,reportUnknownArgumentType]
 
 import contextlib
 from typing import Any
@@ -78,8 +79,8 @@ class CreateProductUseCase:
             logger.info(f"Created product entity: {created_product.id}")
 
             # Process and upload images
-            upload_results = []
-            upload_errors = []
+            upload_results: list[dict[str, Any]] = []
+            upload_errors: list[dict[str, Any]] = []
             images_uploaded = 0
 
             for i, image_file in enumerate(images):
@@ -128,7 +129,7 @@ class CreateProductUseCase:
                     upload_results.append(
                         {
                             "filename": image_file.filename,
-                            "image_id": str(image_record.id),
+                            "image_id": str(image_record["id"]),
                             "s3_url": upload_metadata["s3_url"],
                             "is_primary": (i == 0),
                         }

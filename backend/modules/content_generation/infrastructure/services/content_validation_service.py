@@ -166,7 +166,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
         }
 
         # MercadoLibre content policies
-        self.content_policies = {
+        self.content_policies: dict[str, Any] = {
             "title_max_length": 60,
             "description_min_length": 50,
             "description_max_length": 2000,
@@ -178,7 +178,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
         }
 
         # Quality assessment criteria
-        self.quality_criteria = {
+        self.quality_criteria: dict[str, dict[str, Any]] = {
             "completeness": {
                 "weight": 0.25,
                 "factors": ["has_brand", "has_model", "has_category", "has_price"],
@@ -206,7 +206,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
         }
 
         # Common validation patterns
-        self.validation_patterns = {
+        self.validation_patterns: dict[str, str] = {
             "phone_number": r"(\+?[0-9]{1,3})?[-.\s]?(\([0-9]{1,4}\))?[-.\s]?[0-9]{1,4}[-.\s]?[0-9]{1,4}[-.\s]?[0-9]{1,9}",
             "email": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
             "url": r"https?://[^\s]+",
@@ -220,7 +220,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
     async def validate_content(
         self,
         content: GeneratedContent,
-    ) -> ContentValidationResult:
+    ) -> dict[str, Any]:
         """
         Validate generated content comprehensively.
 
@@ -234,7 +234,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
             ContentValidationError: If validation fails
         """
         try:
-            validation_results = {
+            validation_results: dict[str, Any] = {
                 "is_valid": True,
                 "errors": [],
                 "warnings": [],
@@ -315,7 +315,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
     async def check_ml_compliance(
         self,
         content: GeneratedContent,
-    ) -> ComplianceResult:
+    ) -> dict[str, Any]:
         """
         Check if content complies with MercadoLibre policies.
 
@@ -325,7 +325,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
         Returns:
             Dict containing compliance results
         """
-        compliance_results = {
+        compliance_results: dict[str, Any] = {
             "is_compliant": True,
             "issues": [],
             "warnings": [],
@@ -435,7 +435,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
         Returns:
             List of improvement suggestions
         """
-        suggestions = []
+        suggestions: list[str] = []
 
         # Title suggestions
         if len(content.ml_title) < 30:
@@ -479,7 +479,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
 
     def _validate_title(self, title: str) -> ValidationResult:
         """Validate title content."""
-        validation_result = {
+        validation_result: ValidationResult = {
             "is_valid": True,
             "errors": [],
             "warnings": [],
@@ -516,7 +516,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
 
     def _validate_description(self, description: str) -> ValidationResult:
         """Validate description content."""
-        validation_result = {
+        validation_result: ValidationResult = {
             "is_valid": True,
             "errors": [],
             "warnings": [],
@@ -559,7 +559,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
 
     def _validate_price(self, price: Decimal | float) -> ValidationResult:
         """Validate price."""
-        validation_result = {
+        validation_result: ValidationResult = {
             "is_valid": True,
             "errors": [],
             "warnings": [],
@@ -579,7 +579,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
 
     def _validate_attributes(self, attributes: dict[str, Any]) -> ValidationResult:
         """Validate attributes."""
-        validation_result = {
+        validation_result: ValidationResult = {
             "is_valid": True,
             "errors": [],
             "warnings": [],
@@ -606,7 +606,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
 
     def _validate_structure(self, content: GeneratedContent) -> ValidationResult:
         """Validate content structure."""
-        validation_result = {
+        validation_result: ValidationResult = {
             "is_valid": True,
             "errors": [],
             "warnings": [],
@@ -629,7 +629,7 @@ class ContentValidationService(ContentValidationServiceProtocol):
 
     def _check_prohibited_content(self, text: str) -> ProhibitedContentResult:
         """Check for prohibited content."""
-        violations = []
+        violations: list[str] = []
         text_lower = text.lower()
 
         # Check for spam keywords
@@ -698,14 +698,14 @@ class ContentValidationService(ContentValidationServiceProtocol):
 
         return {"has_misleading_claims": False}
 
-    def _check_price_compliance(self, price: float) -> PriceComplianceResult:
+    def _check_price_compliance(self, price: Decimal | float) -> PriceComplianceResult:
         """Check price compliance."""
-        violations = []
+        violations: list[str] = []
 
         if price <= 0:
             violations.append("Price must be positive")
 
-        if price != round(price, 2):
+        if price != round(float(price), 2):
             violations.append("Price has more than 2 decimal places")
 
         return {

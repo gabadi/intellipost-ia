@@ -300,6 +300,35 @@ class GenerateContentUseCase:
 
         return saved_content
 
+    async def get_generated_content(
+        self,
+        content_id: UUID,
+    ) -> GeneratedContent | None:
+        """
+        Get generated content by ID.
+
+        Args:
+            content_id: Content ID to retrieve
+
+        Returns:
+            GeneratedContent or None if not found
+
+        Raises:
+            EntityNotFoundError: If content is not found
+        """
+        try:
+            content = await self.content_repository.get_generated_content(content_id)
+            if content is None:
+                from modules.content_generation.domain.exceptions import (
+                    EntityNotFoundError,
+                )
+
+                raise EntityNotFoundError(f"Generated content not found: {content_id}")
+            return content
+        except Exception as e:
+            logger.error(f"Error getting generated content {content_id}: {e}")
+            raise
+
     async def get_content_versions(
         self,
         product_id: UUID,

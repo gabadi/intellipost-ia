@@ -207,13 +207,15 @@ class MLCategoryService(MLCategoryServiceProtocol):
             category_attributes = await self.get_category_attributes(category_id)
 
             # Validate required attributes
-            validation_errors = []
-            missing_attributes = []
+            validation_errors: list[str] = []
+            missing_attributes: list[str] = []
 
             for attr in category_attributes.get("attributes", []):
                 if attr.get("required", False):
                     attr_id = attr.get("id")
-                    if not self._has_matching_feature(attr_id, product_features):
+                    if attr_id and not self._has_matching_feature(
+                        attr_id, product_features
+                    ):
                         missing_attributes.append(attr_id)
 
             if missing_attributes:
@@ -326,7 +328,7 @@ class MLCategoryService(MLCategoryServiceProtocol):
         """Search for categories based on product features."""
         search_queries = self._generate_search_queries(product_features)
 
-        all_results = []
+        all_results: list[dict[str, Any]] = []
         for query in search_queries:
             try:
                 results = await self._search_categories(query)
@@ -336,10 +338,10 @@ class MLCategoryService(MLCategoryServiceProtocol):
                 continue
 
         # Deduplicate results
-        unique_results = {}
+        unique_results: dict[str, dict[str, Any]] = {}
         for result in all_results:
             cat_id = result.get("id")
-            if cat_id not in unique_results:
+            if cat_id and cat_id not in unique_results:
                 unique_results[cat_id] = result
 
         return list(unique_results.values())
@@ -354,7 +356,7 @@ class MLCategoryService(MLCategoryServiceProtocol):
             response = await self._make_request("GET", url, params=params)
 
             # Extract categories from response
-            categories = []
+            categories: list[dict[str, Any]] = []
             if "results" in response:
                 for result in response["results"]:
                     categories.append(
@@ -374,7 +376,7 @@ class MLCategoryService(MLCategoryServiceProtocol):
 
     def _generate_search_queries(self, product_features: dict[str, Any]) -> list[str]:
         """Generate search queries from product features."""
-        queries = []
+        queries: list[str] = []
 
         # Basic product description
         brand = product_features.get("brand", "")
@@ -454,7 +456,7 @@ class MLCategoryService(MLCategoryServiceProtocol):
         categories: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Get detailed information for multiple categories."""
-        tasks = []
+        tasks: list[Any] = []
         for category in categories:
             task = self.get_category_info(category["id"])
             tasks.append(task)
@@ -462,7 +464,7 @@ class MLCategoryService(MLCategoryServiceProtocol):
         try:
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            detailed_categories = []
+            detailed_categories: list[dict[str, Any]] = []
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
                     logger.warning(
@@ -471,7 +473,8 @@ class MLCategoryService(MLCategoryServiceProtocol):
                     continue
 
                 # Merge original category data with detailed info
-                detailed_category = {**categories[i], **result}
+                result_dict: dict[str, Any] = result if isinstance(result, dict) else {}  # type: ignore[reportUnknownVariableType]
+                detailed_category: dict[str, Any] = {**categories[i], **result_dict}
                 detailed_categories.append(detailed_category)
 
             return detailed_categories
@@ -632,6 +635,13 @@ class MLCategoryService(MLCategoryServiceProtocol):
                     status_code=e.response.status_code,
                 ) from e
 
+        # This should never be reached due to exceptions being raised
+        raise ExternalServiceError(
+            "Request failed after all retries",
+            service_name="MercadoLibre API",
+            service_url=url,
+        )
+
     async def close(self):
         """Close the HTTP client."""
         await self.client.aclose()
@@ -640,6 +650,11 @@ class MLCategoryService(MLCategoryServiceProtocol):
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
+    ) -> None:
         """Async context manager exit."""
         await self.close()

@@ -4,6 +4,7 @@ Integration tests for AI and ML services.
 This module tests the integration with external AI and ML APIs
 including Google Gemini and MercadoLibre category detection.
 """
+# type: ignore[reportCallIssue]
 
 import os
 from datetime import UTC, datetime
@@ -48,24 +49,23 @@ class TestGeminiAIIntegration:
             api_key=os.getenv("GEMINI_API_KEY", "test_key"),
             model_name="gemini-2.5-flash",
             max_retries=2,
-            base_delay=0.1,
-            max_delay=5.0,
-            timeout=10.0,
-            rate_limit_requests_per_minute=30,
+            timeout_seconds=10,
         )
 
     @pytest.fixture
     def sample_images(self):
         """Sample image data for testing."""
+        from modules.content_generation.tests.conftest import TestImageData
+
         return [
-            ImageData(
+            TestImageData(
                 s3_key="test/iphone13pro.jpg",
                 s3_url="https://example.com/iphone13pro.jpg",
                 file_format="jpeg",
                 resolution_width=800,
                 resolution_height=600,
             ),
-            ImageData(
+            TestImageData(
                 s3_key="test/iphone13pro_back.jpg",
                 s3_url="https://example.com/iphone13pro_back.jpg",
                 file_format="jpeg",
@@ -403,13 +403,13 @@ class TestCompleteWorkflowIntegration:
         """Create GenerateContentUseCase with mocked dependencies."""
         # This would normally be dependency-injected
         return GenerateContentUseCase(
-            ai_content_generator=Mock(),
-            ml_category_service=Mock(),
-            title_generation_service=Mock(),
-            description_generation_service=Mock(),
-            attribute_mapping_service=Mock(),
+            ai_service=Mock(),
             content_repository=Mock(),
-            content_validation_service=Mock(),
+            title_service=Mock(),
+            description_service=Mock(),
+            validation_service=Mock(),
+            attribute_service=Mock(),
+            category_service=Mock(),
         )
 
     @pytest.fixture

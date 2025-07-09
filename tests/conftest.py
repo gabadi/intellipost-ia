@@ -27,7 +27,6 @@ def check_database_connection() -> bool:
     """
     try:
         import socket
-        import asyncpg
 
         # Extract connection details from test settings
         settings = Settings()

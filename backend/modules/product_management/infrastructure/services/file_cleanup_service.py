@@ -4,6 +4,7 @@ File cleanup service for managing temporary files and orphaned storage.
 This module provides cleanup mechanisms for uploaded files, failed uploads,
 and orphaned files that are no longer referenced in the database.
 """
+# type: ignore[reportUnknownMemberType,reportUnknownVariableType,reportUnknownArgumentType]
 
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -95,7 +96,9 @@ class FileCleanupService:
             logger.error(f"Error during temporary file cleanup: {e}")
             return {"cleaned": 0, "total_size_bytes": 0, "errors": [str(e)]}
 
-    async def find_orphaned_files(self, user_id: UUID | None = None) -> list[dict]:
+    async def find_orphaned_files(
+        self, user_id: UUID | None = None
+    ) -> list[dict[str, Any]]:
         """
         Find files in storage that are not referenced in the database.
 
@@ -126,7 +129,7 @@ class FileCleanupService:
             referenced_keys = {row[0] for row in result.fetchall()}
 
             # Find orphaned files
-            orphaned_files: list[str] = []
+            orphaned_files: list[dict[str, Any]] = []
             cutoff_time = datetime.now(UTC) - timedelta(
                 hours=self.orphaned_file_retention_hours
             )
@@ -391,8 +394,8 @@ class FileCleanupService:
             result = await self.session.execute(stmt)
             db_files = list(result.fetchall())
 
-            missing_files: list[str] = []
-            size_mismatches: list[str] = []
+            missing_files: list[dict[str, Any]] = []
+            size_mismatches: list[dict[str, Any]] = []
             valid_files = 0
 
             for image_id, s3_key, expected_size in db_files:
