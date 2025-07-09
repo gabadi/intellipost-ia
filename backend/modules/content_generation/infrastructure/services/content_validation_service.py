@@ -14,9 +14,6 @@ from modules.content_generation.domain.entities import GeneratedContent
 from modules.content_generation.domain.exceptions import (
     ContentValidationError,
 )
-from modules.content_generation.domain.ports.ai_service_protocols import (
-    ContentValidationServiceProtocol,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +83,7 @@ class PriceComplianceResult(TypedDict):
     violations: list[str]
 
 
-class ContentValidationService(ContentValidationServiceProtocol):
+class ContentValidationService:
     """
     Content validation service for MercadoLibre compliance.
 

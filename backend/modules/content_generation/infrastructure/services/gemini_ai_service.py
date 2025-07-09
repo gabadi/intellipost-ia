@@ -33,7 +33,6 @@ from modules.content_generation.domain.exceptions import (
     InvalidContentError,
 )
 from modules.content_generation.domain.ports.ai_service_protocols import (
-    AIContentGeneratorProtocol,
     ImageData,
 )
 from modules.content_generation.infrastructure.config import ai_content_config
@@ -41,7 +40,7 @@ from modules.content_generation.infrastructure.config import ai_content_config
 logger = logging.getLogger(__name__)
 
 
-class GeminiAIService(AIContentGeneratorProtocol):
+class GeminiAIService:
     """
     Google Gemini AI service implementation for content generation.
 

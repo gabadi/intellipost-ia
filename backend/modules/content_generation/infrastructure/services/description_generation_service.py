@@ -11,14 +11,11 @@ from typing import Any
 from modules.content_generation.domain.exceptions import (
     DescriptionGenerationError,
 )
-from modules.content_generation.domain.ports.ai_service_protocols import (
-    DescriptionGenerationServiceProtocol,
-)
 
 logger = logging.getLogger(__name__)
 
 
-class DescriptionGenerationService(DescriptionGenerationServiceProtocol):
+class DescriptionGenerationService:
     """
     Description generation service for MercadoLibre optimization.
 

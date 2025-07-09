@@ -18,9 +18,6 @@ from modules.content_generation.domain.exceptions import (
     EntityNotFoundError,
     RepositoryError,
 )
-from modules.content_generation.domain.ports.ai_service_protocols import (
-    ContentRepositoryProtocol,
-)
 from modules.content_generation.infrastructure.models.generated_content_model import (
     GeneratedContentModel,
 )
@@ -28,7 +25,7 @@ from modules.content_generation.infrastructure.models.generated_content_model im
 logger = logging.getLogger(__name__)
 
 
-class SQLAlchemyContentRepository(ContentRepositoryProtocol):
+class SQLAlchemyContentRepository:
     """
     SQLAlchemy implementation of the content repository.
 

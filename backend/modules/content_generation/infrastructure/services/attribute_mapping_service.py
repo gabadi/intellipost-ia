@@ -12,14 +12,11 @@ from modules.content_generation.domain.exceptions import (
     AttributeMappingError,
     AttributeValidationError,
 )
-from modules.content_generation.domain.ports.ai_service_protocols import (
-    AttributeMappingServiceProtocol,
-)
 
 logger = logging.getLogger(__name__)
 
 
-class AttributeMappingService(AttributeMappingServiceProtocol):
+class AttributeMappingService:
     """
     Attribute mapping service for MercadoLibre categories.
 

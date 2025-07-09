@@ -1,4 +1,4 @@
-# Test file for backend hooks - TESTING FIXED HOOKS
+# Test file for backend hooks - TESTING TY TYPE CHECKER
 def test_function(name: str, age: int) -> str:
     if age < 18:
         return f"Hello {name}, you are {age} years old and under 18"

@@ -12,14 +12,11 @@ from typing import Any
 from modules.content_generation.domain.exceptions import (
     TitleGenerationError,
 )
-from modules.content_generation.domain.ports.ai_service_protocols import (
-    TitleGenerationServiceProtocol,
-)
 
 logger = logging.getLogger(__name__)
 
 
-class TitleGenerationService(TitleGenerationServiceProtocol):
+class TitleGenerationService:
     """
     Title generation service for MercadoLibre optimization.
 

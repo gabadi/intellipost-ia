@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/security_check.sh",
+            "command": "bash -c 'cd $(git rev-parse --show-toplevel) && ./.claude/hooks/security_check.sh'",
             "timeout": 2000
           }
         ]
@@ -22,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uvx ruff check --fix \"$CLAUDE_FILE\" && uvx ruff format \"$CLAUDE_FILE\"",
+            "command": "for file in $CLAUDE_FILE_PATHS; do [[ \"$file\" == *.py ]] && uvx ruff check --fix \"$file\" && uvx ruff format \"$file\" && (cd backend && uvx ty check --project . \"../$file\" --exit-zero 2>/dev/null || true); done",
             "timeout": 3000
           }
         ]
@@ -32,7 +32,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx -y oxlint@latest \"$CLAUDE_FILE\" && npx -y prettier@latest --write \"$CLAUDE_FILE\"",
+            "command": "for file in $CLAUDE_FILE_PATHS; do [[ \"$file\" =~ \\.(ts|js|svelte)$ ]] && npx -y oxlint@latest \"$file\" && npx -y prettier@latest --write \"$file\" && (cd frontend && npx dependency-cruiser \"$file\" 2>/dev/null || true); done",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit.*\\.py$|Write.*\\.py$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "for file in $CLAUDE_FILE_PATHS; do [[ \"$file\" == *.py ]] && (cd $(git rev-parse --show-toplevel)/backend && uvx tach check && echo \"✅ TACH: Arquitectura validada correctamente\" >&2 || echo \"❌ TACH: Violaciones de arquitectura encontradas\" >&2); done",
             "timeout": 3000
           }
         ]
