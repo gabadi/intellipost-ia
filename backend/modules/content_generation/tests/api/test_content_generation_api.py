@@ -734,7 +734,9 @@ class TestRequestResponseValidation:
 
         assert valid_request.regenerate is False
         assert valid_request.category_hint == "celulares"
-        assert valid_request.price_range and valid_request.price_range["min"] == 10000
+        assert (
+            valid_request.price_range and valid_request.price_range.min_price == 10000
+        )
         assert valid_request.target_audience == "usuarios premium"
 
     def test_content_generation_request_validation_invalid(self):

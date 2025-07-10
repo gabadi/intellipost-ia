@@ -10,7 +10,9 @@ from uuid import UUID
 
 from modules.content_generation.domain.entities import (
     ConfidenceScore,
+    EnhancementData,
     GeneratedContent,
+    ProductFeatures,
 )
 from modules.content_generation.domain.exceptions import (
     ContentGenerationError,
@@ -27,6 +29,7 @@ from modules.content_generation.domain.ports.ai_service_protocols import (
     MLCategoryServiceProtocol,
     TitleGenerationServiceProtocol,
 )
+from shared.value_objects import PriceRange
 
 
 class ContentGenerationService:
@@ -63,7 +66,7 @@ class ContentGenerationService:
         images: list[ImageData],
         prompt: str,
         category_hint: str | None = None,
-        price_range: dict[str, float] | None = None,
+        price_range: PriceRange | None = None,
         target_audience: str | None = None,
         regenerate: bool = False,
     ) -> GeneratedContent:
@@ -133,16 +136,14 @@ class ContentGenerationService:
     async def enhance_content(
         self,
         content_id: UUID,
-        enhancement_type: str,
-        additional_data: dict[str, Any] | None = None,
+        enhancement_data: EnhancementData,
     ) -> GeneratedContent:
         """
         Enhance existing generated content.
 
         Args:
             content_id: ID of the content to enhance
-            enhancement_type: Type of enhancement (title, description, attributes)
-            additional_data: Additional data for enhancement
+            enhancement_data: Enhancement data containing type and parameters
 
         Returns:
             GeneratedContent: Enhanced content entity
@@ -157,30 +158,70 @@ class ContentGenerationService:
         if not existing_content:
             raise ContentGenerationError(f"Content not found: {content_id}")
 
+        # Validate enhancement data
+        if not enhancement_data.is_valid_for_type():
+            raise ContentGenerationError(
+                f"Invalid enhancement data for type: {enhancement_data.enhancement_type}"
+            )
+
         # Perform enhancement based on type
-        if enhancement_type == "title":
-            await self._enhance_title(existing_content, additional_data)
+        if enhancement_data.enhancement_type == "title":
+            await self._enhance_title(existing_content, enhancement_data)
             # Create new content with enhanced title
             # Implementation details for creating updated content entity
             pass
-        elif enhancement_type == "description":
-            await self._enhance_description(existing_content, additional_data)
+        elif enhancement_data.enhancement_type == "description":
+            await self._enhance_description(existing_content, enhancement_data)
             # Create new content with enhanced description
             # Implementation details for creating updated content entity
             pass
-        elif enhancement_type == "attributes":
-            await self._enhance_attributes(existing_content, additional_data)
+        elif enhancement_data.enhancement_type == "attributes":
+            await self._enhance_attributes(existing_content, enhancement_data)
             # Create new content with enhanced attributes
             # Implementation details for creating updated content entity
             pass
         else:
             raise ContentGenerationError(
-                f"Unknown enhancement type: {enhancement_type}"
+                f"Unknown enhancement type: {enhancement_data.enhancement_type}"
             )
 
         # For now, return the existing content
         # This would be replaced with actual enhancement logic
         return existing_content
+
+    async def enhance_content_legacy(
+        self,
+        content_id: UUID,
+        enhancement_type: str,
+        additional_data: dict[str, Any] | None = None,
+    ) -> GeneratedContent:
+        """
+        Legacy method for enhancing content using old dict format.
+
+        This method provides backward compatibility for existing code
+        that still uses the old additional_data dict format.
+
+        Args:
+            content_id: ID of the content to enhance
+            enhancement_type: Type of enhancement (title, description, attributes)
+            additional_data: Additional data for enhancement (legacy format)
+
+        Returns:
+            GeneratedContent: Enhanced content entity
+
+        Raises:
+            ContentGenerationError: If enhancement fails
+        """
+        # Convert legacy format to EnhancementData
+        if additional_data is None:
+            additional_data = {}
+
+        # Ensure enhancement_type is included
+        additional_data["enhancement_type"] = enhancement_type
+
+        enhancement_data = EnhancementData.from_dict_legacy(additional_data)
+
+        return await self.enhance_content(content_id, enhancement_data)
 
     async def validate_content_quality(
         self,
@@ -231,7 +272,7 @@ class ContentGenerationService:
         images: list[ImageData],
         prompt: str,
         category_hint: str | None = None,
-        price_range: dict[str, float] | None = None,
+        price_range: PriceRange | None = None,
         target_audience: str | None = None,
     ) -> GeneratedContent:
         """
@@ -294,17 +335,23 @@ class ContentGenerationService:
     async def _enhance_title(
         self,
         content: GeneratedContent,
-        additional_data: dict[str, Any] | None = None,
+        enhancement_data: EnhancementData,
     ) -> str:
         """Enhance the title of existing content."""
-        # Extract product features from additional data or existing content
-        product_features = additional_data or {}
+        # Convert enhancement data to ProductFeatures for compatibility
+        if enhancement_data.custom_attributes:
+            product_features = ProductFeatures.from_dict_legacy(
+                enhancement_data.custom_attributes
+            )
+        else:
+            product_features = ProductFeatures.create_minimal()
 
-        # Generate enhanced title
+        # Generate enhanced title with constraints from enhancement data
+        max_length = enhancement_data.target_length or 60
         enhanced_title = await self._title_generation_service.generate_optimized_title(
             product_features=product_features,
             category_id=content.ml_category_id,
-            max_length=60,
+            max_length=max_length,
         )
 
         return enhanced_title
@@ -312,11 +359,16 @@ class ContentGenerationService:
     async def _enhance_description(
         self,
         content: GeneratedContent,
-        additional_data: dict[str, Any] | None = None,
+        enhancement_data: EnhancementData,
     ) -> str:
         """Enhance the description of existing content."""
-        # Extract additional features
-        additional_features = additional_data or {}
+        # Convert enhancement data to ProductFeatures for compatibility
+        if enhancement_data.custom_attributes:
+            additional_features = ProductFeatures.from_dict_legacy(
+                enhancement_data.custom_attributes
+            )
+        else:
+            additional_features = ProductFeatures.create_minimal()
 
         # Enhance description
         enhanced_description = (
@@ -331,11 +383,16 @@ class ContentGenerationService:
     async def _enhance_attributes(
         self,
         content: GeneratedContent,
-        additional_data: dict[str, Any] | None = None,
+        enhancement_data: EnhancementData,
     ) -> dict[str, Any]:
         """Enhance the attributes of existing content."""
-        # Extract product features from additional data
-        product_features = additional_data or {}
+        # Convert enhancement data to ProductFeatures for compatibility
+        if enhancement_data.custom_attributes:
+            product_features = ProductFeatures.from_dict_legacy(
+                enhancement_data.custom_attributes
+            )
+        else:
+            product_features = ProductFeatures.create_minimal()
 
         # Map additional attributes
         enhanced_attributes = await self._attribute_mapping_service.map_attributes(
@@ -361,7 +418,7 @@ class ContentGenerationService:
     async def validate_category_compatibility(
         self,
         category_id: str,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures | dict[str, Any],
     ) -> dict[str, Any]:
         """
         Validate if a category is compatible with product features.
@@ -373,6 +430,10 @@ class ContentGenerationService:
         Returns:
             Dict containing validation results
         """
+        # Convert dict to ProductFeatures if needed
+        if isinstance(product_features, dict):
+            product_features = ProductFeatures.from_dict_legacy(product_features)
+
         return await self._ml_category_service.validate_category(
             category_id=category_id,
             product_features=product_features,

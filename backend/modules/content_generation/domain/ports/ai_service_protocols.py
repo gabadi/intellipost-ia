@@ -12,6 +12,8 @@ from modules.content_generation.domain.entities.confidence_score import Confiden
 from modules.content_generation.domain.entities.generated_content import (
     GeneratedContent,
 )
+from modules.content_generation.domain.entities.product_features import ProductFeatures
+from shared.value_objects import PriceRange
 
 
 class ImageData(Protocol):
@@ -32,7 +34,7 @@ class AIContentGeneratorProtocol(Protocol):
         images: list[ImageData],
         prompt: str,
         category_hint: str | None = None,
-        price_range: dict[str, float] | None = None,
+        price_range: PriceRange | None = None,
         target_audience: str | None = None,
     ) -> GeneratedContent:
         """Generate complete MercadoLibre listing content."""
@@ -55,7 +57,7 @@ class AIContentGeneratorProtocol(Protocol):
     async def enhance_description(
         self,
         base_description: str,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         target_length: int | None = None,
     ) -> str:
         """Enhance an existing description with additional features."""
@@ -63,12 +65,15 @@ class AIContentGeneratorProtocol(Protocol):
 
     async def extract_product_features(
         self, images: list[ImageData], prompt: str
-    ) -> dict[str, Any]:
+    ) -> ProductFeatures:
         """Extract product features from images and prompt."""
         ...
 
     async def estimate_price(
-        self, product_features: dict[str, Any], category_id: str, condition: str = "new"
+        self,
+        product_features: ProductFeatures,
+        category_id: str,
+        condition: str = "new",
     ) -> dict[str, Any]:
         """Estimate product price based on features and category."""
         ...
@@ -84,13 +89,13 @@ class MLCategoryServiceProtocol(Protocol):
     """Protocol for MercadoLibre category detection services."""
 
     async def predict_category(
-        self, product_features: dict[str, Any], category_hint: str | None = None
+        self, product_features: ProductFeatures, category_hint: str | None = None
     ) -> dict[str, Any]:
         """Predict MercadoLibre category from product features."""
         ...
 
     async def validate_category(
-        self, category_id: str, product_features: dict[str, Any]
+        self, category_id: str, product_features: ProductFeatures
     ) -> dict[str, Any]:
         """Validate if category is appropriate for product."""
         ...
@@ -142,7 +147,7 @@ class TitleGenerationServiceProtocol(Protocol):
     """Protocol for title generation services."""
 
     async def generate_optimized_title(
-        self, product_features: dict[str, Any], category_id: str, max_length: int = 60
+        self, product_features: ProductFeatures, category_id: str, max_length: int = 60
     ) -> str:
         """Generate MercadoLibre-optimized title."""
         ...
@@ -152,13 +157,13 @@ class TitleGenerationServiceProtocol(Protocol):
         ...
 
     async def generate_title_variations(
-        self, base_title: str, product_features: dict[str, Any], count: int = 3
+        self, base_title: str, product_features: ProductFeatures, count: int = 3
     ) -> list[str]:
         """Generate multiple title variations."""
         ...
 
     async def calculate_title_confidence(
-        self, title: str, product_features: dict[str, Any]
+        self, title: str, product_features: ProductFeatures
     ) -> float:
         """Calculate confidence score for generated title."""
         ...
@@ -169,7 +174,7 @@ class DescriptionGenerationServiceProtocol(Protocol):
 
     async def generate_description(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_id: str,
         target_length: int | None = None,
     ) -> str:
@@ -183,13 +188,13 @@ class DescriptionGenerationServiceProtocol(Protocol):
         ...
 
     async def enhance_description(
-        self, base_description: str, additional_features: dict[str, Any]
+        self, base_description: str, additional_features: ProductFeatures
     ) -> str:
         """Enhance existing description with additional features."""
         ...
 
     async def calculate_description_confidence(
-        self, description: str, product_features: dict[str, Any]
+        self, description: str, product_features: ProductFeatures
     ) -> float:
         """Calculate confidence score for generated description."""
         ...
@@ -199,7 +204,7 @@ class AttributeMappingServiceProtocol(Protocol):
     """Protocol for attribute mapping services."""
 
     async def map_attributes(
-        self, product_features: dict[str, Any], category_id: str
+        self, product_features: ProductFeatures, category_id: str
     ) -> dict[str, Any]:
         """Map product features to MercadoLibre attributes."""
         ...
@@ -219,7 +224,7 @@ class AttributeMappingServiceProtocol(Protocol):
         ...
 
     async def calculate_attribute_confidence(
-        self, attributes: dict[str, Any], product_features: dict[str, Any]
+        self, attributes: dict[str, Any], product_features: ProductFeatures
     ) -> float:
         """Calculate confidence score for mapped attributes."""
         ...

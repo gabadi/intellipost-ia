@@ -8,6 +8,7 @@ optimized for SEO and search algorithm performance.
 import re
 from typing import Any
 
+from modules.content_generation.domain.entities import ProductFeatures
 from modules.content_generation.domain.exceptions import (
     TitleGenerationError,
 )
@@ -109,7 +110,7 @@ class TitleGenerationService:
 
     async def generate_optimized_title(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_id: str,
         max_length: int = 60,
     ) -> str:
@@ -212,7 +213,7 @@ class TitleGenerationService:
     async def generate_title_variations(
         self,
         base_title: str,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         count: int = 3,
     ) -> list[str]:
         """
@@ -266,7 +267,7 @@ class TitleGenerationService:
     async def calculate_title_confidence(
         self,
         title: str,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> float:
         """
         Calculate confidence score for generated title.
@@ -289,9 +290,7 @@ class TitleGenerationService:
         confidence += completeness_score * 0.3
 
         # SEO score
-        seo_score = self._calculate_seo_score(
-            title, product_features.get("category", "")
-        )
+        seo_score = self._calculate_seo_score(title, product_features.category or "")
         confidence += seo_score * 0.2
 
         # Readability score
@@ -305,24 +304,24 @@ class TitleGenerationService:
         return min(confidence, 1.0)
 
     def _extract_title_components(
-        self, product_features: dict[str, Any]
+        self, product_features: ProductFeatures
     ) -> dict[str, str]:
         """Extract title components from product features."""
         components: dict[str, str] = {}
 
         # Core components
-        components["brand"] = product_features.get("brand", "")
-        components["model"] = product_features.get("model", "")
-        components["category"] = product_features.get("category", "")
-        components["condition"] = product_features.get("condition", "")
+        components["brand"] = product_features.brand or ""
+        components["model"] = product_features.model or ""
+        components["category"] = product_features.category or ""
+        components["condition"] = product_features.condition or ""
 
         # Additional components
-        components["color"] = product_features.get("color", "")
-        components["size"] = product_features.get("size", "")
-        components["material"] = product_features.get("material", "")
+        components["color"] = product_features.color or ""
+        components["size"] = product_features.size or ""
+        components["material"] = product_features.material or ""
 
         # Technical specs
-        specs = product_features.get("technical_specs", {})
+        specs = product_features.technical_specs
         if specs:
             # Extract key specs that should appear in title
             important_specs = ["capacity", "memory", "storage", "resolution", "power"]
@@ -389,14 +388,14 @@ class TitleGenerationService:
     def _select_best_title(
         self,
         title_variants: list[str],
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> str:
         """Select the best title from variants."""
         if not title_variants:
             # Generate fallback title
-            brand = product_features.get("brand", "")
-            model = product_features.get("model", "")
-            category = product_features.get("category", "Producto")
+            brand = product_features.brand or ""
+            model = product_features.model or ""
+            category = product_features.category or "Producto"
 
             if brand and model:
                 return f"{brand} {model}"
@@ -416,7 +415,7 @@ class TitleGenerationService:
         return best_variant[0]
 
     def _score_title_variant(
-        self, title: str, product_features: dict[str, Any]
+        self, title: str, product_features: ProductFeatures
     ) -> float:
         """Score a title variant for selection."""
         score = 0.0
@@ -431,22 +430,22 @@ class TitleGenerationService:
             score += 0.1
 
         # Brand presence
-        brand = product_features.get("brand", "")
+        brand = product_features.brand or ""
         if brand and brand.lower() in title.lower():
             score += 0.25
 
         # Model presence
-        model = product_features.get("model", "")
+        model = product_features.model or ""
         if model and model.lower() in title.lower():
             score += 0.25
 
         # Category presence
-        category = product_features.get("category", "")
+        category = product_features.category or ""
         if category and category.lower() in title.lower():
             score += 0.1
 
         # Condition presence (if not new)
-        condition = product_features.get("condition", "")
+        condition = product_features.condition or ""
         if condition and condition != "nuevo" and condition.lower() in title.lower():
             score += 0.1
 
@@ -564,34 +563,28 @@ class TitleGenerationService:
             return 0.2
 
     def _calculate_completeness_score(
-        self, title: str, product_features: dict[str, Any]
+        self, title: str, product_features: ProductFeatures
     ) -> float:
         """Calculate completeness score based on included information."""
         score = 0.0
 
         # Brand
-        if (
-            product_features.get("brand", "")
-            and product_features["brand"].lower() in title.lower()
-        ):
+        if product_features.brand and product_features.brand.lower() in title.lower():
             score += 0.4
 
         # Model
-        if (
-            product_features.get("model", "")
-            and product_features["model"].lower() in title.lower()
-        ):
+        if product_features.model and product_features.model.lower() in title.lower():
             score += 0.3
 
         # Category
         if (
-            product_features.get("category", "")
-            and product_features["category"].lower() in title.lower()
+            product_features.category
+            and product_features.category.lower() in title.lower()
         ):
             score += 0.2
 
         # Condition (if not new)
-        condition = product_features.get("condition", "")
+        condition = product_features.condition or ""
         if condition and condition != "nuevo" and condition.lower() in title.lower():
             score += 0.1
 
@@ -634,11 +627,11 @@ class TitleGenerationService:
         return base_title
 
     def _add_seo_keywords(
-        self, base_title: str, product_features: dict[str, Any]
+        self, base_title: str, product_features: ProductFeatures
     ) -> str:
         """Add SEO keywords to title."""
         # Add condition if not present and product is not new
-        condition = product_features.get("condition", "")
+        condition = product_features.condition or ""
         if (
             condition
             and condition != "nuevo"

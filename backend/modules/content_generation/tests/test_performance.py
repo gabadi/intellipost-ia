@@ -94,7 +94,7 @@ class TestContentGenerationPerformance:
         return service
 
     @pytest.fixture
-    def use_case(self, mock_ai_service, mock_category_service):
+    def use_case(self, mock_ai_service, mock_category_service, test_logger):
         """Create use case with mocked services."""
         content_repository = Mock()
         content_repository.get_content_by_product_id = AsyncMock(return_value=None)
@@ -144,6 +144,7 @@ class TestContentGenerationPerformance:
             attribute_service=attribute_service,
             category_service=mock_category_service,
             migration_service=migration_service,
+            logger=test_logger,
         )
 
     @pytest.fixture

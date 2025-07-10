@@ -18,6 +18,7 @@ from .exceptions import (
     ValueObjectSerializationError,
     ValueObjectValidationError,
 )
+from .price_range import PriceRange
 from .protocols import (
     MercadoLibreValueObjectProtocol,
     SerializableValueObjectProtocol,
@@ -42,4 +43,5 @@ __all__ = [
     "InvalidFieldRangeError",
     "InvalidFieldFormatError",
     "MultipleValidationError",
+    "PriceRange",
 ]

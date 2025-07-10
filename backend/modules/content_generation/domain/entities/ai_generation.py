@@ -11,6 +11,8 @@ from enum import Enum
 from typing import Any
 from uuid import UUID
 
+from shared.value_objects import PriceRange
+
 
 class GenerationStatus(str, Enum):
     """Status of AI content generation process."""
@@ -58,7 +60,7 @@ class AIGeneration:
     input_images: list[str] | None = None  # S3 keys
     input_prompt: str | None = None
     category_hint: str | None = None
-    price_range: dict[str, float] | None = None
+    price_range: PriceRange | None = None
     target_audience: str | None = None
 
     # Processing results
@@ -89,8 +91,7 @@ class AIGeneration:
             self.completed_steps = []
         if self.created_at is None:
             self.created_at = datetime.now(UTC)
-        if self.price_range is None:
-            self.price_range = {}
+        # price_range remains None if not provided
 
         self._validate_progress()
         self._validate_status()

@@ -13,6 +13,9 @@ import pytest
 from modules.content_generation.domain.entities.generated_content import (
     GeneratedContent,
 )
+from modules.content_generation.domain.entities.product_features import (
+    ProductFeatures,
+)
 from modules.content_generation.domain.exceptions import (
     AIServiceError,
     CategoryDetectionError,
@@ -284,11 +287,13 @@ class TestMLCategoryService:
                 mock_details.return_value = mock_search_results
 
                 result = await ml_category_service.predict_category(
-                    {
-                        "title": "iPhone 13 Pro 128GB",
-                        "description": "iPhone en excelente estado",
-                        "brand": "Apple",
-                    }
+                    ProductFeatures.from_dict_legacy(
+                        {
+                            "title": "iPhone 13 Pro 128GB",
+                            "description": "iPhone en excelente estado",
+                            "brand": "Apple",
+                        }
+                    )
                 )
 
                 assert result["category_id"] == "MLA1055"
@@ -307,13 +312,15 @@ class TestMLCategoryService:
                 CategoryDetectionError, match="Failed to predict category"
             ):
                 await ml_category_service.predict_category(
-                    {"title": "iPhone 13 Pro 128GB"}
+                    ProductFeatures.from_dict_legacy({"title": "iPhone 13 Pro 128GB"})
                 )
 
     @pytest.mark.asyncio
     async def test_predict_category_with_cache(self, ml_category_service):
         """Test category prediction with caching."""
-        features = {"title": "iPhone 13 Pro 128GB", "brand": "Apple"}
+        features = ProductFeatures.from_dict_legacy(
+            {"title": "iPhone 13 Pro 128GB", "brand": "Apple"}
+        )
 
         mock_search_results = [
             {
@@ -364,7 +371,7 @@ class TestMLCategoryService:
                 mock_details.return_value = mock_search_results
 
                 result = await ml_category_service.predict_category(
-                    {"title": "Generic product"}
+                    ProductFeatures.from_dict_legacy({"title": "Generic product"})
                 )
 
             assert result["category_id"] == "MLA1055"
@@ -374,11 +381,13 @@ class TestMLCategoryService:
     def test_build_category_features(self, ml_category_service):
         """Test building category features from product data."""
         # Test the internal _generate_search_queries method instead
-        product_features = {
-            "title": "iPhone 13 Pro 128GB Negro",
-            "description": "iPhone en excelente estado con caja original",
-            "brand": "Apple",
-        }
+        product_features = ProductFeatures.from_dict_legacy(
+            {
+                "title": "iPhone 13 Pro 128GB Negro",
+                "description": "iPhone en excelente estado con caja original",
+                "brand": "Apple",
+            }
+        )
 
         queries = ml_category_service._generate_search_queries(product_features)
 
@@ -456,14 +465,16 @@ class TestTitleGenerationService:
     @pytest.mark.asyncio
     async def test_generate_title_success(self, title_service):
         """Test successful title generation."""
-        product_data = {
-            "title": "iPhone 13 Pro 128GB Negro Usado Excelente Estado",
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-            "condition": "Usado",
-            "color": "Negro",
-            "storage": "128GB",
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "title": "iPhone 13 Pro 128GB Negro Usado Excelente Estado",
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "condition": "Usado",
+                "color": "Negro",
+                "storage": "128GB",
+            }
+        )
 
         result = await title_service.generate_optimized_title(product_data, "MLA1055")
 
@@ -474,12 +485,14 @@ class TestTitleGenerationService:
     @pytest.mark.asyncio
     async def test_generate_title_too_long(self, title_service):
         """Test title generation with content that's too long."""
-        product_data = {
-            "title": "iPhone 13 Pro 128GB Negro Usado Excelente Estado Con Caja Original Y Todos Los Accesorios Incluidos",
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-            "condition": "Usado",
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "title": "iPhone 13 Pro 128GB Negro Usado Excelente Estado Con Caja Original Y Todos Los Accesorios Incluidos",
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "condition": "Usado",
+            }
+        )
 
         result = await title_service.generate_optimized_title(product_data, "MLA1055")
 
@@ -542,11 +555,13 @@ class TestTitleGenerationService:
     @pytest.mark.asyncio
     async def test_optimize_for_seo(self, title_service):
         """Test SEO optimization for MercadoLibre."""
-        product_data = {
-            "title": "iPhone 13 Pro 128GB Negro",
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "title": "iPhone 13 Pro 128GB Negro",
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+            }
+        )
 
         optimized = await title_service.generate_optimized_title(
             product_data, "MLA1055"
@@ -561,13 +576,15 @@ class TestTitleGenerationService:
     async def test_calculate_title_confidence(self, title_service):
         """Test title confidence calculation."""
         title = "iPhone 13 Pro 128GB Negro Usado Excelente Estado"
-        product_data = {
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-            "condition": "Usado",
-            "color": "Negro",
-            "storage": "128GB",
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "condition": "Usado",
+                "color": "Negro",
+                "storage": "128GB",
+            }
+        )
 
         confidence = await title_service.calculate_title_confidence(title, product_data)
 
@@ -591,19 +608,21 @@ class TestDescriptionGenerationService:
     @pytest.mark.asyncio
     async def test_generate_description_success(self, description_service):
         """Test successful description generation."""
-        product_data = {
-            "title": "iPhone 13 Pro 128GB Negro",
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-            "condition": "Usado",
-            "color": "Negro",
-            "storage": "128GB",
-            "features": [
-                "Pantalla Super Retina XDR",
-                "Chip A15 Bionic",
-                "Sistema de cámaras Pro",
-            ],
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "title": "iPhone 13 Pro 128GB Negro",
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "condition": "Usado",
+                "color": "Negro",
+                "storage": "128GB",
+                "features": [
+                    "Pantalla Super Retina XDR",
+                    "Chip A15 Bionic",
+                    "Sistema de cámaras Pro",
+                ],
+            }
+        )
 
         result = await description_service.generate_description(product_data, "MLA1055")
 
@@ -617,12 +636,14 @@ class TestDescriptionGenerationService:
     @pytest.mark.asyncio
     async def test_generate_description_mobile_first(self, description_service):
         """Test mobile-first description formatting."""
-        product_data = {
-            "title": "iPhone 13 Pro 128GB Negro",
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-            "features": ["Feature 1", "Feature 2", "Feature 3"],
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "title": "iPhone 13 Pro 128GB Negro",
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "features": ["Feature 1", "Feature 2", "Feature 3"],
+            }
+        )
 
         result = await description_service.generate_description(product_data, "MLA1055")
 
@@ -633,12 +654,14 @@ class TestDescriptionGenerationService:
     @pytest.mark.asyncio
     async def test_generate_description_with_warranty(self, description_service):
         """Test description generation with warranty information."""
-        product_data = {
-            "title": "iPhone 13 Pro 128GB Negro",
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-            "condition": "Usado",
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "title": "iPhone 13 Pro 128GB Negro",
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "condition": "Usado",
+            }
+        )
 
         result = await description_service.generate_description(product_data, "MLA1055")
 
@@ -651,12 +674,14 @@ class TestDescriptionGenerationService:
     @pytest.mark.asyncio
     async def test_generate_description_with_shipping(self, description_service):
         """Test description generation with shipping information."""
-        product_data = {
-            "title": "iPhone 13 Pro 128GB Negro",
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-            "condition": "Usado",
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "title": "iPhone 13 Pro 128GB Negro",
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "condition": "Usado",
+            }
+        )
 
         result = await description_service.generate_description(product_data, "MLA1055")
 
@@ -706,16 +731,18 @@ class TestDescriptionGenerationService:
     @pytest.mark.asyncio
     async def test_format_for_mobile(self, description_service):
         """Test mobile-first formatting through description generation."""
-        product_data = {
-            "title": "iPhone 13 Pro features",
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-            "features": [
-                "Camera system",
-                "A15 Bionic chip",
-                "Super Retina XDR display",
-            ],
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "title": "iPhone 13 Pro features",
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "features": [
+                    "Camera system",
+                    "A15 Bionic chip",
+                    "Super Retina XDR display",
+                ],
+            }
+        )
 
         formatted = await description_service.generate_description(
             product_data, "MLA1055"
@@ -731,13 +758,15 @@ class TestDescriptionGenerationService:
             "iPhone 13 Pro de 128GB en color negro. Excelente estado de conservación. "
             * 5
         )
-        product_data = {
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-            "condition": "Usado",
-            "color": "Negro",
-            "storage": "128GB",
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "condition": "Usado",
+                "color": "Negro",
+                "storage": "128GB",
+            }
+        )
 
         confidence = await description_service.calculate_description_confidence(
             description, product_data
@@ -758,14 +787,16 @@ class TestAttributeMappingService:
     @pytest.mark.asyncio
     async def test_map_attributes_success(self, attribute_service):
         """Test successful attribute mapping."""
-        product_data = {
-            "brand": "Apple",
-            "model": "iPhone 13 Pro",
-            "color": "Negro",
-            "storage": "128GB",
-            "condition": "Usado",
-            "screen_size": "6.1 pulgadas",
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "brand": "Apple",
+                "model": "iPhone 13 Pro",
+                "color": "Negro",
+                "storage": "128GB",
+                "condition": "Usado",
+                "screen_size": "6.1 pulgadas",
+            }
+        )
 
         result = await attribute_service.map_attributes(product_data, "MLA1055")
 
@@ -780,11 +811,13 @@ class TestAttributeMappingService:
     @pytest.mark.asyncio
     async def test_map_attributes_missing_required(self, attribute_service):
         """Test attribute mapping with missing required attributes."""
-        product_data = {
-            "model": "iPhone 13 Pro",
-            "color": "Negro",
-            # Missing required brand
-        }
+        product_data = ProductFeatures.from_dict_legacy(
+            {
+                "model": "iPhone 13 Pro",
+                "color": "Negro",
+                # Missing required brand
+            }
+        )
 
         result = await attribute_service.map_attributes(product_data, "MLA1055")
 
@@ -799,7 +832,9 @@ class TestAttributeMappingService:
     @pytest.mark.asyncio
     async def test_map_attributes_invalid_category(self, attribute_service):
         """Test attribute mapping with invalid category."""
-        product_data = {"brand": "Apple", "model": "iPhone 13 Pro", "color": "Negro"}
+        product_data = ProductFeatures.from_dict_legacy(
+            {"brand": "Apple", "model": "iPhone 13 Pro", "color": "Negro"}
+        )
 
         # Service doesn't raise exception for invalid category, it returns default attributes
         result = await attribute_service.map_attributes(

@@ -13,6 +13,7 @@ from urllib.parse import urlencode
 import httpx
 from cachetools import TTLCache
 
+from modules.content_generation.domain.entities import ProductFeatures
 from modules.content_generation.domain.exceptions import (
     CategoryDetectionError,
     CategoryValidationError,
@@ -82,7 +83,7 @@ class MLCategoryService:
 
     async def predict_category(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_hint: str | None = None,
     ) -> dict[str, Any]:
         """
@@ -146,7 +147,7 @@ class MLCategoryService:
                     for cat in top_candidates[1:3]  # Top 2 alternatives
                 ],
                 "prediction_method": "ml_api_search",
-                "features_used": list(product_features.keys()),
+                "features_used": list(product_features.to_dict_legacy().keys()),
             }
 
             # Cache the result
@@ -168,7 +169,7 @@ class MLCategoryService:
     async def validate_category(
         self,
         category_id: str,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> dict[str, Any]:
         """
         Validate if category is appropriate for product.
@@ -325,7 +326,7 @@ class MLCategoryService:
 
     async def _search_categories_by_features(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> list[dict[str, Any]]:
         """Search for categories based on product features."""
         search_queries = self._generate_search_queries(product_features)
@@ -376,14 +377,14 @@ class MLCategoryService:
             self.logger.error(f"Error searching categories with query '{query}': {e}")
             return []
 
-    def _generate_search_queries(self, product_features: dict[str, Any]) -> list[str]:
+    def _generate_search_queries(self, product_features: ProductFeatures) -> list[str]:
         """Generate search queries from product features."""
         queries: list[str] = []
 
         # Basic product description
-        brand = product_features.get("brand", "")
-        model = product_features.get("model", "")
-        category = product_features.get("category", "")
+        brand = product_features.brand or ""
+        model = product_features.model or ""
+        category = product_features.category or ""
 
         if brand and model:
             queries.append(f"{brand} {model}")
@@ -395,15 +396,15 @@ class MLCategoryService:
             queries.append(brand)
 
         # Technical specs
-        specs = product_features.get("technical_specs", {})
+        specs = product_features.technical_specs
         if specs:
             for key, value in specs.items():
                 if value:
                     queries.append(f"{key} {value}")
 
         # Color and material
-        color = product_features.get("color", "")
-        material = product_features.get("material", "")
+        color = product_features.color or ""
+        material = product_features.material or ""
 
         if color:
             queries.append(f"{category} {color}" if category else color)
@@ -420,7 +421,7 @@ class MLCategoryService:
     def _rank_categories(
         self,
         categories: list[dict[str, Any]],
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_hint: str | None = None,
     ) -> list[dict[str, Any]]:
         """Rank categories by relevance to product features."""
@@ -437,8 +438,8 @@ class MLCategoryService:
                     score += 0.3
 
             # Brand/model matching
-            brand = product_features.get("brand", "").lower()
-            model = product_features.get("model", "").lower()
+            brand = (product_features.brand or "").lower()
+            model = (product_features.model or "").lower()
             category_name = category.get("name", "").lower()
 
             if brand and brand in category_name:
@@ -488,7 +489,7 @@ class MLCategoryService:
     def _select_best_category(
         self,
         categories: list[dict[str, Any]],
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> dict[str, Any]:
         """Select the best category from candidates."""
         if not categories:
@@ -501,7 +502,7 @@ class MLCategoryService:
     def _calculate_category_confidence(
         self,
         category: dict[str, Any],
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         search_results: list[dict[str, Any]],
     ) -> float:
         """Calculate confidence score for category selection."""
@@ -530,7 +531,7 @@ class MLCategoryService:
         self,
         category_info: dict[str, Any],
         category_attributes: dict[str, Any],
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> float:
         """Calculate compatibility score between category and product."""
         score = 0.0
@@ -558,15 +559,11 @@ class MLCategoryService:
         return min(score, 1.0)
 
     def _has_matching_feature(
-        self, attr_id: str, product_features: dict[str, Any]
+        self, attr_id: str, product_features: ProductFeatures
     ) -> bool:
         """Check if product features match a category attribute."""
         # Simple matching logic - in production this would be more sophisticated
         attr_id_lower = attr_id.lower()
-
-        # Check direct matches
-        if attr_id_lower in product_features:
-            return bool(product_features[attr_id_lower])
 
         # Check common mappings
         mappings = {
@@ -580,18 +577,19 @@ class MLCategoryService:
 
         for key, alternatives in mappings.items():
             if attr_id_lower in alternatives:
-                return key in product_features and bool(product_features[key])
+                feature_value = getattr(product_features, key, None)
+                return bool(feature_value)
 
         return False
 
     def _create_prediction_cache_key(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_hint: str | None = None,
     ) -> str:
         """Create cache key for category prediction."""
         key_data = {
-            "features": sorted(product_features.items()),
+            "features": sorted(product_features.to_dict_legacy().items()),
             "hint": category_hint,
         }
         key_string = json.dumps(key_data, sort_keys=True)

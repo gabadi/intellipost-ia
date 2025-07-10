@@ -24,6 +24,7 @@ from google.generativeai.types import HarmBlockThreshold, HarmCategory
 from modules.content_generation.domain.entities import (
     ConfidenceScore,
     GeneratedContent,
+    ProductFeatures,
 )
 from modules.content_generation.domain.exceptions import (
     AIServiceError,
@@ -43,6 +44,7 @@ from shared.migration.value_object_migration import (
     safe_migrate_ml_sale_terms,
     safe_migrate_ml_shipping,
 )
+from shared.value_objects import PriceRange
 
 
 class GeminiAIService:
@@ -114,7 +116,7 @@ class GeminiAIService:
         images: list[ImageData],
         prompt: str,
         category_hint: str | None = None,
-        price_range: dict[str, float] | None = None,
+        price_range: PriceRange | None = None,
         target_audience: str | None = None,
     ) -> GeneratedContent:
         """
@@ -308,7 +310,7 @@ class GeminiAIService:
     async def enhance_description(
         self,
         base_description: str,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         target_length: int | None = None,
     ) -> str:
         """
@@ -338,7 +340,7 @@ class GeminiAIService:
         self,
         images: list[ImageData],
         prompt: str,
-    ) -> dict[str, Any]:
+    ) -> ProductFeatures:
         """
         Extract product features from images and prompt.
 
@@ -347,22 +349,22 @@ class GeminiAIService:
             prompt: User description
 
         Returns:
-            Dict of extracted features
+            ProductFeatures instance with extracted features
         """
         extraction_prompt = self._create_feature_extraction_prompt(prompt)
         input_parts = await self._prepare_multimodal_input(images, extraction_prompt)
 
         try:
             response = await self._generate_with_retry(input_parts)
-            features = self._parse_feature_extraction_response(response)
-            return features
+            features_dict = self._parse_feature_extraction_response(response)
+            return ProductFeatures.from_dict_legacy(features_dict)
         except Exception as e:
             self.logger.error(f"Error extracting product features: {e}")
-            return {}
+            return ProductFeatures.from_dict_legacy({"description": prompt})
 
     async def estimate_price(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_id: str,
         condition: str = "new",
     ) -> dict[str, Any]:
@@ -411,7 +413,7 @@ class GeminiAIService:
         images: list[ImageData],
         prompt: str,
         category_hint: str | None = None,
-        price_range: dict[str, float] | None = None,
+        price_range: PriceRange | None = None,
         target_audience: str | None = None,
     ) -> list[Any]:
         """Prepare multimodal input for Gemini API."""
@@ -440,7 +442,7 @@ class GeminiAIService:
         self,
         user_prompt: str,
         category_hint: str | None = None,
-        price_range: dict[str, float] | None = None,
+        price_range: PriceRange | None = None,
         target_audience: str | None = None,
     ) -> str:
         """Create optimized prompt for MercadoLibre content generation."""
@@ -465,7 +467,7 @@ CONTEXTO ADICIONAL:
             base_prompt += f"- Sugerencia de categoría: {category_hint}\n"
 
         if price_range:
-            base_prompt += f"- Rango de precio esperado: ${price_range.get('min', 0)} - ${price_range.get('max', 999999)}\n"
+            base_prompt += f"- Rango de precio esperado: ${price_range.min_price} - ${price_range.max_price}\n"
 
         if target_audience:
             base_prompt += f"- Audiencia objetivo: {target_audience}\n"
@@ -545,7 +547,7 @@ RESPONDE SOLO CON JSON VÁLIDO:
     def _create_description_enhancement_prompt(
         self,
         base_description: str,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         target_length: int | None = None,
     ) -> str:
         """Create prompt for enhancing descriptions."""
@@ -557,7 +559,7 @@ RESPONDE SOLO CON JSON VÁLIDO:
 Mejora la descripción del producto para MercadoLibre Argentina.
 
 DESCRIPCIÓN ACTUAL: {base_description}
-CARACTERÍSTICAS ADICIONALES: {json.dumps(product_features, ensure_ascii=False)}
+CARACTERÍSTICAS ADICIONALES: {json.dumps(product_features.to_dict_legacy(), ensure_ascii=False)}
 {length_instruction}
 
 MEJORAS REQUERIDAS:
@@ -603,7 +605,7 @@ RESPONDE SOLO CON JSON VÁLIDO:
 
     def _create_price_estimation_prompt(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_id: str,
         condition: str,
     ) -> str:
@@ -611,7 +613,7 @@ RESPONDE SOLO CON JSON VÁLIDO:
         return f"""
 Estima el precio del producto para MercadoLibre Argentina.
 
-CARACTERÍSTICAS: {json.dumps(product_features, ensure_ascii=False)}
+CARACTERÍSTICAS: {json.dumps(product_features.to_dict_legacy(), ensure_ascii=False)}
 CATEGORÍA: {category_id}
 CONDICIÓN: {condition}
 

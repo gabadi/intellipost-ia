@@ -7,6 +7,7 @@ optimized for mobile-first experience and conversion.
 
 from typing import Any
 
+from modules.content_generation.domain.entities import ProductFeatures
 from modules.content_generation.domain.exceptions import (
     DescriptionGenerationError,
 )
@@ -167,7 +168,7 @@ class DescriptionGenerationService:
 
     async def generate_description(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_id: str,
         target_length: int | None = None,
     ) -> str:
@@ -329,7 +330,7 @@ class DescriptionGenerationService:
     async def calculate_description_confidence(
         self,
         description: str,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> float:
         """
         Calculate confidence score for generated description.
@@ -363,7 +364,7 @@ class DescriptionGenerationService:
 
         # SEO score
         seo_score = self._calculate_seo_score(
-            description, product_features.get("category", "")
+            description, product_features.category or ""
         )
         confidence += seo_score * 0.15
 
@@ -389,7 +390,7 @@ class DescriptionGenerationService:
 
     def _generate_description_sections(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_type: str,
         target_length: int,
     ) -> dict[str, str]:
@@ -435,12 +436,12 @@ class DescriptionGenerationService:
         return sections
 
     def _generate_intro_section(
-        self, product_features: dict[str, Any], template: dict[str, str]
+        self, product_features: ProductFeatures, template: dict[str, str]
     ) -> str:
         """Generate introduction section."""
-        brand = product_features.get("brand", "")
-        model = product_features.get("model", "")
-        condition = product_features.get("condition", "new")
+        brand = product_features.brand or ""
+        model = product_features.model or ""
+        condition = product_features.condition or "new"
 
         condition_description = self.condition_descriptions.get(
             condition, "en excelente estado"
@@ -457,23 +458,23 @@ class DescriptionGenerationService:
         )
 
     def _generate_features_section(
-        self, product_features: dict[str, Any], template: dict[str, str]
+        self, product_features: ProductFeatures, template: dict[str, str]
     ) -> str:
         """Generate features section."""
         features: list[str] = []
 
         # Extract key features
-        if product_features.get("color"):
-            features.append(f"Color: {product_features['color']}")
+        if product_features.color:
+            features.append(f"Color: {product_features.color}")
 
-        if product_features.get("size"):
-            features.append(f"Tamaño: {product_features['size']}")
+        if product_features.size:
+            features.append(f"Tamaño: {product_features.size}")
 
-        if product_features.get("material"):
-            features.append(f"Material: {product_features['material']}")
+        if product_features.material:
+            features.append(f"Material: {product_features.material}")
 
         # Add technical specs as features
-        specs = product_features.get("technical_specs", {})
+        specs = product_features.technical_specs
         for spec_name, spec_value in specs.items():
             if spec_value:
                 features.append(f"{spec_name.title()}: {spec_value}")
@@ -490,10 +491,10 @@ class DescriptionGenerationService:
         return features_template.format(features_list=features_list)
 
     def _generate_specs_section(
-        self, product_features: dict[str, Any], template: dict[str, str]
+        self, product_features: ProductFeatures, template: dict[str, str]
     ) -> str:
         """Generate specifications section."""
-        specs = product_features.get("technical_specs", {})
+        specs = product_features.technical_specs
 
         if not specs:
             return ""
@@ -510,20 +511,20 @@ class DescriptionGenerationService:
         return specs_template.format(specs_list=specs_list)
 
     def _generate_benefits_section(
-        self, product_features: dict[str, Any], template: dict[str, str]
+        self, product_features: ProductFeatures, template: dict[str, str]
     ) -> str:
         """Generate benefits section."""
         benefits: list[str] = []
 
         # Generate benefits based on features
-        if product_features.get("condition") == "new":
+        if (product_features.condition or "new") == "new":
             benefits.append("Producto completamente nuevo")
 
-        if product_features.get("brand"):
-            benefits.append(f"Marca {product_features['brand']} de confianza")
+        if product_features.brand:
+            benefits.append(f"Marca {product_features.brand} de confianza")
 
         # Add category-specific benefits
-        category = product_features.get("category", "")
+        category = product_features.category or ""
         if "electrónicos" in category.lower():
             benefits.append("Tecnología de última generación")
         elif "ropa" in category.lower():
@@ -542,13 +543,13 @@ class DescriptionGenerationService:
         return benefits_template.format(benefits_list=benefits_list)
 
     def _generate_warranty_section(
-        self, product_features: dict[str, Any], template: dict[str, str]
+        self, product_features: ProductFeatures, template: dict[str, str]
     ) -> str:
         """Generate warranty section."""
         warranty_info = "Garantía del vendedor incluida"
 
         # Customize based on condition
-        condition = product_features.get("condition", "new")
+        condition = product_features.condition or "new"
         if condition == "new":
             warranty_info = "Garantía oficial + garantía del vendedor"
         elif condition == "refurbished":
@@ -559,13 +560,13 @@ class DescriptionGenerationService:
         return warranty_template.format(warranty_info=warranty_info)
 
     def _generate_shipping_section(
-        self, product_features: dict[str, Any], template: dict[str, str]
+        self, product_features: ProductFeatures, template: dict[str, str]
     ) -> str:
         """Generate shipping section."""
         shipping_info = "Envío rápido y seguro"
 
         # Customize based on product type
-        if product_features.get("category"):
+        if product_features.category:
             shipping_info = "Envío gratis a todo el país"
 
         shipping_template = template.get("shipping", "Envío: {shipping_info}")
@@ -784,12 +785,12 @@ class DescriptionGenerationService:
         score = 0.0
 
         # Check for brand mention
-        brand = product_features.get("brand", "")
+        brand = product_features.brand or ""
         if brand and brand.lower() in description.lower():
             score += 0.2
 
         # Check for model mention
-        model = product_features.get("model", "")
+        model = product_features.model or ""
         if model and model.lower() in description.lower():
             score += 0.2
 

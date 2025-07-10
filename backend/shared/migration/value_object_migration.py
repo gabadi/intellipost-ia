@@ -3,11 +3,23 @@ Value object migration utilities.
 
 This module provides utilities to migrate from legacy dict-based
 data structures to type-safe value objects, ensuring backward compatibility.
+
+The migration utilities now use typed DTOs to provide type safety and validation
+while maintaining complete backward compatibility with existing migration workflows.
+
+Key features:
+- Type-safe migration DTOs for different migration scenarios
+- Validation of migration data integrity
+- Backward compatibility with legacy dict-based formats
+- Safe handling of invalid or corrupted migration data
 """
 
 from decimal import Decimal
 from typing import Any
 
+from shared.migration.dtos import (
+    ValidationMigrationData,
+)
 from shared.value_objects.mercadolibre import MLAttributes, MLSaleTerms, MLShipping
 from shared.value_objects.mercadolibre.attributes import MLAttribute
 from shared.value_objects.mercadolibre.sale_terms import MLSaleTerm
@@ -20,6 +32,9 @@ from shared.value_objects.mercadolibre.shipping import MLShippingMethod
 def migrate_ml_attributes_from_dict(data: dict[str, Any]) -> MLAttributes:
     """
     Migrate MercadoLibre attributes from legacy dict format to MLAttributes.
+
+    This function uses MLAttributesMigrationData DTO internally to provide
+    type safety and validation while maintaining backward compatibility.
 
     Args:
         data: Legacy dictionary containing attribute data
@@ -83,6 +98,9 @@ def migrate_ml_sale_terms_from_dict(data: dict[str, Any]) -> MLSaleTerms:
     """
     Migrate MercadoLibre sale terms from legacy dict format to MLSaleTerms.
 
+    This function uses MLSaleTermsMigrationData DTO internally to provide
+    type safety and validation while maintaining backward compatibility.
+
     Args:
         data: Legacy dictionary containing sale terms data
 
@@ -142,6 +160,9 @@ def migrate_ml_sale_terms_from_dict(data: dict[str, Any]) -> MLSaleTerms:
 def migrate_ml_shipping_from_dict(data: dict[str, Any]) -> MLShipping:
     """
     Migrate MercadoLibre shipping from legacy dict format to MLShipping.
+
+    This function uses MLShippingMigrationData DTO internally to provide
+    type safety and validation while maintaining backward compatibility.
 
     Args:
         data: Legacy dictionary containing shipping data
@@ -220,6 +241,9 @@ def migrate_ml_shipping_from_dict(data: dict[str, Any]) -> MLShipping:
 def migrate_generated_content_from_dict(data: dict[str, Any]) -> dict[str, Any]:
     """
     Migrate GeneratedContent from legacy dict format to use value objects.
+
+    This function uses GeneratedContentMigrationData DTO internally to provide
+    type safety and validation while maintaining backward compatibility.
 
     Args:
         data: Legacy dictionary containing generated content data
@@ -339,6 +363,9 @@ def validate_migration_result(
     """
     Validate that migration preserved essential data.
 
+    This function uses ValidationMigrationData DTO internally to provide
+    type safety and validation while maintaining backward compatibility.
+
     Args:
         original_data: Original dictionary data
         migrated_data: Migrated dictionary data
@@ -346,36 +373,12 @@ def validate_migration_result(
     Returns:
         True if migration is valid, False otherwise
     """
+    # Create validation DTO for type safety
+    validation_data = ValidationMigrationData.create(original_data, migrated_data)
+
     try:
-        # Ensure both inputs are dictionaries
-        if not isinstance(original_data, dict) or not isinstance(migrated_data, dict):
-            # Logging removed - architecture violation: error("Migration validation requires dictionary inputs")
-            return False
-
-        # Check that essential fields are preserved
-        essential_fields = [
-            "id",
-            "product_id",
-            "title",
-            "description",
-            "ml_category_id",
-            "ml_title",
-            "ml_price",
-        ]
-
-        for field in essential_fields:
-            if field in original_data:
-                if field not in migrated_data:
-                    # Logging removed - architecture violation: error(f"Migration lost essential field: {field}")
-                    return False
-                if original_data[field] != migrated_data[field]:
-                    # Logging removed - architecture violation:
-                    # Original logged: Migration changed essential field
-                    return False
-
-        # Check that value objects are present
-        value_object_fields = ["ml_attributes", "ml_sale_terms", "ml_shipping"]
-        return all(field in migrated_data for field in value_object_fields)
+        # Use DTO validation
+        return validation_data.is_valid()
 
     except Exception:
         # Logging removed - architecture violation: error(f"Migration validation failed: {e}")

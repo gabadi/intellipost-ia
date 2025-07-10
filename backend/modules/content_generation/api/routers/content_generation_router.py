@@ -412,10 +412,10 @@ def create_content_generation_router(
     ):
         """Enhance existing generated content."""
         try:
+            # Use the new enhance_content method with EnhancementData
             enhanced_content = await use_case.enhance_content(
                 content_id=content_id,
-                enhancement_type=request.enhancement_type,
-                additional_data=request.additional_data,
+                enhancement_data=request.enhancement_data,
             )
 
             return GeneratedContentSchema(

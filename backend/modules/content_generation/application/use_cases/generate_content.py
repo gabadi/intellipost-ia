@@ -13,9 +13,11 @@ from uuid import UUID, uuid4
 
 from modules.content_generation.domain.entities import (
     AIGeneration,
+    EnhancementData,
     GeneratedContent,
     GenerationStatus,
     ProcessingStep,
+    ProductFeatures,
 )
 from modules.content_generation.domain.exceptions import (
     CategoryDetectionError,
@@ -38,6 +40,7 @@ from modules.content_generation.domain.ports.logging.protocols import (
 from modules.content_generation.domain.services.value_object_migration_service import (
     ValueObjectMigrationService,
 )
+from shared.value_objects import PriceRange
 
 
 class GenerateContentUseCase:
@@ -111,7 +114,7 @@ class GenerateContentUseCase:
         images: Sequence[ImageData],
         prompt: str,
         category_hint: str | None = None,
-        price_range: dict[str, float] | None = None,
+        price_range: PriceRange | None = None,
         target_audience: str | None = None,
         regenerate: bool = False,
     ) -> AIGeneration:
@@ -201,7 +204,7 @@ class GenerateContentUseCase:
         images: Sequence[ImageData],
         prompt: str,
         category_hint: str | None = None,
-        price_range: dict[str, float] | None = None,
+        price_range: PriceRange | None = None,
         target_audience: str | None = None,
     ) -> AIGeneration:
         """
@@ -273,16 +276,14 @@ class GenerateContentUseCase:
     async def enhance_content(
         self,
         content_id: UUID,
-        enhancement_type: str,
-        additional_data: dict[str, Any] | None = None,
+        enhancement_data: EnhancementData,
     ) -> GeneratedContent:
         """
         Enhance existing generated content.
 
         Args:
             content_id: ID of the content to enhance
-            enhancement_type: Type of enhancement (title, description, attributes)
-            additional_data: Additional data for enhancement
+            enhancement_data: Enhancement data containing type and parameters
 
         Returns:
             GeneratedContent: Enhanced content entity
@@ -291,17 +292,25 @@ class GenerateContentUseCase:
         if not content:
             raise ContentGenerationError(f"Content not found: {content_id}")
 
+        # Validate enhancement data
+        if not enhancement_data.is_valid_for_type():
+            raise ContentGenerationError(
+                f"Invalid enhancement data for type: {enhancement_data.enhancement_type}"
+            )
+
         enhanced_content = None
 
-        if enhancement_type == "title":
-            enhanced_content = await self._enhance_title(content, additional_data)
-        elif enhancement_type == "description":
-            enhanced_content = await self._enhance_description(content, additional_data)
-        elif enhancement_type == "attributes":
-            enhanced_content = await self._enhance_attributes(content, additional_data)
+        if enhancement_data.enhancement_type == "title":
+            enhanced_content = await self._enhance_title(content, enhancement_data)
+        elif enhancement_data.enhancement_type == "description":
+            enhanced_content = await self._enhance_description(
+                content, enhancement_data
+            )
+        elif enhancement_data.enhancement_type == "attributes":
+            enhanced_content = await self._enhance_attributes(content, enhancement_data)
         else:
             raise ContentGenerationError(
-                f"Unknown enhancement type: {enhancement_type}"
+                f"Unknown enhancement type: {enhancement_data.enhancement_type}"
             )
 
         # Save enhanced content
@@ -310,6 +319,37 @@ class GenerateContentUseCase:
         )
 
         return saved_content
+
+    async def enhance_content_legacy(
+        self,
+        content_id: UUID,
+        enhancement_type: str,
+        additional_data: dict[str, Any] | None = None,
+    ) -> GeneratedContent:
+        """
+        Legacy method for enhancing content using old dict format.
+
+        This method provides backward compatibility for existing code
+        that still uses the old additional_data dict format.
+
+        Args:
+            content_id: ID of the content to enhance
+            enhancement_type: Type of enhancement (title, description, attributes)
+            additional_data: Additional data for enhancement (legacy format)
+
+        Returns:
+            GeneratedContent: Enhanced content entity
+        """
+        # Convert legacy format to EnhancementData
+        if additional_data is None:
+            additional_data = {}
+
+        # Ensure enhancement_type is included
+        additional_data["enhancement_type"] = enhancement_type
+
+        enhancement_data = EnhancementData.from_dict_legacy(additional_data)
+
+        return await self.enhance_content(content_id, enhancement_data)
 
     async def get_generated_content(
         self,
@@ -361,7 +401,7 @@ class GenerateContentUseCase:
         images: Sequence[ImageData],
         prompt: str,
         category_hint: str | None = None,
-        price_range: dict[str, float] | None = None,
+        price_range: PriceRange | None = None,
         target_audience: str | None = None,
     ) -> GeneratedContent:
         """Execute all processing steps in sequence."""
@@ -458,7 +498,7 @@ class GenerateContentUseCase:
         images: Sequence[ImageData],
         prompt: str,
         image_features: dict[str, Any],
-    ) -> dict[str, Any]:
+    ) -> ProductFeatures:
         """Extract product features from images and prompt."""
         try:
             # Use AI service to extract features
@@ -467,22 +507,24 @@ class GenerateContentUseCase:
             )
 
             # Enhance with image analysis
-            features.update(image_features)
+            enhanced_data = features.to_dict_legacy()
+            enhanced_data.update(image_features)
 
-            return features
+            return ProductFeatures.from_dict_legacy(enhanced_data)
 
         except Exception as e:
             self.logger.error(f"Error extracting product features: {e}")
             # Return basic features from prompt
-            return {
+            fallback_data = {
                 "description": prompt,
                 "category": "general",
                 "condition": "new",
             }
+            return ProductFeatures.from_dict_legacy(fallback_data)
 
     async def _detect_category(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_hint: str | None = None,
     ) -> dict[str, Any]:
         """Detect MercadoLibre category."""
@@ -520,7 +562,7 @@ class GenerateContentUseCase:
 
     async def _generate_title(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_id: str,
     ) -> dict[str, Any]:
         """Generate optimized title."""
@@ -548,8 +590,8 @@ class GenerateContentUseCase:
         except Exception as e:
             self.logger.error(f"Title generation failed: {e}")
             # Return fallback title
-            brand = product_features.get("brand", "")
-            model = product_features.get("model", "")
+            brand = product_features.brand or ""
+            model = product_features.model or ""
             fallback_title = f"{brand} {model}".strip() or "Producto"
 
             return {
@@ -560,7 +602,7 @@ class GenerateContentUseCase:
 
     async def _generate_description(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_id: str,
     ) -> dict[str, Any]:
         """Generate comprehensive description."""
@@ -590,9 +632,7 @@ class GenerateContentUseCase:
         except Exception as e:
             self.logger.error(f"Description generation failed: {e}")
             # Return fallback description
-            fallback_description = product_features.get(
-                "description", "Producto de calidad"
-            )
+            fallback_description = product_features.description or "Producto de calidad"
 
             return {
                 "description": fallback_description,
@@ -605,7 +645,7 @@ class GenerateContentUseCase:
 
     async def _map_attributes(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_id: str,
     ) -> dict[str, Any]:
         """Map product attributes."""
@@ -634,10 +674,10 @@ class GenerateContentUseCase:
             self.logger.error(f"Attribute mapping failed: {e}")
             # Return basic attributes
             fallback_attributes = {}
-            if product_features.get("brand"):
-                fallback_attributes["BRAND"] = product_features["brand"]
-            if product_features.get("model"):
-                fallback_attributes["MODEL"] = product_features["model"]
+            if product_features.brand:
+                fallback_attributes["BRAND"] = product_features.brand
+            if product_features.model:
+                fallback_attributes["MODEL"] = product_features.model
 
             return {
                 "attributes": fallback_attributes,
@@ -650,9 +690,9 @@ class GenerateContentUseCase:
 
     async def _estimate_price(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_id: str,
-        price_range: dict[str, float] | None = None,
+        price_range: PriceRange | None = None,
     ) -> dict[str, Any]:
         """Estimate product price."""
         try:
@@ -662,8 +702,8 @@ class GenerateContentUseCase:
 
             # Apply price range constraints if provided
             if price_range:
-                min_price = price_range.get("min", 0)
-                max_price = price_range.get("max", float("inf"))
+                min_price = price_range.min_price
+                max_price = price_range.max_price
 
                 estimated_price = price_estimation.get("estimated_price", 0)
                 if estimated_price < min_price:
@@ -680,7 +720,7 @@ class GenerateContentUseCase:
             # Return fallback price
             fallback_price = 10000.0  # Default price in ARS
             if price_range:
-                fallback_price = price_range.get("min", fallback_price)
+                fallback_price = price_range.min_price
 
             return {
                 "estimated_price": fallback_price,
@@ -696,7 +736,7 @@ class GenerateContentUseCase:
         category_info: dict[str, Any],
         attribute_info: dict[str, Any],
         price_info: dict[str, Any],
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> GeneratedContent:
         """Create the final generated content entity."""
 
@@ -724,7 +764,7 @@ class GenerateContentUseCase:
             ml_currency_id="ARS",
             ml_available_quantity=1,
             ml_buying_mode="buy_it_now",
-            ml_condition=product_features.get("condition", "new"),
+            ml_condition=product_features.condition or "new",
             ml_listing_type_id="gold_special",
             ml_attributes=self.migration_service.migrate_ml_attributes(
                 attribute_info["attributes"]
@@ -749,11 +789,17 @@ class GenerateContentUseCase:
     async def _enhance_title(
         self,
         content: GeneratedContent,
-        additional_data: dict[str, Any] | None = None,
+        enhancement_data: EnhancementData,
     ) -> GeneratedContent:
         """Enhance content title."""
-        # Extract current product features
-        product_features = additional_data or {}
+        # Convert enhancement data to ProductFeatures for compatibility
+        # Use custom_attributes as the product features data
+        if enhancement_data.custom_attributes:
+            product_features = ProductFeatures.from_dict_legacy(
+                enhancement_data.custom_attributes
+            )
+        else:
+            product_features = ProductFeatures.create_minimal()
 
         # Generate enhanced title
         enhanced_title = await self.title_service.generate_optimized_title(
@@ -803,11 +849,16 @@ class GenerateContentUseCase:
     async def _enhance_description(
         self,
         content: GeneratedContent,
-        additional_data: dict[str, Any] | None = None,
+        enhancement_data: EnhancementData,
     ) -> GeneratedContent:
         """Enhance content description."""
-        # Extract additional features
-        additional_features = additional_data or {}
+        # Convert enhancement data to ProductFeatures for compatibility
+        if enhancement_data.custom_attributes:
+            additional_features = ProductFeatures.from_dict_legacy(
+                enhancement_data.custom_attributes
+            )
+        else:
+            additional_features = ProductFeatures.create_minimal()
 
         # Enhance description
         enhanced_description = await self.description_service.enhance_description(
@@ -859,11 +910,16 @@ class GenerateContentUseCase:
     async def _enhance_attributes(
         self,
         content: GeneratedContent,
-        additional_data: dict[str, Any] | None = None,
+        enhancement_data: EnhancementData,
     ) -> GeneratedContent:
         """Enhance content attributes."""
-        # Extract product features
-        product_features = additional_data or {}
+        # Convert enhancement data to ProductFeatures for compatibility
+        if enhancement_data.custom_attributes:
+            product_features = ProductFeatures.from_dict_legacy(
+                enhancement_data.custom_attributes
+            )
+        else:
+            product_features = ProductFeatures.create_minimal()
 
         # Map additional attributes
         enhanced_attributes = await self.attribute_service.map_attributes(

@@ -59,7 +59,7 @@ depends_on = []
 # User Management - Domain Layer (Pure business logic, can use shared value objects)
 [[modules]]
 path = "modules.user_management.domain"
-depends_on = ["shared"]
+depends_on = []
 
 # User Management - Application Layer (Use cases, can only depend on domain)
 [[modules]]
@@ -74,7 +74,7 @@ depends_on = ["modules.user_management.domain", "infrastructure"]
 # User Management - API Layer (Controllers, depends on application, infrastructure, and domain)
 [[modules]]
 path = "modules.user_management.api"
-depends_on = ["modules.user_management.application", "modules.user_management.domain", "modules.user_management.infrastructure", "api", "api.dependencies"]
+depends_on = ["modules.user_management.application", "modules.user_management.domain", "modules.user_management.infrastructure", "api.dependencies"]
 
 # Product Management module - TRUE INDEPENDENCE
 [[modules]]
@@ -84,7 +84,7 @@ depends_on = ["modules.product_management.domain"]
 # Product Management - Domain Layer (Pure business logic, can use shared value objects)
 [[modules]]
 path = "modules.product_management.domain"
-depends_on = ["shared"]
+depends_on = []
 
 # Product Management - Application Layer (Use cases, can only depend on domain)
 [[modules]]
@@ -114,7 +114,7 @@ depends_on = ["shared"]
 # Content Generation - Application Layer (Use cases, can only depend on domain)
 [[modules]]
 path = "modules.content_generation.application"
-depends_on = ["modules.content_generation.domain"]
+depends_on = ["modules.content_generation.domain", "shared"]
 
 # Content Generation - Infrastructure Layer (External concerns, depends on domain for contracts)
 [[modules]]
@@ -124,7 +124,7 @@ depends_on = ["modules.content_generation.domain", "infrastructure", "shared"]
 # Content Generation - API Layer (Controllers, depends on application, infrastructure, and domain)
 [[modules]]
 path = "modules.content_generation.api"
-depends_on = ["modules.content_generation.application", "modules.content_generation.domain", "modules.content_generation.infrastructure", "modules.user_management.domain", "api"]
+depends_on = ["modules.content_generation.application", "modules.content_generation.domain", "modules.user_management.domain", "shared"]
 
 # Marketplace Integration module - TRUE INDEPENDENCE
 [[modules]]
@@ -134,7 +134,7 @@ depends_on = []
 # Marketplace Integration - Domain Layer (Pure business logic, can use shared value objects)
 [[modules]]
 path = "modules.marketplace_integration.domain"
-depends_on = ["shared"]
+depends_on = []
 
 # Marketplace Integration - Application Layer (Use cases, can only depend on domain)
 [[modules]]
@@ -159,7 +159,7 @@ depends_on = []
 # Notifications - Domain Layer (Pure business logic, can use shared value objects)
 [[modules]]
 path = "modules.notifications.domain"
-depends_on = ["shared"]
+depends_on = []
 
 # Notifications - Application Layer (Use cases, can only depend on domain)
 [[modules]]

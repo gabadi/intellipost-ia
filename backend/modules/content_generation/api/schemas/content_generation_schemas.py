@@ -9,7 +9,10 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from modules.content_generation.domain.entities import EnhancementData
+from shared.value_objects import PriceRange
 
 
 class ContentGenerationRequest(BaseModel):
@@ -19,6 +22,10 @@ class ContentGenerationRequest(BaseModel):
         str_strip_whitespace=True,
         validate_assignment=True,
         use_enum_values=True,
+        json_encoders={
+            PriceRange: lambda v: v.to_dict_legacy() if v else None,
+        },
+        arbitrary_types_allowed=True,
     )
 
     regenerate: bool = Field(
@@ -29,10 +36,17 @@ class ContentGenerationRequest(BaseModel):
         default=None, description="Optional hint for category detection", max_length=100
     )
 
-    price_range: dict[str, float] | None = Field(
+    price_range: PriceRange | None = Field(
         default=None,
-        description="Optional price range guidance",
-        examples=[{"min": 10000, "max": 50000}],
+        description=(
+            "Optional price range guidance for content generation. "
+            "Supports both PriceRange objects and legacy dict format with 'min' and 'max' keys "
+            "for backward compatibility. Currency defaults to ARS if not specified in dict format."
+        ),
+        examples=[
+            PriceRange(min_price=10000, max_price=50000, currency="ARS"),
+            {"min": 10000, "max": 50000},  # Legacy dict format
+        ],
     )
 
     target_audience: str | None = Field(
@@ -40,6 +54,57 @@ class ContentGenerationRequest(BaseModel):
         description="Optional target audience specification",
         max_length=100,
     )
+
+    @field_validator("price_range", mode="before")
+    @classmethod
+    def validate_price_range(cls, v: Any) -> PriceRange | None:
+        """
+        Validate and convert price_range from dict format if needed.
+
+        Supports backward compatibility by accepting both:
+        - PriceRange objects (new format)
+        - Dict with 'min' and 'max' keys (legacy format)
+
+        Args:
+            v: Input value to validate (PriceRange, dict, or None)
+
+        Returns:
+            PriceRange object or None
+
+        Raises:
+            ValueError: If format is invalid
+        """
+        if v is None:
+            return None
+
+        # If it's already a PriceRange, return as-is
+        if isinstance(v, PriceRange):
+            return v
+
+        # If it's a dict, convert from legacy format
+        if isinstance(v, dict):
+            return PriceRange.from_dict_legacy(v)
+
+        # If it's anything else, raise validation error
+        raise ValueError(
+            f"Invalid price_range format: {type(v)}. Expected PriceRange or dict with 'min' and 'max' keys."
+        )
+
+    def model_dump(self, **kwargs) -> dict[str, Any]:
+        """
+        Override model_dump to serialize PriceRange to legacy dict format.
+
+        This ensures backward compatibility by converting PriceRange objects
+        to the legacy dict format with 'min' and 'max' keys when serializing
+        to JSON for API responses.
+
+        Returns:
+            Dictionary with price_range in legacy format if present
+        """
+        data = super().model_dump(**kwargs)
+        if self.price_range is not None:
+            data["price_range"] = self.price_range.to_dict_legacy()
+        return data
 
 
 class ContentGenerationResponse(BaseModel):
@@ -249,15 +314,100 @@ class ContentValidationSchema(BaseModel):
 class ContentEnhancementRequest(BaseModel):
     """Request schema for content enhancement."""
 
-    model_config = ConfigDict(str_strip_whitespace=True)
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        arbitrary_types_allowed=True,
+        json_encoders={
+            EnhancementData: lambda v: v.to_dict_legacy() if v else None,
+        },
+    )
 
-    enhancement_type: str = Field(
-        description="Type of enhancement (title, description, attributes)"
+    enhancement_data: EnhancementData | None = Field(
+        default=None, description="Enhancement data with type and parameters"
+    )
+
+    # Legacy fields for backward compatibility
+    enhancement_type: str | None = Field(
+        default=None,
+        description="Type of enhancement (title, description, attributes) - legacy field",
     )
 
     additional_data: dict[str, Any] | None = Field(
-        default=None, description="Additional data for enhancement"
+        default=None, description="Additional data for enhancement - legacy field"
     )
+
+    @field_validator("enhancement_data", mode="before")
+    @classmethod
+    def validate_enhancement_data(cls, v: Any, info: Any) -> EnhancementData | None:
+        """
+        Validate and convert enhancement data.
+
+        This validator handles multiple input formats:
+        1. EnhancementData object (new format)
+        2. Dict with enhancement data (converted to EnhancementData)
+        3. None (use legacy fields if available)
+
+        Args:
+            v: Input value to validate
+            info: Validation context info
+
+        Returns:
+            EnhancementData object or None
+        """
+        # If it's already an EnhancementData object, return as-is
+        if isinstance(v, EnhancementData):
+            return v
+
+        # If it's a dict, convert to EnhancementData
+        if isinstance(v, dict):
+            return EnhancementData.from_dict_legacy(v)
+
+        # If it's None, we'll handle legacy fields in model validation
+        if v is None:
+            return None
+
+        # Otherwise, raise validation error
+        raise ValueError(
+            f"Invalid enhancement_data format: {type(v)}. Expected EnhancementData or dict."
+        )
+
+    def model_post_init(self, __context: Any) -> None:
+        """
+        Post-initialization to handle legacy field compatibility.
+
+        If enhancement_data is None but legacy fields are provided,
+        create an EnhancementData object from the legacy fields.
+        """
+        if self.enhancement_data is None and self.enhancement_type is not None:
+            # Create enhancement data from legacy fields
+            legacy_data = self.additional_data or {}
+            legacy_data["enhancement_type"] = self.enhancement_type
+
+            # Convert to EnhancementData
+            object.__setattr__(
+                self, "enhancement_data", EnhancementData.from_dict_legacy(legacy_data)
+            )
+
+    def model_dump(self, **kwargs) -> dict[str, Any]:
+        """
+        Override model_dump to handle EnhancementData serialization.
+
+        This ensures backward compatibility by including both the new
+        enhancement_data field and legacy fields in the output.
+
+        Returns:
+            Dictionary with both new and legacy field formats
+        """
+        data = super().model_dump(**kwargs)
+
+        # If we have enhancement_data, also populate legacy fields
+        if self.enhancement_data is not None:
+            data["enhancement_type"] = self.enhancement_data.enhancement_type
+            data["additional_data"] = self.enhancement_data.to_dict_legacy()
+            # Convert enhancement_data to dict for JSON serialization
+            data["enhancement_data"] = self.enhancement_data.to_dict_legacy()
+
+        return data
 
 
 class ContentVersionsSchema(BaseModel):

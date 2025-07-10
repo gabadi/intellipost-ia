@@ -35,6 +35,7 @@ from modules.content_generation.infrastructure.services.gemini_ai_service import
 from modules.content_generation.infrastructure.services.ml_category_service import (
     MLCategoryService,
 )
+from shared.value_objects import PriceRange
 
 
 @pytest.mark.integration
@@ -515,7 +516,7 @@ class TestCompleteWorkflowIntegration:
             images=sample_images,
             prompt="Smartphone Apple iPhone 13 Pro usado",
             category_hint="celulares",
-            price_range={"min": 400000, "max": 500000},
+            price_range=PriceRange(min_price=400000, max_price=500000, currency="ARS"),
             target_audience="usuarios de smartphones premium",
             regenerate=False,
         )

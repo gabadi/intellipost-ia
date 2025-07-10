@@ -7,6 +7,7 @@ ensuring proper category-specific attribute detection and validation.
 
 from typing import Any, cast
 
+from modules.content_generation.domain.entities import ProductFeatures
 from modules.content_generation.domain.exceptions import (
     AttributeMappingError,
     AttributeValidationError,
@@ -246,7 +247,7 @@ class AttributeMappingService:
 
     async def map_attributes(
         self,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         category_id: str,
     ) -> dict[str, Any]:
         """
@@ -449,7 +450,7 @@ class AttributeMappingService:
     async def calculate_attribute_confidence(
         self,
         attributes: dict[str, Any],
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> float:
         """
         Calculate confidence score for mapped attributes.
@@ -484,7 +485,7 @@ class AttributeMappingService:
     def _extract_attribute_value(
         self,
         attr_id: str,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
         mappings: dict[str, str],
     ) -> str | None:
         """Extract attribute value from product features."""
@@ -498,8 +499,8 @@ class AttributeMappingService:
         if not feature_key:
             return None
 
-        # Get the raw value
-        raw_value = product_features.get(feature_key)
+        # Get the raw value from ProductFeatures
+        raw_value = getattr(product_features, feature_key, None)
         if not raw_value:
             return None
 
@@ -617,7 +618,7 @@ class AttributeMappingService:
         self,
         attr_id: str,
         attr_value: Any,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> float:
         """Calculate confidence for a single attribute."""
         confidence = 0.0
@@ -647,26 +648,26 @@ class AttributeMappingService:
         return False
 
     def _create_default_attributes(
-        self, product_features: dict[str, Any]
+        self, product_features: ProductFeatures
     ) -> dict[str, Any]:
         """Create default attributes for unknown categories."""
         default_attributes: dict[str, Any] = {}
 
         # Map common attributes
-        if product_features.get("brand"):
-            default_attributes["BRAND"] = product_features["brand"]
+        if product_features.brand:
+            default_attributes["BRAND"] = product_features.brand
 
-        if product_features.get("model"):
-            default_attributes["MODEL"] = product_features["model"]
+        if product_features.model:
+            default_attributes["MODEL"] = product_features.model
 
-        if product_features.get("color"):
+        if product_features.color:
             default_attributes["COLOR"] = self._apply_value_mapping(
-                "color", product_features["color"]
+                "color", product_features.color
             )
 
-        if product_features.get("condition"):
+        if product_features.condition:
             default_attributes["ITEM_CONDITION"] = self._apply_value_mapping(
-                "condition", product_features["condition"]
+                "condition", product_features.condition
             )
 
         return default_attributes
@@ -705,7 +706,7 @@ class AttributeMappingService:
         self,
         current_attributes: dict[str, Any],
         category_id: str,
-        product_features: dict[str, Any],
+        product_features: ProductFeatures,
     ) -> list[dict[str, Any]]:
         """Suggest missing attributes that could be added."""
         suggestions: list[dict[str, Any]] = []
