@@ -195,7 +195,7 @@ class ProductFeatures(BaseValueObject):
 
         # Validate price if provided
         if self.price is not None:
-            if not isinstance(self.price, (int, float)):
+            if not isinstance(self.price, int | float):
                 errors.append(InvalidFieldTypeError("price", self.price, "float"))
             elif self.price < 0:
                 errors.append(
@@ -222,7 +222,7 @@ class ProductFeatures(BaseValueObject):
 
         # Validate extraction_confidence if provided
         if self.extraction_confidence is not None:
-            if not isinstance(self.extraction_confidence, (int, float)):
+            if not isinstance(self.extraction_confidence, int | float):
                 errors.append(
                     InvalidFieldTypeError(
                         "extraction_confidence", self.extraction_confidence, "float"
@@ -272,7 +272,7 @@ class ProductFeatures(BaseValueObject):
             if not isinstance(field_value, list):
                 raise InvalidFieldTypeError(field_name, field_value, "list")
         elif field_name == "price":
-            if field_value is not None and not isinstance(field_value, (int, float)):
+            if field_value is not None and not isinstance(field_value, int | float):
                 raise InvalidFieldTypeError(field_name, field_value, "float")
         elif field_name == "image_count":
             if not isinstance(field_value, int):
@@ -550,7 +550,9 @@ class ProductFeatures(BaseValueObject):
         for field_name in simple_fields:
             self_value = getattr(self, field_name)
             other_value = getattr(other, field_name)
-            merged_data[field_name] = other_value if other_value is not None else self_value
+            merged_data[field_name] = (
+                other_value if other_value is not None else self_value
+            )
 
         # Merge numeric fields (prefer higher values)
         merged_data["image_count"] = max(self.image_count, other.image_count)
@@ -678,9 +680,9 @@ class ProductFeatures(BaseValueObject):
             total_weight += weight
             field_value = getattr(self, field_name)
             if field_value and (
-                (isinstance(field_value, (dict, list)) and len(field_value) > 0)
+                (isinstance(field_value, dict | list) and len(field_value) > 0)
                 or (isinstance(field_value, str) and len(field_value.strip()) > 0)
-                or (isinstance(field_value, (int, float)) and field_value > 0)
+                or (isinstance(field_value, int | float) and field_value > 0)
             ):
                 score += weight
 
