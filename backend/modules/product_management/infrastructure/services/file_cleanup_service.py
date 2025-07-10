@@ -4,7 +4,6 @@ File cleanup service for managing temporary files and orphaned storage.
 This module provides cleanup mechanisms for uploaded files, failed uploads,
 and orphaned files that are no longer referenced in the database.
 """
-# type: ignore[reportUnknownMemberType,reportUnknownVariableType,reportUnknownArgumentType]
 
 from datetime import UTC, datetime, timedelta
 from pathlib import Path

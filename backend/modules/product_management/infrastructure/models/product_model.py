@@ -3,7 +3,6 @@ SQLAlchemy Product model for product management module.
 
 This module contains the SQLAlchemy models for Product and ProductImage entities.
 """
-# type: ignore[reportUnknownMemberType,reportUnknownVariableType,reportUnknownArgumentType,reportMissingTypeArgument]
 
 from datetime import UTC, datetime
 from uuid import UUID as UUIDType

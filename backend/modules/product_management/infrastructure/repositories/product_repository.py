@@ -3,7 +3,6 @@ SQLAlchemy implementation of ProductRepositoryProtocol.
 
 This module provides PostgreSQL persistence for Product entities using SQLAlchemy.
 """
-# type: ignore[reportUnknownMemberType,reportUnknownVariableType,reportUnknownArgumentType,reportMissingTypeArgument]
 
 from typing import Any
 from uuid import UUID

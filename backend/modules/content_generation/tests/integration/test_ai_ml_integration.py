@@ -4,7 +4,6 @@ Integration tests for AI and ML services.
 This module tests the integration with external AI and ML APIs
 including Google Gemini and MercadoLibre category detection.
 """
-# type: ignore[reportCallIssue]
 
 import os
 from datetime import UTC, datetime

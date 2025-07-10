@@ -67,7 +67,7 @@ class ProductResponse(BaseModel):
     published_at: str | None = None
 
     # Related data
-    images: list[ProductImageResponse] = Field(default_factory=list)  # type: ignore[reportUnknownMemberType]
+    images: list[ProductImageResponse] = Field(default_factory=list)
 
 
 class CreateProductRequest(BaseModel):

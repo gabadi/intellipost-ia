@@ -3,7 +3,6 @@ Create product use case.
 
 This module contains the business logic for creating a new product with images.
 """
-# type: ignore[reportUnknownMemberType,reportUnknownVariableType,reportUnknownArgumentType]
 
 import contextlib
 from typing import Any
