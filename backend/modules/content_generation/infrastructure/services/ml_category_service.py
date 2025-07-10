@@ -7,7 +7,6 @@ to detect and validate product categories, avoiding penalties from AI guessing.
 
 import asyncio
 import json
-import logging
 from typing import Any
 from urllib.parse import urlencode
 
@@ -20,8 +19,9 @@ from modules.content_generation.domain.exceptions import (
     ExternalServiceError,
     MercadoLibreAPIError,
 )
-
-logger = logging.getLogger(__name__)
+from modules.content_generation.domain.ports.logging.protocols import (
+    ContentLoggerProtocol,
+)
 
 
 class MLCategoryService:
@@ -34,6 +34,7 @@ class MLCategoryService:
 
     def __init__(
         self,
+        logger: ContentLoggerProtocol,
         site_id: str = "MLA",  # Argentina
         timeout_seconds: int = 30,
         max_retries: int = 3,
@@ -44,12 +45,14 @@ class MLCategoryService:
         Initialize the MercadoLibre category service.
 
         Args:
+            logger: Logger protocol for logging operations
             site_id: MercadoLibre site ID (MLA for Argentina)
             timeout_seconds: Request timeout in seconds
             max_retries: Maximum retry attempts
             cache_ttl_seconds: Cache TTL in seconds
             cache_max_size: Maximum cache size
         """
+        self.logger = logger
         self.site_id = site_id
         self.timeout_seconds = timeout_seconds
         self.max_retries = max_retries
@@ -75,7 +78,7 @@ class MLCategoryService:
             ttl=cache_ttl_seconds // 2,  # Shorter TTL for predictions
         )
 
-        logger.info(f"Initialized ML Category Service for site: {site_id}")
+        self.logger.info(f"Initialized ML Category Service for site: {site_id}")
 
     async def predict_category(
         self,
@@ -103,7 +106,7 @@ class MLCategoryService:
 
             # Check cache first
             if cache_key in self.prediction_cache:
-                logger.debug("Category prediction cache hit")
+                self.logger.debug("Category prediction cache hit")
                 return self.prediction_cache[cache_key]
 
             # Search for categories based on product features
@@ -149,13 +152,13 @@ class MLCategoryService:
             # Cache the result
             self.prediction_cache[cache_key] = result
 
-            logger.info(
+            self.logger.info(
                 f"Category predicted: {best_category['name']} ({best_category['id']}) with confidence {confidence_score:.2f}"
             )
             return result
 
         except Exception as e:
-            logger.error(f"Error predicting category: {e}")
+            self.logger.error(f"Error predicting category: {e}")
             raise CategoryDetectionError(
                 f"Failed to predict category: {str(e)}",
                 product_features=product_features,
@@ -239,7 +242,7 @@ class MLCategoryService:
             }
 
         except Exception as e:
-            logger.error(f"Error validating category {category_id}: {e}")
+            self.logger.error(f"Error validating category {category_id}: {e}")
             raise CategoryValidationError(
                 f"Failed to validate category: {str(e)}",
                 category_id=category_id,
@@ -275,7 +278,9 @@ class MLCategoryService:
             return response
 
         except Exception as e:
-            logger.error(f"Error getting category attributes for {category_id}: {e}")
+            self.logger.error(
+                f"Error getting category attributes for {category_id}: {e}"
+            )
             raise MercadoLibreAPIError(
                 f"Failed to get category attributes: {str(e)}",
                 api_endpoint=f"/categories/{category_id}/attributes",
@@ -311,7 +316,7 @@ class MLCategoryService:
             return response
 
         except Exception as e:
-            logger.error(f"Error getting category info for {category_id}: {e}")
+            self.logger.error(f"Error getting category info for {category_id}: {e}")
             raise MercadoLibreAPIError(
                 f"Failed to get category info: {str(e)}",
                 api_endpoint=f"/categories/{category_id}",
@@ -331,7 +336,7 @@ class MLCategoryService:
                 results = await self._search_categories(query)
                 all_results.extend(results)
             except Exception as e:
-                logger.warning(f"Search query failed: {query}, error: {e}")
+                self.logger.warning(f"Search query failed: {query}, error: {e}")
                 continue
 
         # Deduplicate results
@@ -368,7 +373,7 @@ class MLCategoryService:
             return categories
 
         except Exception as e:
-            logger.error(f"Error searching categories with query '{query}': {e}")
+            self.logger.error(f"Error searching categories with query '{query}': {e}")
             return []
 
     def _generate_search_queries(self, product_features: dict[str, Any]) -> list[str]:
@@ -464,7 +469,7 @@ class MLCategoryService:
             detailed_categories: list[dict[str, Any]] = []
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
-                    logger.warning(
+                    self.logger.warning(
                         f"Failed to get details for category {categories[i]['id']}: {result}"
                     )
                     continue
@@ -477,7 +482,7 @@ class MLCategoryService:
             return detailed_categories
 
         except Exception as e:
-            logger.error(f"Error getting category details batch: {e}")
+            self.logger.error(f"Error getting category details batch: {e}")
             return categories  # Return original categories as fallback
 
     def _select_best_category(
@@ -617,7 +622,9 @@ class MLCategoryService:
             except httpx.RequestError as e:
                 if attempt < self.max_retries - 1:
                     wait_time = (2**attempt) + (attempt * 0.1)
-                    logger.warning(f"Request failed, retrying in {wait_time}s: {e}")
+                    self.logger.warning(
+                        f"Request failed, retrying in {wait_time}s: {e}"
+                    )
                     await asyncio.sleep(wait_time)
                 else:
                     raise ExternalServiceError(

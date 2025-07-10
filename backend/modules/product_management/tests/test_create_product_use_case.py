@@ -43,15 +43,31 @@ def mock_file_storage_service():
 
 
 @pytest.fixture
-def create_product_use_case(mock_product_repository, mock_file_storage_service):
-    """Create CreateProductUseCase with mocked dependencies."""
-    return CreateProductUseCase(mock_product_repository, mock_file_storage_service)
+def mock_logger():
+    """Create mock logger."""
+    logger = Mock()
+    logger.info = Mock()
+    logger.error = Mock()
+    logger.warning = Mock()
+    logger.debug = Mock()
+    logger.critical = Mock()
+    return logger
 
 
 @pytest.fixture
-def get_products_use_case(mock_product_repository):
+def create_product_use_case(
+    mock_product_repository, mock_file_storage_service, mock_logger
+):
+    """Create CreateProductUseCase with mocked dependencies."""
+    return CreateProductUseCase(
+        mock_product_repository, mock_file_storage_service, mock_logger
+    )
+
+
+@pytest.fixture
+def get_products_use_case(mock_product_repository, mock_logger):
     """Create GetProductsUseCase with mocked dependencies."""
-    return GetProductsUseCase(mock_product_repository)
+    return GetProductsUseCase(mock_product_repository, mock_logger)
 
 
 @pytest.fixture

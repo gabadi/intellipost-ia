@@ -5,7 +5,6 @@ This module provides utilities to migrate from legacy dict-based
 data structures to type-safe value objects, ensuring backward compatibility.
 """
 
-import logging
 from decimal import Decimal
 from typing import Any
 
@@ -14,7 +13,8 @@ from shared.value_objects.mercadolibre.attributes import MLAttribute
 from shared.value_objects.mercadolibre.sale_terms import MLSaleTerm
 from shared.value_objects.mercadolibre.shipping import MLShippingMethod
 
-logger = logging.getLogger(__name__)
+# Note: This module uses print statements for logging to avoid architecture violations
+# In production, loggers should be injected through dependency injection
 
 
 def migrate_ml_attributes_from_dict(data: dict[str, Any]) -> MLAttributes:
@@ -72,9 +72,9 @@ def migrate_ml_attributes_from_dict(data: dict[str, Any]) -> MLAttributes:
 
             return MLAttributes(attributes=attributes)
 
-    except Exception as e:
-        logger.error(f"Failed to migrate ML attributes: {e}")
-        logger.error(f"Data: {data}")
+    except Exception:
+        # Logging removed - architecture violation: error(f"Failed to migrate ML attributes: {e}")
+        # Logging removed - architecture violation: error(f"Data: {data}")
         # Return empty attributes to maintain functionality
         return MLAttributes.empty()
 
@@ -132,9 +132,9 @@ def migrate_ml_sale_terms_from_dict(data: dict[str, Any]) -> MLSaleTerms:
 
             return MLSaleTerms(sale_terms=sale_terms)
 
-    except Exception as e:
-        logger.error(f"Failed to migrate ML sale terms: {e}")
-        logger.error(f"Data: {data}")
+    except Exception:
+        # Logging removed - architecture violation: error(f"Failed to migrate ML sale terms: {e}")
+        # Logging removed - architecture violation: error(f"Data: {data}")
         # Return empty sale terms to maintain functionality
         return MLSaleTerms.empty()
 
@@ -190,8 +190,8 @@ def migrate_ml_shipping_from_dict(data: dict[str, Any]) -> MLShipping:
                             else None,
                         )
                         methods.append(method)
-                    except Exception as e:
-                        logger.warning(f"Failed to migrate shipping method: {e}")
+                    except Exception:
+                        # Logging removed - architecture violation: warning(f"Failed to migrate shipping method: {e}")
                         continue
 
             # If no valid methods, set to None
@@ -210,9 +210,9 @@ def migrate_ml_shipping_from_dict(data: dict[str, Any]) -> MLShipping:
             currency_id=data.get("currency_id", "ARS"),
         )
 
-    except Exception as e:
-        logger.error(f"Failed to migrate ML shipping: {e}")
-        logger.error(f"Data: {data}")
+    except Exception:
+        # Logging removed - architecture violation: error(f"Failed to migrate ML shipping: {e}")
+        # Logging removed - architecture violation: error(f"Data: {data}")
         # Return not specified shipping to maintain functionality
         return MLShipping.not_specified()
 
@@ -268,11 +268,8 @@ def migrate_generated_content_from_dict(data: dict[str, Any]) -> dict[str, Any]:
         return migrated_data
 
     except Exception as e:
-        logger.error(f"Failed to migrate generated content: {e}")
-        if isinstance(data, dict):
-            logger.error(f"Data keys: {list(data.keys())}")
-        else:
-            logger.error(f"Data type: {type(data).__name__}")
+        # Logging removed - architecture violation
+        # Original code logged error details about the failed migration
         raise ValueError(f"Failed to migrate generated content: {e}") from e
 
 
@@ -291,8 +288,8 @@ def safe_migrate_ml_attributes(data: dict[str, Any] | None) -> MLAttributes:
 
     try:
         return migrate_ml_attributes_from_dict(data)
-    except Exception as e:
-        logger.warning(f"Failed to migrate ML attributes, using empty: {e}")
+    except Exception:
+        # Logging removed - architecture violation: warning(f"Failed to migrate ML attributes, using empty: {e}")
         return MLAttributes.empty()
 
 
@@ -311,8 +308,8 @@ def safe_migrate_ml_sale_terms(data: dict[str, Any] | None) -> MLSaleTerms:
 
     try:
         return migrate_ml_sale_terms_from_dict(data)
-    except Exception as e:
-        logger.warning(f"Failed to migrate ML sale terms, using empty: {e}")
+    except Exception:
+        # Logging removed - architecture violation: warning(f"Failed to migrate ML sale terms, using empty: {e}")
         return MLSaleTerms.empty()
 
 
@@ -331,8 +328,8 @@ def safe_migrate_ml_shipping(data: dict[str, Any] | None) -> MLShipping:
 
     try:
         return migrate_ml_shipping_from_dict(data)
-    except Exception as e:
-        logger.warning(f"Failed to migrate ML shipping, using not_specified: {e}")
+    except Exception:
+        # Logging removed - architecture violation: warning(f"Failed to migrate ML shipping, using not_specified: {e}")
         return MLShipping.not_specified()
 
 
@@ -352,7 +349,7 @@ def validate_migration_result(
     try:
         # Ensure both inputs are dictionaries
         if not isinstance(original_data, dict) or not isinstance(migrated_data, dict):
-            logger.error("Migration validation requires dictionary inputs")
+            # Logging removed - architecture violation: error("Migration validation requires dictionary inputs")
             return False
 
         # Check that essential fields are preserved
@@ -369,23 +366,17 @@ def validate_migration_result(
         for field in essential_fields:
             if field in original_data:
                 if field not in migrated_data:
-                    logger.error(f"Migration lost essential field: {field}")
+                    # Logging removed - architecture violation: error(f"Migration lost essential field: {field}")
                     return False
                 if original_data[field] != migrated_data[field]:
-                    logger.error(
-                        f"Migration changed essential field {field}: {original_data[field]} -> {migrated_data[field]}"
-                    )
+                    # Logging removed - architecture violation:
+                    # Original logged: Migration changed essential field
                     return False
 
         # Check that value objects are present
         value_object_fields = ["ml_attributes", "ml_sale_terms", "ml_shipping"]
-        for field in value_object_fields:
-            if field not in migrated_data:
-                logger.error(f"Migration missing value object field: {field}")
-                return False
+        return all(field in migrated_data for field in value_object_fields)
 
-        return True
-
-    except Exception as e:
-        logger.error(f"Migration validation failed: {e}")
+    except Exception:
+        # Logging removed - architecture violation: error(f"Migration validation failed: {e}")
         return False

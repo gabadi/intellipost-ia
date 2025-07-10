@@ -5,12 +5,12 @@ This service manages background tasks for ML integration including
 token refresh and connection health monitoring.
 """
 
-import logging
 from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from modules.user_management.domain.ports.logging.protocols import UserLoggerProtocol
 from modules.user_management.domain.ports.settings_protocol import SettingsProtocol
 from modules.user_management.infrastructure.repositories.sqlalchemy_ml_credentials_repository import (
     SQLAlchemyMLCredentialsRepository,
@@ -28,8 +28,6 @@ from modules.user_management.infrastructure.services.token_refresh_scheduler imp
     TokenRefreshScheduler,
 )
 
-logger = logging.getLogger(__name__)
-
 
 class MLBackgroundTasksService:
     """
@@ -40,6 +38,7 @@ class MLBackgroundTasksService:
 
     def __init__(
         self,
+        logger: UserLoggerProtocol,
         database_url: str | None = None,
         ml_app_id: str | None = None,
         ml_app_secret: str | None = None,
@@ -49,11 +48,13 @@ class MLBackgroundTasksService:
         Initialize background tasks service.
 
         Args:
+            logger: Logger protocol for logging operations
             database_url: Database connection URL
             ml_app_id: MercadoLibre app ID
             ml_app_secret: MercadoLibre app secret
             settings: Settings provider for configuration
         """
+        self._logger = logger
         # Get configuration from settings provider or use provided values
         if settings:
             self._database_url = database_url or settings.get_database_url()
@@ -87,7 +88,7 @@ class MLBackgroundTasksService:
                 # Use test/development defaults
                 self._ml_app_id = self._ml_app_id or "test_app_id"
                 self._ml_app_secret = self._ml_app_secret or "test_app_secret"
-                logger.info(
+                self._logger.info(
                     f"Using default ML credentials for {environment} environment"
                 )
 
@@ -104,11 +105,11 @@ class MLBackgroundTasksService:
     async def start(self) -> None:
         """Start all background tasks."""
         if self._running:
-            logger.warning("ML background tasks are already running")
+            self._logger.warning("ML background tasks are already running")
             return
 
         try:
-            logger.info("Starting ML background tasks service")
+            self._logger.info("Starting ML background tasks service")
 
             # Initialize services
             await self._initialize_services()
@@ -118,10 +119,10 @@ class MLBackgroundTasksService:
                 await self._token_refresh_scheduler.start()
 
             self._running = True
-            logger.info("ML background tasks service started successfully")
+            self._logger.info("ML background tasks service started successfully")
 
         except Exception as e:
-            logger.error(f"Failed to start ML background tasks: {e}")
+            self._logger.error(f"Failed to start ML background tasks: {e}")
             await self.stop()
             raise
 
@@ -131,7 +132,7 @@ class MLBackgroundTasksService:
             return
 
         try:
-            logger.info("Stopping ML background tasks service")
+            self._logger.info("Stopping ML background tasks service")
 
             # Stop token refresh scheduler
             if self._token_refresh_scheduler:
@@ -141,10 +142,10 @@ class MLBackgroundTasksService:
             await self._engine.dispose()
 
             self._running = False
-            logger.info("ML background tasks service stopped")
+            self._logger.info("ML background tasks service stopped")
 
         except Exception as e:
-            logger.error(f"Error stopping ML background tasks: {e}")
+            self._logger.error(f"Error stopping ML background tasks: {e}")
 
     async def _initialize_services(self) -> None:
         """Initialize OAuth and refresh services."""
@@ -178,7 +179,7 @@ class MLBackgroundTasksService:
                 )
 
         except Exception as e:
-            logger.error(f"Failed to initialize ML services: {e}")
+            self._logger.error(f"Failed to initialize ML services: {e}")
             raise
 
     async def get_status(self) -> dict[str, Any]:
@@ -212,7 +213,7 @@ class MLBackgroundTasksService:
             return status
 
         except Exception as e:
-            logger.error(f"Error getting background tasks status: {e}")
+            self._logger.error(f"Error getting background tasks status: {e}")
             return {"error": str(e)}
 
     async def force_token_refresh(self) -> int:
@@ -321,8 +322,8 @@ async def ml_background_tasks_lifespan():
     """
     try:
         await start_ml_background_tasks()
-        logger.info("ML background tasks startup completed")
+        # Background tasks startup completed
         yield
     finally:
         await stop_ml_background_tasks()
-        logger.info("ML background tasks shutdown completed")
+        # Background tasks shutdown completed

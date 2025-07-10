@@ -7,7 +7,6 @@ specifically optimized for MercadoLibre listing creation.
 
 import asyncio
 import json
-import logging
 import time
 from datetime import datetime
 from decimal import Decimal
@@ -35,14 +34,15 @@ from modules.content_generation.domain.exceptions import (
 from modules.content_generation.domain.ports.ai_service_protocols import (
     ImageData,
 )
+from modules.content_generation.domain.ports.logging.protocols import (
+    ContentLoggerProtocol,
+)
 from modules.content_generation.infrastructure.config import ai_content_config
 from shared.migration.value_object_migration import (
     safe_migrate_ml_attributes,
     safe_migrate_ml_sale_terms,
     safe_migrate_ml_shipping,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class GeminiAIService:
@@ -55,6 +55,7 @@ class GeminiAIService:
 
     def __init__(
         self,
+        logger: ContentLoggerProtocol,
         api_key: str | None = None,
         model_name: str = "gemini-2.5-flash",
         temperature: float = 0.7,
@@ -66,6 +67,7 @@ class GeminiAIService:
         Initialize the Gemini AI service.
 
         Args:
+            logger: Content logger protocol for logging operations
             api_key: Google API key for Gemini
             model_name: Name of the Gemini model to use
             temperature: Temperature for generation (0.0 to 1.0)
@@ -73,6 +75,7 @@ class GeminiAIService:
             timeout_seconds: Request timeout in seconds
             max_retries: Maximum retry attempts
         """
+        self.logger = logger
         self.api_key = api_key or ai_content_config.gemini_api_key
         self.model_name = model_name
         self.temperature = temperature
@@ -104,7 +107,7 @@ class GeminiAIService:
             },
         )
 
-        logger.info(f"Initialized Gemini AI service with model: {self.model_name}")
+        self.logger.info(f"Initialized Gemini AI service with model: {self.model_name}")
 
     async def generate_listing(
         self,
@@ -184,11 +187,13 @@ class GeminiAIService:
                 generated_at=datetime.now(),
             )
 
-            logger.info(f"Generated content successfully in {generation_time_ms}ms")
+            self.logger.info(
+                f"Generated content successfully in {generation_time_ms}ms"
+            )
             return content
 
         except TooManyRequests as e:
-            logger.error(f"Gemini API rate limit exceeded: {e}")
+            self.logger.error(f"Gemini API rate limit exceeded: {e}")
             raise AIServiceRateLimitError(
                 "Rate limit exceeded for Gemini API",
                 provider="gemini",
@@ -196,21 +201,21 @@ class GeminiAIService:
                 retry_after_seconds=60,
             ) from e
         except ServiceUnavailable as e:
-            logger.error(f"Gemini API service unavailable: {e}")
+            self.logger.error(f"Gemini API service unavailable: {e}")
             raise AIServiceError(
                 "Gemini API service is temporarily unavailable",
                 provider="gemini",
                 model_version=self.model_name,
             ) from e
         except GoogleAPICallError as e:
-            logger.error(f"Gemini API call failed: {e}")
+            self.logger.error(f"Gemini API call failed: {e}")
             raise AIServiceError(
                 f"Gemini API call failed: {str(e)}",
                 provider="gemini",
                 model_version=self.model_name,
             ) from e
         except Exception as e:
-            logger.error(f"Unexpected error in content generation: {e}")
+            self.logger.error(f"Unexpected error in content generation: {e}")
             raise AIServiceError(
                 f"Unexpected error in content generation: {str(e)}",
                 provider="gemini",
@@ -297,7 +302,7 @@ class GeminiAIService:
             variations = self._parse_title_variations(response)
             return variations[:count]
         except Exception as e:
-            logger.error(f"Error generating title variations: {e}")
+            self.logger.error(f"Error generating title variations: {e}")
             return [base_title]  # Return original title as fallback
 
     async def enhance_description(
@@ -326,7 +331,7 @@ class GeminiAIService:
             enhanced_description = self._parse_description_response(response)
             return enhanced_description
         except Exception as e:
-            logger.error(f"Error enhancing description: {e}")
+            self.logger.error(f"Error enhancing description: {e}")
             return base_description  # Return original as fallback
 
     async def extract_product_features(
@@ -352,7 +357,7 @@ class GeminiAIService:
             features = self._parse_feature_extraction_response(response)
             return features
         except Exception as e:
-            logger.error(f"Error extracting product features: {e}")
+            self.logger.error(f"Error extracting product features: {e}")
             return {}
 
     async def estimate_price(
@@ -381,7 +386,7 @@ class GeminiAIService:
             price_info = self._parse_price_estimation_response(response)
             return price_info
         except Exception as e:
-            logger.error(f"Error estimating price: {e}")
+            self.logger.error(f"Error estimating price: {e}")
             return {"estimated_price": 0.0, "confidence": 0.0}
 
     async def check_content_quality(
@@ -648,7 +653,7 @@ RESPONDE SOLO CON JSON VÁLIDO:
 
             except TooManyRequests as e:
                 wait_time = (2**attempt) + (attempt * 0.1)
-                logger.warning(
+                self.logger.warning(
                     f"Rate limit hit, retrying in {wait_time}s (attempt {attempt + 1})"
                 )
                 await asyncio.sleep(wait_time)
@@ -656,13 +661,13 @@ RESPONDE SOLO CON JSON VÁLIDO:
             except (ServiceUnavailable, GoogleAPICallError) as e:
                 if attempt < self.max_retries - 1:
                     wait_time = (2**attempt) + (attempt * 0.1)
-                    logger.warning(
+                    self.logger.warning(
                         f"API error, retrying in {wait_time}s (attempt {attempt + 1})"
                     )
                     await asyncio.sleep(wait_time)
                 last_exception = e
             except Exception as e:
-                logger.error(f"Unexpected error on attempt {attempt + 1}: {e}")
+                self.logger.error(f"Unexpected error on attempt {attempt + 1}: {e}")
                 last_exception = e
                 break
 
@@ -745,14 +750,14 @@ RESPONDE SOLO CON JSON VÁLIDO:
             return parsed_data
 
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse JSON response: {e}")
+            self.logger.error(f"Failed to parse JSON response: {e}")
             raise InvalidContentError(
                 "Invalid JSON response from Gemini API",
                 content_type="api_response",
                 validation_errors={"json_error": str(e)},
             ) from e
         except Exception as e:
-            logger.error(f"Error parsing generation response: {e}")
+            self.logger.error(f"Error parsing generation response: {e}")
             raise InvalidContentError(
                 f"Error parsing generation response: {str(e)}",
                 content_type="api_response",
@@ -765,7 +770,7 @@ RESPONDE SOLO CON JSON VÁLIDO:
             parsed_data = json.loads(response_text)
             return parsed_data.get("variations", [])
         except Exception as e:
-            logger.error(f"Error parsing title variations: {e}")
+            self.logger.error(f"Error parsing title variations: {e}")
             return []
 
     def _parse_description_response(self, response: Any) -> str:
@@ -773,7 +778,7 @@ RESPONDE SOLO CON JSON VÁLIDO:
         try:
             return response.get("text", "").strip()
         except Exception as e:
-            logger.error(f"Error parsing description response: {e}")
+            self.logger.error(f"Error parsing description response: {e}")
             return ""
 
     def _parse_feature_extraction_response(self, response: Any) -> dict[str, Any]:
@@ -783,7 +788,7 @@ RESPONDE SOLO CON JSON VÁLIDO:
             parsed_data = json.loads(response_text)
             return parsed_data
         except Exception as e:
-            logger.error(f"Error parsing feature extraction response: {e}")
+            self.logger.error(f"Error parsing feature extraction response: {e}")
             return {}
 
     def _parse_price_estimation_response(self, response: Any) -> dict[str, Any]:
@@ -793,5 +798,5 @@ RESPONDE SOLO CON JSON VÁLIDO:
             parsed_data = json.loads(response_text)
             return parsed_data
         except Exception as e:
-            logger.error(f"Error parsing price estimation response: {e}")
+            self.logger.error(f"Error parsing price estimation response: {e}")
             return {"estimated_price": 0.0, "confidence": 0.0}

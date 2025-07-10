@@ -10,17 +10,15 @@ from uuid import UUID, uuid4
 
 from fastapi import UploadFile
 
-from infrastructure.config.logging import get_logger
 from modules.product_management.domain.entities.product import Product
 from modules.product_management.domain.entities.product_status import ProductStatus
+from modules.product_management.domain.ports.file_storage_protocol import (
+    FileStorageProtocol,
+)
 from modules.product_management.domain.ports.product_repository_protocol import (
     ProductRepositoryProtocol,
 )
-from modules.product_management.infrastructure.services.file_storage_service import (
-    FileStorageService,
-)
-
-logger = get_logger(__name__)
+from shared.logging.protocols import LoggerProtocol
 
 
 class CreateProductUseCase:
@@ -29,10 +27,12 @@ class CreateProductUseCase:
     def __init__(
         self,
         product_repository: ProductRepositoryProtocol,
-        file_storage_service: FileStorageService,
+        file_storage_service: FileStorageProtocol,
+        logger: LoggerProtocol,
     ):
         self.product_repository = product_repository
         self.file_storage_service = file_storage_service
+        self.logger = logger
 
     async def execute(
         self,
@@ -51,7 +51,9 @@ class CreateProductUseCase:
         Returns:
             Dict containing the created product details and upload results
         """
-        logger.info(f"Creating product for user {user_id} with {len(images)} images")
+        self.logger.info(
+            f"Creating product for user {user_id} with {len(images)} images"
+        )
 
         # Validate inputs
         if not prompt_text.strip():
@@ -75,7 +77,7 @@ class CreateProductUseCase:
         try:
             # Save product to database
             created_product = await self.product_repository.create(product)
-            logger.info(f"Created product entity: {created_product.id}")
+            self.logger.info(f"Created product entity: {created_product.id}")
 
             # Process and upload images
             upload_results: list[dict[str, Any]] = []
@@ -135,10 +137,14 @@ class CreateProductUseCase:
                     )
 
                     images_uploaded += 1
-                    logger.info(f"Successfully uploaded image: {image_file.filename}")
+                    self.logger.info(
+                        f"Successfully uploaded image: {image_file.filename}"
+                    )
 
                 except Exception as e:
-                    logger.error(f"Failed to upload image {image_file.filename}: {e}")
+                    self.logger.error(
+                        f"Failed to upload image {image_file.filename}: {e}"
+                    )
                     upload_errors.append(
                         {
                             "filename": image_file.filename,
@@ -156,7 +162,7 @@ class CreateProductUseCase:
 
             # Update product status if partially successful
             if upload_errors and images_uploaded > 0:
-                logger.warning(
+                self.logger.warning(
                     f"Product {product_id} created with {len(upload_errors)} upload errors"
                 )
 
@@ -176,10 +182,10 @@ class CreateProductUseCase:
         except ValueError as e:
             # ValueError means validation or business logic failure
             # The specific error cases handle their own cleanup
-            logger.error(f"Failed to create product: {e}")
+            self.logger.error(f"Failed to create product: {e}")
             raise e
         except Exception as e:
-            logger.error(f"Failed to create product: {e}")
+            self.logger.error(f"Failed to create product: {e}")
             # Attempt to clean up if product was created (for unexpected errors only)
             with contextlib.suppress(Exception):
                 await self.product_repository.delete(product_id)
@@ -190,8 +196,11 @@ class CreateProductUseCase:
 class GetProductsUseCase:
     """Use case for retrieving user's products."""
 
-    def __init__(self, product_repository: ProductRepositoryProtocol):
+    def __init__(
+        self, product_repository: ProductRepositoryProtocol, logger: LoggerProtocol
+    ):
         self.product_repository = product_repository
+        self.logger = logger
 
     async def execute(self, user_id: UUID) -> list[dict[str, Any]]:
         """
@@ -203,7 +212,7 @@ class GetProductsUseCase:
         Returns:
             List of product dictionaries
         """
-        logger.info(f"Retrieving products for user {user_id}")
+        self.logger.info(f"Retrieving products for user {user_id}")
 
         products = await self.product_repository.get_by_user_id(user_id)
 
@@ -251,5 +260,5 @@ class GetProductsUseCase:
             }
             result.append(product_dict)
 
-        logger.info(f"Retrieved {len(result)} products for user {user_id}")
+        self.logger.info(f"Retrieved {len(result)} products for user {user_id}")
         return result

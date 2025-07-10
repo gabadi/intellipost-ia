@@ -5,14 +5,14 @@ This module provides specialized description generation for MercadoLibre listing
 optimized for mobile-first experience and conversion.
 """
 
-import logging
 from typing import Any
 
 from modules.content_generation.domain.exceptions import (
     DescriptionGenerationError,
 )
-
-logger = logging.getLogger(__name__)
+from modules.content_generation.domain.ports.logging.protocols import (
+    ContentLoggerProtocol,
+)
 
 
 class DescriptionGenerationService:
@@ -25,6 +25,7 @@ class DescriptionGenerationService:
 
     def __init__(
         self,
+        logger: ContentLoggerProtocol,
         min_description_length: int = 50,
         max_description_length: int = 2000,
         target_description_length: int = 500,
@@ -33,10 +34,12 @@ class DescriptionGenerationService:
         Initialize the description generation service.
 
         Args:
+            logger: Logger protocol for logging operations
             min_description_length: Minimum description length
             max_description_length: Maximum description length
             target_description_length: Target description length
         """
+        self.logger = logger
         self.min_description_length = min_description_length
         self.max_description_length = max_description_length
         self.target_description_length = target_description_length
@@ -160,7 +163,7 @@ class DescriptionGenerationService:
             "fair": "Producto con signos de uso normal",
         }
 
-        logger.info("Initialized Description Generation Service")
+        self.logger.info("Initialized Description Generation Service")
 
     async def generate_description(
         self,
@@ -211,11 +214,11 @@ class DescriptionGenerationService:
                     generated_description=description,
                 )
 
-            logger.info(f"Generated description: {len(description)} characters")
+            self.logger.info(f"Generated description: {len(description)} characters")
             return description
 
         except Exception as e:
-            logger.error(f"Error generating description: {e}")
+            self.logger.error(f"Error generating description: {e}")
             raise DescriptionGenerationError(
                 f"Failed to generate description: {str(e)}",
                 error_code="DESCRIPTION_GENERATION_FAILED",
@@ -320,7 +323,7 @@ class DescriptionGenerationService:
             return enhanced_description
 
         except Exception as e:
-            logger.error(f"Error enhancing description: {e}")
+            self.logger.error(f"Error enhancing description: {e}")
             return base_description  # Return original as fallback
 
     async def calculate_description_confidence(

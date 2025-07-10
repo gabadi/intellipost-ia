@@ -5,7 +5,6 @@ This module provides comprehensive validation for generated content,
 ensuring MercadoLibre compliance and quality standards.
 """
 
-import logging
 import re
 from decimal import Decimal
 from typing import Any, TypedDict
@@ -14,8 +13,9 @@ from modules.content_generation.domain.entities import GeneratedContent
 from modules.content_generation.domain.exceptions import (
     ContentValidationError,
 )
-
-logger = logging.getLogger(__name__)
+from modules.content_generation.domain.ports.logging.protocols import (
+    ContentLoggerProtocol,
+)
 
 
 class ValidationResult(TypedDict):
@@ -93,6 +93,7 @@ class ContentValidationService:
 
     def __init__(
         self,
+        logger: ContentLoggerProtocol,
         quality_threshold: float = 0.7,
         enable_strict_validation: bool = True,
     ):
@@ -100,9 +101,11 @@ class ContentValidationService:
         Initialize the content validation service.
 
         Args:
+            logger: Logger protocol for logging operations
             quality_threshold: Minimum quality threshold
             enable_strict_validation: Enable strict validation rules
         """
+        self.logger = logger
         self.quality_threshold = quality_threshold
         self.enable_strict_validation = enable_strict_validation
 
@@ -212,7 +215,7 @@ class ContentValidationService:
             "currency": r"[\$\€\£\¥]",
         }
 
-        logger.info("Initialized Content Validation Service")
+        self.logger.info("Initialized Content Validation Service")
 
     async def validate_content(
         self,
@@ -296,14 +299,14 @@ class ContentValidationService:
                     f"Quality score ({quality_score:.2f}) below threshold ({self.quality_threshold})"
                 )
 
-            logger.info(
+            self.logger.info(
                 f"Content validation completed: {'PASS' if validation_results['is_valid'] else 'FAIL'}"
             )
 
             return validation_results
 
         except Exception as e:
-            logger.error(f"Error validating content: {e}")
+            self.logger.error(f"Error validating content: {e}")
             raise ContentValidationError(
                 f"Content validation failed: {str(e)}",
                 error_code="VALIDATION_FAILED",

@@ -13,7 +13,7 @@ depends_on = []
 # Infrastructure layer - shared utilities only
 [[modules]]
 path = "infrastructure"
-depends_on = []
+depends_on = ["shared"]
 
 # Root application - only depends on api and infrastructure (clean orchestrator)
 [[modules]]
@@ -33,6 +33,7 @@ depends_on = [
 path = "api.dependencies"
 depends_on = [
     "infrastructure",
+    "shared",
     "modules.user_management.domain",
     "modules.user_management.application",
     "modules.user_management.infrastructure",
@@ -88,7 +89,7 @@ depends_on = ["shared"]
 # Product Management - Application Layer (Use cases, can only depend on domain)
 [[modules]]
 path = "modules.product_management.application"
-depends_on = ["infrastructure", "modules.product_management.domain", "modules.product_management.infrastructure"]
+depends_on = ["modules.product_management.domain", "shared"]
 
 # Product Management - Infrastructure Layer (External concerns, depends on domain for contracts)
 [[modules]]

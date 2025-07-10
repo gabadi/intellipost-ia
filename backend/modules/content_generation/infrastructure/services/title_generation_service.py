@@ -5,15 +5,15 @@ This module provides specialized title generation for MercadoLibre listings,
 optimized for SEO and search algorithm performance.
 """
 
-import logging
 import re
 from typing import Any
 
 from modules.content_generation.domain.exceptions import (
     TitleGenerationError,
 )
-
-logger = logging.getLogger(__name__)
+from modules.content_generation.domain.ports.logging.protocols import (
+    ContentLoggerProtocol,
+)
 
 
 class TitleGenerationService:
@@ -26,6 +26,7 @@ class TitleGenerationService:
 
     def __init__(
         self,
+        logger: ContentLoggerProtocol,
         max_title_length: int = 60,
         min_title_length: int = 10,
     ):
@@ -33,9 +34,11 @@ class TitleGenerationService:
         Initialize the title generation service.
 
         Args:
+            logger: Logger protocol for logging operations
             max_title_length: Maximum title length (MercadoLibre limit)
             min_title_length: Minimum title length
         """
+        self.logger = logger
         self.max_title_length = max_title_length
         self.min_title_length = min_title_length
 
@@ -102,7 +105,7 @@ class TitleGenerationService:
             "product_features": "{product} {features}",
         }
 
-        logger.info("Initialized Title Generation Service")
+        self.logger.info("Initialized Title Generation Service")
 
     async def generate_optimized_title(
         self,
@@ -139,11 +142,11 @@ class TitleGenerationService:
             # Validate and clean title
             final_title = self._validate_and_clean_title(best_title, max_length)
 
-            logger.info(f"Generated optimized title: {final_title}")
+            self.logger.info(f"Generated optimized title: {final_title}")
             return final_title
 
         except Exception as e:
-            logger.error(f"Error generating optimized title: {e}")
+            self.logger.error(f"Error generating optimized title: {e}")
             raise TitleGenerationError(
                 f"Failed to generate optimized title: {str(e)}",
                 error_code="TITLE_GENERATION_FAILED",
@@ -257,7 +260,7 @@ class TitleGenerationService:
             return unique_variations[:count]
 
         except Exception as e:
-            logger.error(f"Error generating title variations: {e}")
+            self.logger.error(f"Error generating title variations: {e}")
             return [base_title]  # Return original title as fallback
 
     async def calculate_title_confidence(

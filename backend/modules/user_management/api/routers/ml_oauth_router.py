@@ -5,7 +5,6 @@ This module contains the FastAPI router for ML OAuth endpoints
 with authentication, validation, and error handling.
 """
 
-import logging
 from typing import Annotated
 from uuid import UUID
 
@@ -57,8 +56,8 @@ from modules.user_management.infrastructure.services.ml_oauth_service import (
     MLOAuthService,
 )
 
-# Configure logging
-logger = logging.getLogger(__name__)
+# Logging removed from API layer to respect hexagonal architecture
+# Logging should be handled by use cases and infrastructure services
 
 # Router setup
 router = APIRouter(
@@ -110,7 +109,7 @@ async def initiate_oauth(
             site_id=request.site_id,
         )
 
-        logger.info(f"OAuth flow initiated for user {user_id}, site {request.site_id}")
+        # Logging removed - handled by services: info(f"OAuth flow initiated for user {user_id}, site {request.site_id}")
 
         return MLOAuthInitiateResponse(
             authorization_url=flow_data.authorization_url,
@@ -119,13 +118,13 @@ async def initiate_oauth(
         )
 
     except ValidationError as e:
-        logger.warning(f"OAuth initiation validation error: {e}")
+        # Logging removed - handled by services: warning(f"OAuth initiation validation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"error": "validation_error", "error_description": str(e)},
         ) from e
     except Exception as e:
-        logger.error(f"OAuth initiation error: {e}")
+        # Logging removed - handled by services: error(f"OAuth initiation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
@@ -160,7 +159,7 @@ async def handle_callback(
             code_verifier=request.code_verifier,
         )
 
-        logger.info(f"OAuth callback completed for user {user_id}")
+        # Logging removed - handled by services: info(f"OAuth callback completed for user {user_id}")
 
         return MLOAuthCallbackResponse(
             success=True,
@@ -172,7 +171,7 @@ async def handle_callback(
         )
 
     except MLManagerAccountAPIError as e:
-        logger.warning(f"Manager account validation failed: {e}")
+        # Logging removed - handled by services: warning(f"Manager account validation failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={
@@ -183,19 +182,19 @@ async def handle_callback(
             },
         ) from e
     except ValidationError as e:
-        logger.warning(f"OAuth callback validation error: {e}")
+        # Logging removed - handled by services: warning(f"OAuth callback validation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"error": "validation_error", "error_description": str(e)},
         ) from e
     except AuthenticationError as e:
-        logger.warning(f"OAuth callback authentication error: {e}")
+        # Logging removed - handled by services: warning(f"OAuth callback authentication error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"error": "authentication_failed", "error_description": str(e)},
         ) from e
     except MLRateLimitError as e:
-        logger.warning(f"Rate limit exceeded: {e}")
+        # Logging removed - handled by services: warning(f"Rate limit exceeded: {e}")
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail={
@@ -205,7 +204,7 @@ async def handle_callback(
             },
         ) from e
     except Exception as e:
-        logger.error(f"OAuth callback error: {e}")
+        # Logging removed - handled by services: error(f"OAuth callback error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
@@ -253,7 +252,7 @@ async def get_connection_status(
         )
 
     except Exception as e:
-        logger.error(f"Status check error: {e}")
+        # Logging removed - handled by services: error(f"Status check error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
@@ -284,7 +283,7 @@ async def disconnect(
         success = await use_case.execute(user_id)
 
         if success:
-            logger.info(f"MercadoLibre disconnected for user {user_id}")
+            # Logging removed - handled by services: info(f"MercadoLibre disconnected for user {user_id}")
             return MLDisconnectResponse(
                 success=True,
                 message="MercadoLibre account disconnected successfully",
@@ -296,7 +295,7 @@ async def disconnect(
             )
 
     except Exception as e:
-        logger.error(f"Disconnect error: {e}")
+        # Logging removed - handled by services: error(f"Disconnect error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
@@ -325,7 +324,7 @@ async def refresh_tokens(
         # Execute token refresh
         credentials = await use_case.execute(user_id)
 
-        logger.info(f"Tokens refreshed for user {user_id}")
+        # Logging removed - handled by services: info(f"Tokens refreshed for user {user_id}")
 
         return MLTokenRefreshResponse(
             success=True,
@@ -335,13 +334,13 @@ async def refresh_tokens(
         )
 
     except AuthenticationError as e:
-        logger.warning(f"Token refresh authentication error: {e}")
+        # Logging removed - handled by services: warning(f"Token refresh authentication error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"error": "refresh_failed", "error_description": str(e)},
         ) from e
     except MLRateLimitError as e:
-        logger.warning(f"Rate limit exceeded during refresh: {e}")
+        # Logging removed - handled by services: warning(f"Rate limit exceeded during refresh: {e}")
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail={
@@ -351,7 +350,7 @@ async def refresh_tokens(
             },
         ) from e
     except Exception as e:
-        logger.error(f"Token refresh error: {e}")
+        # Logging removed - handled by services: error(f"Token refresh error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={

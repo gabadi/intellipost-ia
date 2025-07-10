@@ -201,14 +201,26 @@ def get_create_product_use_case(
     file_storage_service: FileStorageService = Depends(get_file_storage_service),
 ) -> CreateProductUseCase:
     """Get create product use case instance."""
-    return CreateProductUseCase(product_repository, file_storage_service)
+    from api.dependencies.logging import create_logger_dependency
+
+    logger_factory = create_logger_dependency(
+        "modules.product_management.application.use_cases.create_product"
+    )
+    logger = logger_factory()
+    return CreateProductUseCase(product_repository, file_storage_service, logger)
 
 
 def get_get_products_use_case(
     product_repository: SQLAlchemyProductRepository = Depends(get_product_repository),
 ) -> GetProductsUseCase:
     """Get products use case instance."""
-    return GetProductsUseCase(product_repository)
+    from api.dependencies.logging import create_logger_dependency
+
+    logger_factory = create_logger_dependency(
+        "modules.product_management.application.use_cases.create_product"
+    )
+    logger = logger_factory()
+    return GetProductsUseCase(product_repository, logger)
 
 
 # Product management type aliases

@@ -13,6 +13,7 @@ from uuid import uuid4
 
 import pytest
 
+from infrastructure.logging.adapters import TestLoggerAdapter
 from modules.content_generation.domain.entities.ai_generation import (
     AIGeneration,
     GenerationStatus,
@@ -60,6 +61,13 @@ def event_loop():
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
+
+# Logger fixture for testing
+@pytest.fixture
+def test_logger():
+    """Create a test logger for testing."""
+    return TestLoggerAdapter("test")
 
 
 # Domain entity fixtures

@@ -5,7 +5,6 @@ This module orchestrates the entire content generation process,
 coordinating between different services to create optimized MercadoLibre listings.
 """
 
-import logging
 import time
 from collections.abc import Sequence
 from datetime import UTC, datetime
@@ -33,11 +32,12 @@ from modules.content_generation.domain.ports.ai_service_protocols import (
     MLCategoryServiceProtocol,
     TitleGenerationServiceProtocol,
 )
+from modules.content_generation.domain.ports.logging.protocols import (
+    ContentLoggerProtocol,
+)
 from modules.content_generation.domain.services.value_object_migration_service import (
     ValueObjectMigrationService,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class GenerateContentUseCase:
@@ -58,6 +58,7 @@ class GenerateContentUseCase:
         attribute_service: AttributeMappingServiceProtocol,
         category_service: MLCategoryServiceProtocol,
         migration_service: ValueObjectMigrationService,
+        logger: ContentLoggerProtocol,
         quality_threshold: float = 0.7,
         max_retry_attempts: int = 3,
     ):
@@ -73,6 +74,7 @@ class GenerateContentUseCase:
             attribute_service: Attribute mapping service protocol
             category_service: MercadoLibre category service protocol
             migration_service: Value object migration service
+            logger: Content logger protocol for logging operations
             quality_threshold: Minimum quality threshold
             max_retry_attempts: Maximum retry attempts
         """
@@ -84,6 +86,7 @@ class GenerateContentUseCase:
         self.attribute_service = attribute_service
         self.category_service = category_service
         self.migration_service = migration_service
+        self.logger = logger
         self.quality_threshold = quality_threshold
         self.max_retry_attempts = max_retry_attempts
 
@@ -100,7 +103,7 @@ class GenerateContentUseCase:
             ProcessingStep.CONTENT_FINALIZATION: 0.05,
         }
 
-        logger.info("Initialized Generate Content Use Case")
+        self.logger.info("Initialized Generate Content Use Case")
 
     async def execute(
         self,
@@ -178,7 +181,7 @@ class GenerateContentUseCase:
             )
             ai_generation.complete_processing(generated_content.id, processing_time_ms)
 
-            logger.info(
+            self.logger.info(
                 f"Content generation completed successfully for product {product_id}"
             )
 
@@ -187,7 +190,9 @@ class GenerateContentUseCase:
         except Exception as e:
             # Handle failure
             ai_generation.fail_processing(str(e), type(e).__name__)
-            logger.error(f"Content generation failed for product {product_id}: {e}")
+            self.logger.error(
+                f"Content generation failed for product {product_id}: {e}"
+            )
             raise
 
     async def regenerate_content(
@@ -332,7 +337,7 @@ class GenerateContentUseCase:
                 raise EntityNotFoundError(f"Generated content not found: {content_id}")
             return content
         except Exception as e:
-            logger.error(f"Error getting generated content {content_id}: {e}")
+            self.logger.error(f"Error getting generated content {content_id}: {e}")
             raise
 
     async def get_content_versions(
@@ -467,7 +472,7 @@ class GenerateContentUseCase:
             return features
 
         except Exception as e:
-            logger.error(f"Error extracting product features: {e}")
+            self.logger.error(f"Error extracting product features: {e}")
             # Return basic features from prompt
             return {
                 "description": prompt,
@@ -492,7 +497,7 @@ class GenerateContentUseCase:
             )
 
             if not validation_results["is_valid"]:
-                logger.warning(
+                self.logger.warning(
                     f"Category validation failed: {validation_results['validation_errors']}"
                 )
                 # Use fallback category
@@ -505,7 +510,7 @@ class GenerateContentUseCase:
             return category_prediction
 
         except CategoryDetectionError as e:
-            logger.error(f"Category detection failed: {e}")
+            self.logger.error(f"Category detection failed: {e}")
             # Return default category
             return {
                 "category_id": "MLA1144",
@@ -541,7 +546,7 @@ class GenerateContentUseCase:
             }
 
         except Exception as e:
-            logger.error(f"Title generation failed: {e}")
+            self.logger.error(f"Title generation failed: {e}")
             # Return fallback title
             brand = product_features.get("brand", "")
             model = product_features.get("model", "")
@@ -583,7 +588,7 @@ class GenerateContentUseCase:
             }
 
         except Exception as e:
-            logger.error(f"Description generation failed: {e}")
+            self.logger.error(f"Description generation failed: {e}")
             # Return fallback description
             fallback_description = product_features.get(
                 "description", "Producto de calidad"
@@ -626,7 +631,7 @@ class GenerateContentUseCase:
             }
 
         except Exception as e:
-            logger.error(f"Attribute mapping failed: {e}")
+            self.logger.error(f"Attribute mapping failed: {e}")
             # Return basic attributes
             fallback_attributes = {}
             if product_features.get("brand"):
@@ -671,7 +676,7 @@ class GenerateContentUseCase:
             return price_estimation
 
         except Exception as e:
-            logger.error(f"Price estimation failed: {e}")
+            self.logger.error(f"Price estimation failed: {e}")
             # Return fallback price
             fallback_price = 10000.0  # Default price in ARS
             if price_range:

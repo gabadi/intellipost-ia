@@ -5,7 +5,6 @@ This module provides the repository implementation for content generation
 using SQLAlchemy ORM.
 """
 
-import logging
 from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
@@ -18,6 +17,9 @@ from modules.content_generation.domain.exceptions import (
     EntityNotFoundError,
     RepositoryError,
 )
+from modules.content_generation.domain.ports.logging.protocols import (
+    ContentLoggerProtocol,
+)
 from modules.content_generation.infrastructure.models.generated_content_model import (
     GeneratedContentModel,
 )
@@ -26,8 +28,6 @@ from shared.migration.value_object_migration import (
     safe_migrate_ml_sale_terms,
     safe_migrate_ml_shipping,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class SQLAlchemyContentRepository:
@@ -38,14 +38,16 @@ class SQLAlchemyContentRepository:
     using PostgreSQL with SQLAlchemy ORM.
     """
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession, logger: ContentLoggerProtocol):
         """
         Initialize the repository with a database session.
 
         Args:
             session: AsyncSession for database operations
+            logger: Logger protocol for logging operations
         """
         self.session = session
+        self.logger = logger
 
     async def save_generated_content(
         self,
@@ -75,12 +77,12 @@ class SQLAlchemyContentRepository:
             # Convert back to domain entity
             saved_content = self._model_to_domain(content_model)
 
-            logger.info(f"Saved generated content: {saved_content.id}")
+            self.logger.info(f"Saved generated content: {saved_content.id}")
             return saved_content
 
         except Exception as e:
             await self.session.rollback()
-            logger.error(f"Error saving generated content: {e}")
+            self.logger.error(f"Error saving generated content: {e}")
             raise RepositoryError(
                 f"Failed to save generated content: {str(e)}",
                 operation="save",
@@ -118,11 +120,11 @@ class SQLAlchemyContentRepository:
             # Convert to domain entity
             content = self._model_to_domain(content_model)
 
-            logger.debug(f"Retrieved generated content: {content_id}")
+            self.logger.debug(f"Retrieved generated content: {content_id}")
             return content
 
         except Exception as e:
-            logger.error(f"Error retrieving generated content {content_id}: {e}")
+            self.logger.error(f"Error retrieving generated content {content_id}: {e}")
             raise RepositoryError(
                 f"Failed to retrieve generated content: {str(e)}",
                 operation="get",
@@ -163,11 +165,11 @@ class SQLAlchemyContentRepository:
             # Convert to domain entity
             content = self._model_to_domain(content_model)
 
-            logger.debug(f"Retrieved content for product: {product_id}")
+            self.logger.debug(f"Retrieved content for product: {product_id}")
             return content
 
         except Exception as e:
-            logger.error(f"Error retrieving content for product {product_id}: {e}")
+            self.logger.error(f"Error retrieving content for product {product_id}: {e}")
             raise RepositoryError(
                 f"Failed to retrieve content for product: {str(e)}",
                 operation="get_by_product",
@@ -216,14 +218,14 @@ class SQLAlchemyContentRepository:
             # Convert back to domain entity
             updated_content = self._model_to_domain(content_model)
 
-            logger.info(f"Updated generated content: {updated_content.id}")
+            self.logger.info(f"Updated generated content: {updated_content.id}")
             return updated_content
 
         except EntityNotFoundError:
             raise
         except Exception as e:
             await self.session.rollback()
-            logger.error(f"Error updating generated content {content.id}: {e}")
+            self.logger.error(f"Error updating generated content {content.id}: {e}")
             raise RepositoryError(
                 f"Failed to update generated content: {str(e)}",
                 operation="update",
@@ -262,12 +264,12 @@ class SQLAlchemyContentRepository:
             await self.session.delete(content_model)
             await self.session.commit()
 
-            logger.info(f"Deleted generated content: {content_id}")
+            self.logger.info(f"Deleted generated content: {content_id}")
             return True
 
         except Exception as e:
             await self.session.rollback()
-            logger.error(f"Error deleting generated content {content_id}: {e}")
+            self.logger.error(f"Error deleting generated content {content_id}: {e}")
             raise RepositoryError(
                 f"Failed to delete generated content: {str(e)}",
                 operation="delete",
@@ -306,13 +308,13 @@ class SQLAlchemyContentRepository:
                 self._model_to_domain(model) for model in content_models
             ]
 
-            logger.debug(
+            self.logger.debug(
                 f"Retrieved {len(content_versions)} content versions for product: {product_id}"
             )
             return content_versions
 
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f"Error retrieving content versions for product {product_id}: {e}"
             )
             raise RepositoryError(
@@ -361,13 +363,13 @@ class SQLAlchemyContentRepository:
             # Convert to domain entities
             content_list = [self._model_to_domain(model) for model in content_models]
 
-            logger.debug(
+            self.logger.debug(
                 f"Retrieved {len(content_list)} content items in confidence range {min_confidence}-{max_confidence}"
             )
             return content_list
 
         except Exception as e:
-            logger.error(f"Error retrieving content by confidence range: {e}")
+            self.logger.error(f"Error retrieving content by confidence range: {e}")
             raise RepositoryError(
                 f"Failed to retrieve content by confidence range: {str(e)}",
                 operation="get_by_confidence",
@@ -407,13 +409,15 @@ class SQLAlchemyContentRepository:
             # Convert to domain entities
             content_list = [self._model_to_domain(model) for model in content_models]
 
-            logger.debug(
+            self.logger.debug(
                 f"Retrieved {len(content_list)} content items for category: {category_id}"
             )
             return content_list
 
         except Exception as e:
-            logger.error(f"Error retrieving content by category {category_id}: {e}")
+            self.logger.error(
+                f"Error retrieving content by category {category_id}: {e}"
+            )
             raise RepositoryError(
                 f"Failed to retrieve content by category: {str(e)}",
                 operation="get_by_category",

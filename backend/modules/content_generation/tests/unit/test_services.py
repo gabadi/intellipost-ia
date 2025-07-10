@@ -40,9 +40,10 @@ class TestGeminiAIService:
     """Test cases for GeminiAIService."""
 
     @pytest.fixture
-    def gemini_service(self):
+    def gemini_service(self, test_logger):
         """Create a GeminiAIService instance for testing."""
         return GeminiAIService(
+            logger=test_logger,
             api_key="test_api_key",
             model_name="gemini-2.5-flash",
             temperature=0.7,
@@ -247,9 +248,10 @@ class TestMLCategoryService:
     """Test cases for MLCategoryService."""
 
     @pytest.fixture
-    def ml_category_service(self):
+    def ml_category_service(self, test_logger):
         """Create a MLCategoryService instance for testing."""
         return MLCategoryService(
+            logger=test_logger,
             site_id="MLA",
             timeout_seconds=10,
             max_retries=3,
@@ -443,9 +445,10 @@ class TestTitleGenerationService:
     """Test cases for TitleGenerationService."""
 
     @pytest.fixture
-    def title_service(self):
+    def title_service(self, test_logger):
         """Create a TitleGenerationService instance for testing."""
         return TitleGenerationService(
+            logger=test_logger,
             max_title_length=60,
             min_title_length=10,
         )
@@ -576,9 +579,10 @@ class TestDescriptionGenerationService:
     """Test cases for DescriptionGenerationService."""
 
     @pytest.fixture
-    def description_service(self):
+    def description_service(self, test_logger):
         """Create a DescriptionGenerationService instance for testing."""
         return DescriptionGenerationService(
+            logger=test_logger,
             min_description_length=100,
             max_description_length=8000,
             target_description_length=500,
@@ -747,9 +751,9 @@ class TestAttributeMappingService:
     """Test cases for AttributeMappingService."""
 
     @pytest.fixture
-    def attribute_service(self):
+    def attribute_service(self, test_logger):
         """Create an AttributeMappingService instance for testing."""
-        return AttributeMappingService()
+        return AttributeMappingService(logger=test_logger)
 
     @pytest.mark.asyncio
     async def test_map_attributes_success(self, attribute_service):

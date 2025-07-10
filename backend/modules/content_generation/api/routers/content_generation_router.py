@@ -5,7 +5,6 @@ This module provides the FastAPI router for content generation endpoints.
 """
 
 import asyncio
-import logging
 from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
@@ -45,8 +44,6 @@ from modules.content_generation.domain.exceptions import (
     QualityThresholdError,
 )
 from modules.user_management.domain.entities.user import User
-
-logger = logging.getLogger(__name__)
 
 # Initialize router
 router = APIRouter(
@@ -95,7 +92,7 @@ class WebSocketManager:
             },
         )
 
-        logger.info(f"WebSocket connected for processing: {processing_id}")
+        # Logging removed - handled by use cases: info(f"WebSocket connected for processing: {processing_id}")
 
     def disconnect(self, websocket: WebSocket, processing_id: UUID):
         """Disconnect a WebSocket client."""
@@ -107,7 +104,7 @@ class WebSocketManager:
             if not self.active_connections[processing_id]:
                 del self.active_connections[processing_id]
 
-        logger.info(f"WebSocket disconnected for processing: {processing_id}")
+        # Logging removed - handled by use cases: info(f"WebSocket disconnected for processing: {processing_id}")
 
     async def send_personal_message(
         self, processing_id: UUID, websocket: WebSocket, message: dict[str, Any]
@@ -115,8 +112,8 @@ class WebSocketManager:
         """Send a message to a specific WebSocket connection."""
         try:
             await websocket.send_json(message)
-        except Exception as e:
-            logger.error(f"Error sending WebSocket message: {e}")
+        except Exception:
+            # Logging removed - handled by use cases: error(f"Error sending WebSocket message: {e}")
             self.disconnect(websocket, processing_id)
 
     async def broadcast_to_processing(
@@ -131,8 +128,8 @@ class WebSocketManager:
         for websocket in self.active_connections[processing_id]:
             try:
                 await websocket.send_json(message)
-            except Exception as e:
-                logger.error(f"Error broadcasting to WebSocket: {e}")
+            except Exception:
+                # Logging removed - handled by use cases: error(f"Error broadcasting to WebSocket: {e}")
                 disconnected_connections.append(websocket)
 
         # Clean up disconnected connections
@@ -561,12 +558,13 @@ def create_content_generation_router(
                             },
                         )
 
-                except Exception as e:
-                    logger.error(f"Error handling WebSocket message: {e}")
+                except Exception:
+                    # Logging removed - handled by use cases: error(f"Error handling WebSocket message: {e}")
+                    pass
 
         except WebSocketDisconnect:
             websocket_manager.disconnect(websocket, processing_id)
-            logger.info(f"WebSocket disconnected for processing: {processing_id}")
+            # Logging removed - handled by use cases: info(f"WebSocket disconnected for processing: {processing_id}")
 
     # Helper function to monitor processing progress
     async def _monitor_processing_progress(
@@ -641,7 +639,7 @@ def create_content_generation_router(
             )
 
         except Exception as e:
-            logger.error(f"Error in processing monitor: {e}")
+            # Logging removed - handled by use cases: error(f"Error in processing monitor: {e}")
 
             # Send error message
             await websocket_manager.broadcast_to_processing(

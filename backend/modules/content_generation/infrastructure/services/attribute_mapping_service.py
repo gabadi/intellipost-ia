@@ -5,15 +5,15 @@ This module provides specialized attribute mapping for MercadoLibre categories,
 ensuring proper category-specific attribute detection and validation.
 """
 
-import logging
 from typing import Any, cast
 
 from modules.content_generation.domain.exceptions import (
     AttributeMappingError,
     AttributeValidationError,
 )
-
-logger = logging.getLogger(__name__)
+from modules.content_generation.domain.ports.logging.protocols import (
+    ContentLoggerProtocol,
+)
 
 
 class AttributeMappingService:
@@ -24,8 +24,13 @@ class AttributeMappingService:
     attributes, ensuring proper listing compliance.
     """
 
-    def __init__(self):
-        """Initialize the attribute mapping service."""
+    def __init__(self, logger: ContentLoggerProtocol):
+        """Initialize the attribute mapping service.
+
+        Args:
+            logger: Logger protocol for logging operations
+        """
+        self.logger = logger
 
         # MercadoLibre category attribute mappings
         self.category_attributes: dict[str, dict[str, Any]] = {
@@ -237,7 +242,7 @@ class AttributeMappingService:
             },
         }
 
-        logger.info("Initialized Attribute Mapping Service")
+        self.logger.info("Initialized Attribute Mapping Service")
 
     async def map_attributes(
         self,
@@ -261,7 +266,7 @@ class AttributeMappingService:
             # Get category attribute configuration
             category_config = self.category_attributes.get(category_id)
             if not category_config:
-                logger.warning(
+                self.logger.warning(
                     f"No attribute mapping found for category: {category_id}"
                 )
                 return self._create_default_attributes(product_features)
@@ -278,7 +283,7 @@ class AttributeMappingService:
                 if value:
                     mapped_attributes[attr_id] = value
                 else:
-                    logger.warning(f"Missing required attribute: {attr_id}")
+                    self.logger.warning(f"Missing required attribute: {attr_id}")
 
             # Map optional attributes
             optional_attrs = cast("list[str]", category_config["optional"])
@@ -292,14 +297,16 @@ class AttributeMappingService:
             # Validate all mapped attributes
             validated_attributes = self._validate_mapped_attributes(mapped_attributes)
 
-            logger.info(
+            self.logger.info(
                 f"Mapped {len(validated_attributes)} attributes for category {category_id}"
             )
 
             return validated_attributes
 
         except Exception as e:
-            logger.error(f"Error mapping attributes for category {category_id}: {e}")
+            self.logger.error(
+                f"Error mapping attributes for category {category_id}: {e}"
+            )
             raise AttributeMappingError(
                 f"Failed to map attributes: {str(e)}",
                 category_id=category_id,
@@ -390,7 +397,9 @@ class AttributeMappingService:
             }
 
         except Exception as e:
-            logger.error(f"Error validating attributes for category {category_id}: {e}")
+            self.logger.error(
+                f"Error validating attributes for category {category_id}: {e}"
+            )
             raise AttributeValidationError(
                 f"Failed to validate attributes: {str(e)}",
                 category_id=category_id,
@@ -561,7 +570,7 @@ class AttributeMappingService:
             if validation_result["is_valid"]:
                 validated_attributes[attr_id] = attr_value
             else:
-                logger.warning(
+                self.logger.warning(
                     f"Invalid attribute {attr_id}: {validation_result['error']}"
                 )
 
