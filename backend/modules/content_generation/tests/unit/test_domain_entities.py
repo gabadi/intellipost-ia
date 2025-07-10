@@ -22,6 +22,11 @@ from modules.content_generation.domain.entities.generated_content import (
 from modules.content_generation.domain.exceptions import (
     InvalidContentError,
 )
+from shared.migration.value_object_migration import (
+    safe_migrate_ml_attributes,
+    safe_migrate_ml_sale_terms,
+    safe_migrate_ml_shipping,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -48,19 +53,27 @@ class TestGeneratedContent:
             ml_buying_mode="buy_it_now",
             ml_condition="used",
             ml_listing_type_id="gold_special",
-            ml_attributes={
-                "COLOR": "Negro",
-                "BRAND": "Apple",
-                "LINE": "iPhone",
-                "MODEL": "iPhone 13 Pro",
-            },
-            ml_sale_terms={
-                "id": "WARRANTY_TYPE",
-                "value_id": "WARRANTY_TYPE_DEALER",
-                "value_name": "Garantía del vendedor",
-                "value_struct": None,
-            },
-            ml_shipping={"mode": "me2", "local_pick_up": True, "free_shipping": False},
+            ml_attributes=safe_migrate_ml_attributes(
+                {
+                    "COLOR": "Negro",
+                    "BRAND": "Apple",
+                    "LINE": "iPhone",
+                    "MODEL": "iPhone 13 Pro",
+                }
+            ),
+            ml_sale_terms=safe_migrate_ml_sale_terms(
+                {
+                    "WARRANTY_TYPE": {
+                        "id": "WARRANTY_TYPE",
+                        "name": "Tipo de garantía",
+                        "value_id": "WARRANTY_TYPE_DEALER",
+                        "value_name": "Garantía del vendedor",
+                    }
+                }
+            ),
+            ml_shipping=safe_migrate_ml_shipping(
+                {"mode": "me2", "local_pick_up": True, "free_shipping": False}
+            ),
             confidence_overall=0.87,
             confidence_breakdown={
                 "title": 0.92,
@@ -104,9 +117,9 @@ class TestGeneratedContent:
                 ml_buying_mode="buy_it_now",
                 ml_condition="new",
                 ml_listing_type_id="gold_special",
-                ml_attributes={},
-                ml_sale_terms={},
-                ml_shipping={},
+                ml_attributes=safe_migrate_ml_attributes({}),
+                ml_sale_terms=safe_migrate_ml_sale_terms({}),
+                ml_shipping=safe_migrate_ml_shipping({}),
                 confidence_overall=0.8,
                 confidence_breakdown={},
                 ai_provider="gemini",
@@ -135,9 +148,9 @@ class TestGeneratedContent:
                 ml_buying_mode="buy_it_now",
                 ml_condition="new",
                 ml_listing_type_id="gold_special",
-                ml_attributes={},
-                ml_sale_terms={},
-                ml_shipping={},
+                ml_attributes=safe_migrate_ml_attributes({}),
+                ml_sale_terms=safe_migrate_ml_sale_terms({}),
+                ml_shipping=safe_migrate_ml_shipping({}),
                 confidence_overall=1.5,  # Invalid confidence score
                 confidence_breakdown={},
                 ai_provider="gemini",
@@ -164,9 +177,9 @@ class TestGeneratedContent:
                 ml_buying_mode="buy_it_now",
                 ml_condition="new",
                 ml_listing_type_id="gold_special",
-                ml_attributes={},
-                ml_sale_terms={},
-                ml_shipping={},
+                ml_attributes=safe_migrate_ml_attributes({}),
+                ml_sale_terms=safe_migrate_ml_sale_terms({}),
+                ml_shipping=safe_migrate_ml_shipping({}),
                 confidence_overall=0.8,
                 confidence_breakdown={},
                 ai_provider="gemini",
@@ -193,9 +206,9 @@ class TestGeneratedContent:
                 ml_buying_mode="buy_it_now",
                 ml_condition="new",
                 ml_listing_type_id="gold_special",
-                ml_attributes={},
-                ml_sale_terms={},
-                ml_shipping={},
+                ml_attributes=safe_migrate_ml_attributes({}),
+                ml_sale_terms=safe_migrate_ml_sale_terms({}),
+                ml_shipping=safe_migrate_ml_shipping({}),
                 confidence_overall=0.8,
                 confidence_breakdown={},
                 ai_provider="gemini",
@@ -224,9 +237,9 @@ class TestGeneratedContent:
                 ml_buying_mode="buy_it_now",
                 ml_condition="new",
                 ml_listing_type_id="gold_special",
-                ml_attributes={},
-                ml_sale_terms={},
-                ml_shipping={},
+                ml_attributes=safe_migrate_ml_attributes({}),
+                ml_sale_terms=safe_migrate_ml_sale_terms({}),
+                ml_shipping=safe_migrate_ml_shipping({}),
                 confidence_overall=0.8,
                 confidence_breakdown={},
                 ai_provider="gemini",
@@ -252,9 +265,9 @@ class TestGeneratedContent:
             ml_buying_mode="buy_it_now",
             ml_condition="new",
             ml_listing_type_id="gold_special",
-            ml_attributes={},
-            ml_sale_terms={},
-            ml_shipping={},
+            ml_attributes=safe_migrate_ml_attributes({}),
+            ml_sale_terms=safe_migrate_ml_sale_terms({}),
+            ml_shipping=safe_migrate_ml_shipping({}),
             confidence_overall=0.9,  # High confidence
             confidence_breakdown={},
             ai_provider="gemini",
@@ -282,9 +295,9 @@ class TestGeneratedContent:
             ml_buying_mode="buy_it_now",
             ml_condition="new",
             ml_listing_type_id="gold_special",
-            ml_attributes={},
-            ml_sale_terms={},
-            ml_shipping={},
+            ml_attributes=safe_migrate_ml_attributes({}),
+            ml_sale_terms=safe_migrate_ml_sale_terms({}),
+            ml_shipping=safe_migrate_ml_shipping({}),
             confidence_overall=0.3,  # Low confidence
             confidence_breakdown={},
             ai_provider="gemini",

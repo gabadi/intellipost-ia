@@ -128,6 +128,13 @@ class TestContentGenerationPerformance:
         )
         attribute_service.calculate_attribute_confidence = AsyncMock(return_value=0.8)
 
+        # Import migration service
+        from modules.content_generation.domain.services.value_object_migration_service import (
+            ValueObjectMigrationService,
+        )
+
+        migration_service = ValueObjectMigrationService()
+
         return GenerateContentUseCase(
             ai_service=mock_ai_service,
             content_repository=content_repository,
@@ -136,6 +143,7 @@ class TestContentGenerationPerformance:
             validation_service=validation_service,
             attribute_service=attribute_service,
             category_service=mock_category_service,
+            migration_service=migration_service,
         )
 
     @pytest.fixture

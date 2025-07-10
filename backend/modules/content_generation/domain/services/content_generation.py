@@ -344,7 +344,13 @@ class ContentGenerationService:
         )
 
         # Merge with existing attributes
-        merged_attributes = {**content.ml_attributes, **enhanced_attributes}
+        if hasattr(content.ml_attributes, "to_dict"):
+            current_attributes = content.ml_attributes.to_dict()
+        else:
+            current_attributes = (
+                content.ml_attributes if isinstance(content.ml_attributes, dict) else {}
+            )
+        merged_attributes = {**current_attributes, **enhanced_attributes}
 
         return merged_attributes
 

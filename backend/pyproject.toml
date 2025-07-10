@@ -138,7 +138,8 @@ addopts = [
     "--strict-config",
     "-v",
 ]
-testpaths = ["../tests", "modules", "infrastructure/tests"]
+testpaths = ["../tests", "modules", "infrastructure/tests", "shared/tests"]
+pythonpath = ["."]
 filterwarnings = [
     "error",
     "ignore::UserWarning",

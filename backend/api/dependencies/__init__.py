@@ -18,6 +18,9 @@ from infrastructure.database import get_database_session
 from modules.content_generation.application.use_cases.generate_content import (
     GenerateContentUseCase,
 )
+from modules.content_generation.domain.services.value_object_migration_service import (
+    ValueObjectMigrationService,
+)
 from modules.content_generation.infrastructure.repositories.sqlalchemy_content_repository import (
     SQLAlchemyContentRepository,
 )
@@ -284,6 +287,11 @@ def get_ml_category_service() -> MLCategoryService:
     )
 
 
+def get_value_object_migration_service() -> ValueObjectMigrationService:
+    """Get value object migration service instance."""
+    return ValueObjectMigrationService()
+
+
 def get_generate_content_use_case(
     ai_service: GeminiAIService = Depends(get_gemini_ai_service),
     content_repository: SQLAlchemyContentRepository = Depends(get_content_repository),
@@ -296,6 +304,9 @@ def get_generate_content_use_case(
     ),
     attribute_service: AttributeMappingService = Depends(get_attribute_mapping_service),
     category_service: MLCategoryService = Depends(get_ml_category_service),
+    migration_service: ValueObjectMigrationService = Depends(
+        get_value_object_migration_service
+    ),
 ) -> GenerateContentUseCase:
     """Get content generation use case instance."""
     return GenerateContentUseCase(
@@ -306,6 +317,7 @@ def get_generate_content_use_case(
         validation_service=validation_service,
         attribute_service=attribute_service,
         category_service=category_service,
+        migration_service=migration_service,
     )
 
 
@@ -327,6 +339,9 @@ AttributeMappingServiceDep = Annotated[
     AttributeMappingService, Depends(get_attribute_mapping_service)
 ]
 MLCategoryServiceDep = Annotated[MLCategoryService, Depends(get_ml_category_service)]
+ValueObjectMigrationServiceDep = Annotated[
+    ValueObjectMigrationService, Depends(get_value_object_migration_service)
+]
 GenerateContentUseCaseDep = Annotated[
     GenerateContentUseCase, Depends(get_generate_content_use_case)
 ]

@@ -36,6 +36,11 @@ from modules.content_generation.domain.ports.ai_service_protocols import (
     ImageData,
 )
 from modules.content_generation.infrastructure.config import ai_content_config
+from shared.migration.value_object_migration import (
+    safe_migrate_ml_attributes,
+    safe_migrate_ml_sale_terms,
+    safe_migrate_ml_shipping,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -161,9 +166,15 @@ class GeminiAIService:
                 ml_listing_type_id=generated_data.get(
                     "ml_listing_type_id", "gold_special"
                 ),
-                ml_attributes=generated_data.get("ml_attributes", {}),
-                ml_sale_terms=generated_data.get("ml_sale_terms", {}),
-                ml_shipping=generated_data.get("ml_shipping", {}),
+                ml_attributes=safe_migrate_ml_attributes(
+                    generated_data.get("ml_attributes", {})
+                ),
+                ml_sale_terms=safe_migrate_ml_sale_terms(
+                    generated_data.get("ml_sale_terms", {})
+                ),
+                ml_shipping=safe_migrate_ml_shipping(
+                    generated_data.get("ml_shipping", {})
+                ),
                 confidence_overall=generated_data["confidence_overall"],
                 confidence_breakdown=generated_data["confidence_breakdown"],
                 ai_provider="gemini",

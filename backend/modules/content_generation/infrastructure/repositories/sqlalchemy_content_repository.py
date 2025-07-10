@@ -21,6 +21,11 @@ from modules.content_generation.domain.exceptions import (
 from modules.content_generation.infrastructure.models.generated_content_model import (
     GeneratedContentModel,
 )
+from shared.migration.value_object_migration import (
+    safe_migrate_ml_attributes,
+    safe_migrate_ml_sale_terms,
+    safe_migrate_ml_shipping,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -431,9 +436,9 @@ class SQLAlchemyContentRepository:
             ml_buying_mode=content.ml_buying_mode,
             ml_condition=content.ml_condition,
             ml_listing_type_id=content.ml_listing_type_id,
-            ml_attributes=content.ml_attributes,
-            ml_sale_terms=content.ml_sale_terms,
-            ml_shipping=content.ml_shipping,
+            ml_attributes=content.ml_attributes.to_dict(),
+            ml_sale_terms=content.ml_sale_terms.to_dict(),
+            ml_shipping=content.ml_shipping.to_dict(),
             confidence_overall=content.confidence_overall,
             confidence_breakdown=content.confidence_breakdown,
             ai_provider=content.ai_provider,
@@ -460,9 +465,9 @@ class SQLAlchemyContentRepository:
             ml_buying_mode=model.ml_buying_mode,
             ml_condition=model.ml_condition,
             ml_listing_type_id=model.ml_listing_type_id,
-            ml_attributes=model.ml_attributes,
-            ml_sale_terms=model.ml_sale_terms,
-            ml_shipping=model.ml_shipping,
+            ml_attributes=safe_migrate_ml_attributes(model.ml_attributes),
+            ml_sale_terms=safe_migrate_ml_sale_terms(model.ml_sale_terms),
+            ml_shipping=safe_migrate_ml_shipping(model.ml_shipping),
             confidence_overall=float(model.confidence_overall),
             confidence_breakdown=model.confidence_breakdown,
             ai_provider=model.ai_provider,
@@ -490,9 +495,9 @@ class SQLAlchemyContentRepository:
         model.ml_buying_mode = content.ml_buying_mode
         model.ml_condition = content.ml_condition
         model.ml_listing_type_id = content.ml_listing_type_id
-        model.ml_attributes = content.ml_attributes
-        model.ml_sale_terms = content.ml_sale_terms
-        model.ml_shipping = content.ml_shipping
+        model.ml_attributes = content.ml_attributes.to_dict()
+        model.ml_sale_terms = content.ml_sale_terms.to_dict()
+        model.ml_shipping = content.ml_shipping.to_dict()
         model.confidence_overall = Decimal(str(content.confidence_overall))
         model.confidence_breakdown = content.confidence_breakdown
         model.ai_provider = content.ai_provider

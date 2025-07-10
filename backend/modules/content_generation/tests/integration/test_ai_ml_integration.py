@@ -401,6 +401,13 @@ class TestCompleteWorkflowIntegration:
     def use_case(self):
         """Create GenerateContentUseCase with mocked dependencies."""
         # This would normally be dependency-injected
+        # Import migration service
+        from modules.content_generation.domain.services.value_object_migration_service import (
+            ValueObjectMigrationService,
+        )
+
+        migration_service = ValueObjectMigrationService()
+
         return GenerateContentUseCase(
             ai_service=Mock(),
             content_repository=Mock(),
@@ -409,6 +416,7 @@ class TestCompleteWorkflowIntegration:
             validation_service=Mock(),
             attribute_service=Mock(),
             category_service=Mock(),
+            migration_service=migration_service,
         )
 
     @pytest.fixture

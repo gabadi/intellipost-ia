@@ -33,6 +33,9 @@ from modules.content_generation.domain.ports.ai_service_protocols import (
     MLCategoryServiceProtocol,
     TitleGenerationServiceProtocol,
 )
+from modules.content_generation.domain.services.value_object_migration_service import (
+    ValueObjectMigrationService,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +57,7 @@ class GenerateContentUseCase:
         validation_service: ContentValidationServiceProtocol,
         attribute_service: AttributeMappingServiceProtocol,
         category_service: MLCategoryServiceProtocol,
+        migration_service: ValueObjectMigrationService,
         quality_threshold: float = 0.7,
         max_retry_attempts: int = 3,
     ):
@@ -68,6 +72,7 @@ class GenerateContentUseCase:
             validation_service: Content validation service protocol
             attribute_service: Attribute mapping service protocol
             category_service: MercadoLibre category service protocol
+            migration_service: Value object migration service
             quality_threshold: Minimum quality threshold
             max_retry_attempts: Maximum retry attempts
         """
@@ -78,6 +83,7 @@ class GenerateContentUseCase:
         self.validation_service = validation_service
         self.attribute_service = attribute_service
         self.category_service = category_service
+        self.migration_service = migration_service
         self.quality_threshold = quality_threshold
         self.max_retry_attempts = max_retry_attempts
 
@@ -715,9 +721,15 @@ class GenerateContentUseCase:
             ml_buying_mode="buy_it_now",
             ml_condition=product_features.get("condition", "new"),
             ml_listing_type_id="gold_special",
-            ml_attributes=attribute_info["attributes"],
-            ml_sale_terms={"warranty": "Garantía del vendedor"},
-            ml_shipping={"mode": "me2", "free_shipping": True},
+            ml_attributes=self.migration_service.migrate_ml_attributes(
+                attribute_info["attributes"]
+            ),
+            ml_sale_terms=self.migration_service.migrate_ml_sale_terms(
+                {"warranty": "Garantía del vendedor"}
+            ),
+            ml_shipping=self.migration_service.migrate_ml_shipping(
+                {"mode": "me2", "free_shipping": True}
+            ),
             confidence_overall=overall_confidence,
             confidence_breakdown=confidence_scores,
             ai_provider="gemini",
@@ -853,8 +865,14 @@ class GenerateContentUseCase:
             product_features, content.ml_category_id
         )
 
-        # Merge with existing attributes
-        merged_attributes = {**content.ml_attributes, **enhanced_attributes}
+        # Merge with existing attributes (convert to dict first if it's a value object)
+        if hasattr(content.ml_attributes, "to_dict"):
+            current_attributes = content.ml_attributes.to_dict()
+        else:
+            current_attributes = (
+                content.ml_attributes if isinstance(content.ml_attributes, dict) else {}
+            )
+        merged_attributes = {**current_attributes, **enhanced_attributes}
 
         # Calculate new confidence
         attribute_confidence = (
@@ -878,7 +896,9 @@ class GenerateContentUseCase:
             ml_buying_mode=content.ml_buying_mode,
             ml_condition=content.ml_condition,
             ml_listing_type_id=content.ml_listing_type_id,
-            ml_attributes=merged_attributes,
+            ml_attributes=self.migration_service.migrate_ml_attributes(
+                merged_attributes
+            ),
             ml_sale_terms=content.ml_sale_terms,
             ml_shipping=content.ml_shipping,
             confidence_overall=self._recalculate_overall_confidence(
