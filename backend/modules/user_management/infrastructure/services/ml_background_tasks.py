@@ -175,6 +175,7 @@ class MLBackgroundTasksService:
                 self._token_refresh_scheduler = TokenRefreshScheduler(
                     oauth_service=oauth_service,
                     credentials_repository=credentials_repository,
+                    logger=self._logger,
                     refresh_interval_minutes=refresh_interval,
                 )
 
@@ -270,8 +271,12 @@ async def get_ml_background_service() -> MLBackgroundTasksService:
     if _background_service is None:
         # Use settings from infrastructure to ensure proper configuration
         from infrastructure.config.settings import settings
+        from infrastructure.logging.factory import logger_factory
 
-        _background_service = MLBackgroundTasksService(settings=settings)
+        # Create logger for background service
+        logger = logger_factory.create_logger(__name__)
+
+        _background_service = MLBackgroundTasksService(logger=logger, settings=settings)
 
     return _background_service
 

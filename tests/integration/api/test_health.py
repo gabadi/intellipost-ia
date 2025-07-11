@@ -46,6 +46,7 @@ class TestHealthEndpoint:
 
         # Should be able to parse as ISO format
         from datetime import datetime
+
         timestamp = datetime.fromisoformat(data["timestamp"].replace("Z", "+00:00"))
         assert isinstance(timestamp, datetime)
 

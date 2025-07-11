@@ -18,6 +18,9 @@ from infrastructure.database import get_database_session
 from modules.content_generation.application.use_cases.generate_content import (
     GenerateContentUseCase,
 )
+from modules.content_generation.domain.ports.logging.protocols import (
+    ContentLoggerProtocol,
+)
 from modules.content_generation.domain.services.value_object_migration_service import (
     ValueObjectMigrationService,
 )
@@ -85,6 +88,15 @@ from modules.user_management.infrastructure.services.jose_jwt_service import (
 def get_settings() -> Settings:
     """Get application settings instance."""
     return Settings()
+
+
+def get_content_logger() -> ContentLoggerProtocol:
+    """Get content logger instance."""
+    from api.dependencies.logging import get_content_logger as get_structured_logger
+
+    # StructuredLoggerProtocol is compatible with ContentLoggerProtocol
+    # as they both have the same basic logging methods
+    return get_structured_logger()
 
 
 # Infrastructure dependencies
@@ -239,16 +251,19 @@ GetProductsUseCaseDep = Annotated[
 # Content generation dependencies
 def get_content_repository(
     session: AsyncSession = Depends(get_database_session),
+    logger: ContentLoggerProtocol = Depends(get_content_logger),
 ) -> SQLAlchemyContentRepository:
     """Get content repository instance."""
-    return SQLAlchemyContentRepository(session)
+    return SQLAlchemyContentRepository(session, logger)
 
 
 def get_gemini_ai_service(
     settings: Settings = Depends(get_settings),
+    logger: ContentLoggerProtocol = Depends(get_content_logger),
 ) -> GeminiAIService:
     """Get Gemini AI service instance."""
     return GeminiAIService(
+        logger=logger,
         api_key=settings.ai_content_gemini_api_key,
         model_name=settings.ai_content_gemini_model,
         temperature=0.7,
@@ -258,39 +273,53 @@ def get_gemini_ai_service(
     )
 
 
-def get_title_generation_service() -> TitleGenerationService:
+def get_title_generation_service(
+    logger: ContentLoggerProtocol = Depends(get_content_logger),
+) -> TitleGenerationService:
     """Get title generation service instance."""
     return TitleGenerationService(
+        logger=logger,
         max_title_length=60,
         min_title_length=10,
     )
 
 
-def get_description_generation_service() -> DescriptionGenerationService:
+def get_description_generation_service(
+    logger: ContentLoggerProtocol = Depends(get_content_logger),
+) -> DescriptionGenerationService:
     """Get description generation service instance."""
     return DescriptionGenerationService(
+        logger=logger,
         min_description_length=50,
         max_description_length=2000,
         target_description_length=500,
     )
 
 
-def get_content_validation_service() -> ContentValidationService:
+def get_content_validation_service(
+    logger: ContentLoggerProtocol = Depends(get_content_logger),
+) -> ContentValidationService:
     """Get content validation service instance."""
     return ContentValidationService(
+        logger=logger,
         quality_threshold=0.7,
         enable_strict_validation=True,
     )
 
 
-def get_attribute_mapping_service() -> AttributeMappingService:
+def get_attribute_mapping_service(
+    logger: ContentLoggerProtocol = Depends(get_content_logger),
+) -> AttributeMappingService:
     """Get attribute mapping service instance."""
-    return AttributeMappingService()
+    return AttributeMappingService(logger=logger)
 
 
-def get_ml_category_service() -> MLCategoryService:
+def get_ml_category_service(
+    logger: ContentLoggerProtocol = Depends(get_content_logger),
+) -> MLCategoryService:
     """Get ML category service instance."""
     return MLCategoryService(
+        logger=logger,
         site_id="MLA",  # Argentina
         timeout_seconds=30,
         max_retries=3,
@@ -319,6 +348,7 @@ def get_generate_content_use_case(
     migration_service: ValueObjectMigrationService = Depends(
         get_value_object_migration_service
     ),
+    logger: ContentLoggerProtocol = Depends(get_content_logger),
 ) -> GenerateContentUseCase:
     """Get content generation use case instance."""
     return GenerateContentUseCase(
@@ -330,6 +360,7 @@ def get_generate_content_use_case(
         attribute_service=attribute_service,
         category_service=category_service,
         migration_service=migration_service,
+        logger=logger,
     )
 
 
@@ -414,7 +445,7 @@ def create_content_generation_router_factory():
 
     return create_content_generation_router(
         generate_content_use_case_factory=get_generate_content_use_case,
-        current_user_provider=get_current_user,
+        current_user_provider=None,  # Router will handle auth via FastAPI dependencies
     )
 
 

@@ -17,7 +17,6 @@ from shared.value_objects.exceptions import (
     MultipleValidationError,
     RequiredFieldError,
 )
-from shared.value_objects.protocols import MercadoLibreValueObjectProtocol
 
 
 @dataclass(frozen=True)
@@ -65,7 +64,7 @@ class MLShippingLocation:
 
 
 @dataclass(frozen=True, eq=False)
-class MLShipping(BaseValueObject, MercadoLibreValueObjectProtocol):
+class MLShipping(BaseValueObject):
     """
     MercadoLibre shipping value object.
 

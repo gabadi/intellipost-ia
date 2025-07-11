@@ -24,14 +24,11 @@ from PIL import Image
 
 from infrastructure.config.logging import get_logger
 from infrastructure.config.settings import Settings
-from modules.product_management.domain.ports.file_storage_protocol import (
-    FileStorageProtocol,
-)
 
 logger = get_logger(__name__)
 
 
-class FileStorageService(FileStorageProtocol):
+class FileStorageService:
     """Service for handling file uploads to MinIO/S3."""
 
     def __init__(self, settings: Settings):

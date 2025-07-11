@@ -45,7 +45,10 @@ class TestGeminiAIIntegration:
     @pytest.fixture
     def gemini_service(self):
         """Create GeminiAIService with test configuration."""
+        # Create a mock logger for testing
+        logger = Mock()
         return GeminiAIService(
+            logger=logger,
             api_key=os.getenv("GEMINI_API_KEY", "test_key"),
             model_name="gemini-2.5-flash",
             max_retries=2,

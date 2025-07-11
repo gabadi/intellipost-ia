@@ -17,7 +17,6 @@ from shared.value_objects.exceptions import (
     RequiredFieldError,
     ValueObjectValidationError,
 )
-from shared.value_objects.protocols import MercadoLibreValueObjectProtocol
 
 
 @dataclass(frozen=True)
@@ -48,7 +47,7 @@ class MLSaleTerm:
 
 
 @dataclass(frozen=True, eq=False)
-class MLSaleTerms(BaseValueObject, MercadoLibreValueObjectProtocol):
+class MLSaleTerms(BaseValueObject):
     """
     MercadoLibre sale terms value object.
 

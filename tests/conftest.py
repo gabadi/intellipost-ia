@@ -44,6 +44,7 @@ def check_database_connection() -> bool:
         else:
             # Try to parse the URL more robustly
             from urllib.parse import urlparse
+
             parsed = urlparse(db_url)
             host = parsed.hostname or "localhost"
             port = parsed.port or 5432
@@ -67,7 +68,7 @@ def pytest_configure(config):
         # Add skip marker for integration tests
         config.addinivalue_line(
             "markers",
-            "integration: marks tests as integration tests (skipped when database unavailable)"
+            "integration: marks tests as integration tests (skipped when database unavailable)",
         )
 
 
@@ -165,17 +166,19 @@ def test_settings(database_url: str) -> Settings:
     instead of the default development database.
     """
     # Override environment variables for testing
-    os.environ.update({
-        "INTELLIPOST_ENVIRONMENT": "testing",
-        "INTELLIPOST_DATABASE_URL": database_url,
-        "INTELLIPOST_DATABASE_TEST_URL": database_url,
-        "INTELLIPOST_DEBUG": "false",
-        "INTELLIPOST_SECRET_KEY": "test-secret-key-for-testing-only",
-        "INTELLIPOST_S3_ENDPOINT_URL": "http://localhost:9001",
-        "INTELLIPOST_S3_ACCESS_KEY": "test_access_key",
-        "INTELLIPOST_S3_SECRET_KEY": "test_secret_key",
-        "INTELLIPOST_S3_BUCKET_NAME": "test-bucket",
-    })
+    os.environ.update(
+        {
+            "INTELLIPOST_ENVIRONMENT": "testing",
+            "INTELLIPOST_DATABASE_URL": database_url,
+            "INTELLIPOST_DATABASE_TEST_URL": database_url,
+            "INTELLIPOST_DEBUG": "false",
+            "INTELLIPOST_SECRET_KEY": "test-secret-key-for-testing-only",
+            "INTELLIPOST_S3_ENDPOINT_URL": "http://localhost:9001",
+            "INTELLIPOST_S3_ACCESS_KEY": "test_access_key",
+            "INTELLIPOST_S3_SECRET_KEY": "test_secret_key",
+            "INTELLIPOST_S3_BUCKET_NAME": "test-bucket",
+        }
+    )
 
     return Settings()
 
@@ -192,12 +195,14 @@ def unit_test_settings() -> Settings:
     original_env = os.environ.copy()
 
     # Set test environment variables
-    os.environ.update({
-        "INTELLIPOST_ENVIRONMENT": "testing",
-        "INTELLIPOST_DEBUG": "false",
-        "INTELLIPOST_LOG_LEVEL": "INFO",
-        "INTELLIPOST_SECRET_KEY": "test-secret-key-for-testing-only",
-    })
+    os.environ.update(
+        {
+            "INTELLIPOST_ENVIRONMENT": "testing",
+            "INTELLIPOST_DEBUG": "false",
+            "INTELLIPOST_LOG_LEVEL": "INFO",
+            "INTELLIPOST_SECRET_KEY": "test-secret-key-for-testing-only",
+        }
+    )
 
     try:
         settings = Settings()
@@ -262,7 +267,9 @@ def product_factory():
     def create_product(**kwargs: Any):
         # Import locally to avoid circular imports
         from modules.product_management.domain.entities.product import Product
-        from modules.product_management.domain.entities.product_status import ProductStatus
+        from modules.product_management.domain.entities.product_status import (
+            ProductStatus,
+        )
 
         return Product(
             id=kwargs.get("id", uuid4()),

@@ -18,7 +18,6 @@ from shared.value_objects.exceptions import (
     RequiredFieldError,
     ValueObjectValidationError,
 )
-from shared.value_objects.protocols import MercadoLibreValueObjectProtocol
 
 
 @dataclass(frozen=True)
@@ -51,7 +50,7 @@ class MLAttribute:
 
 
 @dataclass(frozen=True, eq=False)
-class MLAttributes(BaseValueObject, MercadoLibreValueObjectProtocol):
+class MLAttributes(BaseValueObject):
     """
     MercadoLibre attributes value object.
 

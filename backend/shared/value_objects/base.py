@@ -1,8 +1,75 @@
 """
-Base value object implementation.
+Base value object implementation following Domain-Driven Design patterns.
 
 This module provides the abstract base class for all value objects,
 implementing common functionality for validation, serialization, and equality.
+The implementation follows DDD principles and hexagonal architecture patterns.
+
+## Architectural Patterns:
+
+### Value Objects in Domain-Driven Design:
+Value objects are immutable objects that are defined by their attributes rather
+than identity. They provide type safety, validation, and business rule enforcement
+at the domain level.
+
+### Protocol-Based Architecture:
+This implementation supports both inheritance-based and protocol-based patterns:
+- Inheritance: Extend BaseValueObject for full functionality
+- Protocols: Implement ValueObjectProtocol for duck typing flexibility
+
+### Benefits:
+1. **Type Safety**: Strong typing prevents data corruption
+2. **Immutability**: Value objects cannot be modified after creation
+3. **Business Rules**: Validation enforces domain constraints
+4. **Serialization**: Consistent data representation across layers
+5. **Testing**: Easy to create and compare value objects
+
+## Usage Examples:
+
+### Traditional Inheritance Pattern:
+```python
+from shared.value_objects.base import BaseValueObject
+
+@dataclass(frozen=True, eq=False)
+class UserId(BaseValueObject):
+    id: str
+
+    def validate(self) -> None:
+        if not self.id or len(self.id) < 5:
+            raise ValueObjectValidationError("User ID must be at least 5 characters")
+
+    def validate_field(self, field_name: str, field_value: Any) -> None:
+        if field_name == "id" and not isinstance(field_value, str):
+            raise InvalidFieldTypeError(field_name, field_value, "str")
+
+user_id = UserId("user123")  # Automatically validated
+```
+
+### Protocol Implementation (Duck Typing):
+```python
+from shared.value_objects.protocols import ValueObjectProtocol
+
+class CustomValue:  # No inheritance required
+    def __init__(self, value: str):
+        self._value = value
+        self.validate()  # Manual validation call
+
+    def validate(self) -> None:
+        if not self._value:
+            raise ValueError("Value cannot be empty")
+
+    # ... implement other protocol methods
+
+# Both patterns work seamlessly together:
+def process_values(values: list[ValueObjectProtocol]) -> None:
+    for value in values:
+        value.validate()
+        data = value.to_dict()
+        # ... process data
+
+values = [UserId("user123"), CustomValue("custom")]
+process_values(values)  # Works with both patterns!
+```
 """
 
 import json
@@ -17,13 +84,10 @@ from .exceptions import (
     ValueObjectSerializationError,
     ValueObjectValidationError,
 )
-from .protocols import SerializableValueObjectProtocol, ValidatedValueObjectProtocol
 
 
 @dataclass(frozen=True, eq=False)
-class BaseValueObject(
-    ABC, ValidatedValueObjectProtocol, SerializableValueObjectProtocol
-):
+class BaseValueObject(ABC):
     """
     Abstract base class for all value objects.
 
