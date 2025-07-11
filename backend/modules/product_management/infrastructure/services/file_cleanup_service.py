@@ -7,6 +7,7 @@ and orphaned files that are no longer referenced in the database.
 
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any, cast
 from uuid import UUID
 
 from sqlalchemy import select
@@ -36,7 +37,7 @@ class FileCleanupService:
         self.temp_file_retention_hours = 24  # Keep temp files for 24 hours
         self.orphaned_file_retention_hours = 168  # Keep orphaned files for 7 days
 
-    async def cleanup_temporary_files(self, temp_dir: str | Path) -> dict:
+    async def cleanup_temporary_files(self, temp_dir: str | Path) -> dict[str, Any]:
         """
         Clean up temporary uploaded files.
 
@@ -53,7 +54,7 @@ class FileCleanupService:
 
         cleaned_count = 0
         total_size = 0
-        errors = []
+        errors: list[str] = []
         cutoff_time = datetime.now(UTC) - timedelta(
             hours=self.temp_file_retention_hours
         )
@@ -94,7 +95,9 @@ class FileCleanupService:
             logger.error(f"Error during temporary file cleanup: {e}")
             return {"cleaned": 0, "total_size_bytes": 0, "errors": [str(e)]}
 
-    async def find_orphaned_files(self, user_id: UUID | None = None) -> list[dict]:
+    async def find_orphaned_files(
+        self, user_id: UUID | None = None
+    ) -> list[dict[str, Any]]:
         """
         Find files in storage that are not referenced in the database.
 
@@ -125,7 +128,7 @@ class FileCleanupService:
             referenced_keys = {row[0] for row in result.fetchall()}
 
             # Find orphaned files
-            orphaned_files = []
+            orphaned_files: list[dict[str, Any]] = []
             cutoff_time = datetime.now(UTC) - timedelta(
                 hours=self.orphaned_file_retention_hours
             )
@@ -161,7 +164,7 @@ class FileCleanupService:
         user_id: UUID | None = None,
         dry_run: bool = False,
         max_files: int = 100,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Clean up orphaned files from storage.
 
@@ -190,7 +193,7 @@ class FileCleanupService:
 
             cleaned_count = 0
             total_size = 0
-            errors = []
+            errors: list[str] = []
 
             for file_info in files_to_clean:
                 try:
@@ -229,7 +232,7 @@ class FileCleanupService:
             logger.error(f"Error during orphaned file cleanup: {e}")
             raise ValueError(f"Orphaned file cleanup failed: {e}") from e
 
-    async def cleanup_failed_uploads(self, age_hours: int = 1) -> dict:
+    async def cleanup_failed_uploads(self, age_hours: int = 1) -> dict[str, Any]:
         """
         Clean up files from failed upload attempts.
 
@@ -262,7 +265,7 @@ class FileCleanupService:
 
             cleaned_count = 0
             total_size = 0
-            errors = []
+            errors: list[str] = []
 
             for s3_key, file_size in failed_upload_files:
                 try:
@@ -295,7 +298,9 @@ class FileCleanupService:
             logger.error(f"Error during failed upload cleanup: {e}")
             raise ValueError(f"Failed upload cleanup failed: {e}") from e
 
-    async def get_storage_statistics(self, user_id: UUID | None = None) -> dict:
+    async def get_storage_statistics(
+        self, user_id: UUID | None = None
+    ) -> dict[str, Any]:
         """
         Get storage usage statistics.
 
@@ -330,13 +335,15 @@ class FileCleanupService:
 
             # Calculate statistics
             total_db_size = sum(row[0] for row in db_files)
-            format_counts = {}
+            format_counts: dict[str, int] = {}
             for _, file_format, _ in db_files:
                 format_counts[file_format] = format_counts.get(file_format, 0) + 1
 
             # Find orphaned files count
-            orphaned_files = await self.find_orphaned_files(user_id)
-            orphaned_size = sum(file["size"] for file in orphaned_files)
+            orphaned_files: list[dict[str, Any]] = await self.find_orphaned_files(
+                user_id
+            )
+            orphaned_size = sum(cast("int", file["size"]) for file in orphaned_files)
 
             return {
                 "bucket_stats": bucket_stats,
@@ -354,7 +361,9 @@ class FileCleanupService:
             logger.error(f"Error getting storage statistics: {e}")
             raise ValueError(f"Failed to get storage statistics: {e}") from e
 
-    async def validate_file_integrity(self, user_id: UUID | None = None) -> dict:
+    async def validate_file_integrity(
+        self, user_id: UUID | None = None
+    ) -> dict[str, Any]:
         """
         Validate that all database file references have corresponding S3 files.
 
@@ -384,8 +393,8 @@ class FileCleanupService:
             result = await self.session.execute(stmt)
             db_files = list(result.fetchall())
 
-            missing_files = []
-            size_mismatches = []
+            missing_files: list[dict[str, Any]] = []
+            size_mismatches: list[dict[str, Any]] = []
             valid_files = 0
 
             for image_id, s3_key, expected_size in db_files:

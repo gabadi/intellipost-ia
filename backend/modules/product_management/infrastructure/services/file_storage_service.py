@@ -3,11 +3,13 @@ File storage service for product images using MinIO/S3.
 
 This module provides file upload and management capabilities for product images.
 """
+# type: ignore[reportUnknownMemberType,reportUnknownArgumentType,reportUnknownVariableType]
 
 import asyncio
 import functools
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID, uuid4
 
 import boto3  # type: ignore[import-untyped]
@@ -15,6 +17,9 @@ from botocore.exceptions import (  # type: ignore[import-untyped]
     ClientError,
     NoCredentialsError,
 )
+
+if TYPE_CHECKING:
+    from botocore.client import BaseClient  # type: ignore[import-untyped]
 from PIL import Image
 
 from infrastructure.config.logging import get_logger
@@ -28,10 +33,10 @@ class FileStorageService:
 
     def __init__(self, settings: Settings):
         self.settings = settings
-        self.bucket_name = settings.s3_bucket_name
+        self.bucket_name: str = settings.s3_bucket_name
 
         # Initialize S3 client
-        self.s3_client = boto3.client(
+        self.s3_client: BaseClient = boto3.client(  # type: ignore[reportUnknownMemberType]
             "s3",
             endpoint_url=settings.s3_endpoint_url,
             aws_access_key_id=settings.s3_access_key,
@@ -40,18 +45,19 @@ class FileStorageService:
         )
 
         # Bucket existence will be checked on first use
-        self._bucket_checked = False
+        self._bucket_checked: bool = False
 
     async def _ensure_bucket_exists(self) -> None:
         """Ensure the S3 bucket exists."""
         try:
             # Run in executor to avoid blocking
-            head_bucket_func = functools.partial(
-                self.s3_client.head_bucket, Bucket=self.bucket_name
+            head_bucket_func = functools.partial(  # type: ignore[reportUnknownMemberType]
+                self.s3_client.head_bucket,
+                Bucket=self.bucket_name,  # type: ignore[reportUnknownMemberType]
             )
-            await asyncio.get_event_loop().run_in_executor(None, head_bucket_func)
+            await asyncio.get_event_loop().run_in_executor(None, head_bucket_func)  # type: ignore[reportUnknownArgumentType]
         except ClientError as e:
-            error_code = e.response["Error"]["Code"]
+            error_code = cast("str", e.response["Error"]["Code"])
             if error_code == "404":
                 # Bucket doesn't exist, create it
                 try:
@@ -120,7 +126,7 @@ class FileStorageService:
         file_content: bytes,
         filename: str,
         content_type: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Upload product image to S3 and return metadata.
 
@@ -243,7 +249,7 @@ class FileStorageService:
         expiration: int = 3600,
         content_type: str | None = None,
         max_content_length: int | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Generate a presigned URL for direct file upload.
 
@@ -260,7 +266,7 @@ class FileStorageService:
             ValueError: If URL generation fails
         """
         try:
-            conditions = []
+            conditions: list[dict[str, Any] | list[Any]] = []
             if content_type:
                 conditions.append({"Content-Type": content_type})
             if max_content_length:
@@ -317,7 +323,7 @@ class FileStorageService:
         except ClientError:
             return False
 
-    def validate_image_file(self, file_content: bytes, filename: str) -> dict:
+    def validate_image_file(self, file_content: bytes, filename: str) -> dict[str, Any]:
         """
         Validate image file and return validation results.
 
@@ -381,7 +387,7 @@ class FileStorageService:
                 "file_info": None,
             }
 
-    async def list_files_by_prefix(self, prefix: str) -> list[dict]:
+    async def list_files_by_prefix(self, prefix: str) -> list[dict[str, Any]]:
         """
         List files in the bucket with a specific prefix.
 
@@ -402,7 +408,7 @@ class FileStorageService:
                 None, list_objects_func
             )
 
-            files = []
+            files: list[dict[str, Any]] = []
             for obj in response.get("Contents", []):
                 files.append(
                     {
@@ -420,7 +426,7 @@ class FileStorageService:
             logger.error(f"Failed to list files with prefix {prefix}: {e}")
             raise ValueError(f"Failed to list files: {e}") from e
 
-    async def get_file_metadata(self, s3_key: str) -> dict | None:
+    async def get_file_metadata(self, s3_key: str) -> dict[str, Any] | None:
         """
         Get metadata for a specific file.
 
@@ -484,7 +490,7 @@ class FileStorageService:
             logger.error(f"Failed to copy {source_key} to {destination_key}: {e}")
             raise ValueError(f"Failed to copy file: {e}") from e
 
-    async def get_bucket_usage(self) -> dict:
+    async def get_bucket_usage(self) -> dict[str, Any]:
         """
         Get bucket usage statistics.
 

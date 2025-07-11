@@ -24,7 +24,14 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from infrastructure.database import Base
 from modules.product_management.domain.entities.confidence_score import ConfidenceScore
 from modules.product_management.domain.entities.product import Product
+from modules.product_management.domain.entities.product_image import ProductImage
 from modules.product_management.domain.entities.product_status import ProductStatus
+from modules.product_management.domain.value_objects.product_image_metadata import (
+    ProductImageMetadata,
+)
+from modules.product_management.domain.value_objects.product_image_resolution import (
+    ProductImageResolution,
+)
 
 
 class ProductModel(Base):
@@ -255,6 +262,88 @@ class ProductImageModel(Base):
             if self.processed_at
             else None,
         }
+
+    def to_domain(self) -> ProductImage:
+        """Convert SQLAlchemy model to domain entity."""
+        # Create resolution value object
+        resolution = ProductImageResolution(
+            width=self.resolution_width, height=self.resolution_height
+        )
+
+        # Create metadata value object
+        metadata_dict = self.processing_metadata or {}
+        metadata = ProductImageMetadata(
+            ai_analysis=metadata_dict.get("ai_analysis", {}),
+            quality_score=metadata_dict.get("quality_score"),
+            sharpness_score=metadata_dict.get("sharpness_score"),
+            brightness_score=metadata_dict.get("brightness_score"),
+            contrast_score=metadata_dict.get("contrast_score"),
+            detected_objects=metadata_dict.get("detected_objects", []),
+            dominant_colors=metadata_dict.get("dominant_colors", []),
+            color_palette=metadata_dict.get("color_palette", []),
+            processing_steps=metadata_dict.get("processing_steps", []),
+            processing_errors=metadata_dict.get("processing_errors", []),
+            compression_ratio=metadata_dict.get("compression_ratio"),
+            file_hash=metadata_dict.get("file_hash"),
+        )
+
+        return ProductImage(
+            id=self.id,
+            product_id=self.product_id,
+            original_filename=self.original_filename,
+            s3_key=self.s3_key,
+            s3_url=self.s3_url,
+            original_s3_url=self.original_s3_url,
+            processed_s3_url=self.processed_s3_url,
+            file_size_bytes=self.file_size_bytes,
+            file_format=self.file_format,
+            resolution=resolution,
+            is_primary=self.is_primary,
+            metadata=metadata,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+            uploaded_at=self.uploaded_at,
+            processed_at=self.processed_at,
+        )
+
+    @classmethod
+    def from_domain(cls, image: ProductImage) -> "ProductImageModel":
+        """Create SQLAlchemy model from domain entity."""
+        # Convert metadata to dict for JSON storage
+        metadata_dict = {
+            "ai_analysis": image.metadata.ai_analysis,
+            "quality_score": image.metadata.quality_score,
+            "sharpness_score": image.metadata.sharpness_score,
+            "brightness_score": image.metadata.brightness_score,
+            "contrast_score": image.metadata.contrast_score,
+            "detected_objects": image.metadata.detected_objects,
+            "dominant_colors": image.metadata.dominant_colors,
+            "color_palette": image.metadata.color_palette,
+            "processing_steps": image.metadata.processing_steps,
+            "processing_errors": image.metadata.processing_errors,
+            "compression_ratio": image.metadata.compression_ratio,
+            "file_hash": image.metadata.file_hash,
+        }
+
+        return cls(
+            id=image.id,
+            product_id=image.product_id,
+            original_filename=image.original_filename,
+            s3_key=image.s3_key,
+            s3_url=image.s3_url,
+            original_s3_url=image.original_s3_url,
+            processed_s3_url=image.processed_s3_url,
+            file_size_bytes=image.file_size_bytes,
+            file_format=image.file_format,
+            resolution_width=image.resolution.width,
+            resolution_height=image.resolution.height,
+            is_primary=image.is_primary,
+            processing_metadata=metadata_dict,
+            created_at=image.created_at,
+            updated_at=image.updated_at,
+            uploaded_at=image.uploaded_at,
+            processed_at=image.processed_at,
+        )
 
     @classmethod
     def from_upload_data(

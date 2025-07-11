@@ -12,15 +12,12 @@ from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.user_management.domain.entities.ml_credentials import MLCredentials
-from modules.user_management.domain.ports.ml_credentials_repository_protocol import (
-    MLCredentialsRepositoryProtocol,
-)
 from modules.user_management.infrastructure.models.ml_credentials_model import (
     MLCredentialsModel,
 )
 
 
-class SQLAlchemyMLCredentialsRepository(MLCredentialsRepositoryProtocol):
+class SQLAlchemyMLCredentialsRepository:
     """
     SQLAlchemy implementation of ML credentials repository.
 

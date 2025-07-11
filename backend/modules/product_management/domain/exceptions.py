@@ -35,3 +35,24 @@ class ProductStatusTransitionError(ProductDomainError):
         super().__init__(message, product_id)
         self.current_status = current_status
         self.target_status = target_status
+
+
+class InvalidProductImageError(ProductDomainError):
+    """Raised when product image validation fails."""
+
+    def __init__(
+        self,
+        reason: str,
+        product_id: str | None = None,
+        image_id: str | None = None,
+        field_name: str | None = None,
+        field_value: str | None = None,
+    ) -> None:
+        message = f"Invalid product image: {reason}"
+        if image_id:
+            message += f" (image_id: {image_id})"
+        super().__init__(message, product_id)
+        self.reason = reason
+        self.image_id = image_id
+        self.field_name = field_name
+        self.field_value = field_value

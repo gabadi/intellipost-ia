@@ -41,6 +41,21 @@ Docstring Style: Google format for public APIs only
 ```
 
 ### Type Safety Requirements
+
+**Pyright Configuration: STRICT Mode**
+```toml
+typeCheckingMode = "strict"
+```
+
+**Architectural Decision:** We use pyright in `strict` mode to enforce the highest level of type safety from the start. This ensures:
+- All functions require complete type annotations
+- No unused imports or variables survive
+- Optional access is properly handled
+- Runtime type errors are caught at development time
+
+**Impact:** Code generation and development must meet strict typing standards from day one. This prevents technical debt accumulation and ensures consistent code quality.
+
+**Code Standards:**
 ```python
 # ✅ Required: Complete type annotations
 async def generate_listing(
@@ -54,6 +69,14 @@ async def generate_listing(
 # ❌ Forbidden: Missing types
 def process_data(input_data):
     return result
+
+# ❌ Forbidden: Unused imports (strict mode catches these)
+import unused_module  # Will fail type checking
+
+# ❌ Forbidden: Unused variables (strict mode catches these)
+def process_data(data: str) -> str:
+    unused_var = "temporary"  # Will fail type checking
+    return data.upper()
 ```
 
 ### Hexagonal Architecture Patterns (Go-Style + Static Duck-Typing)

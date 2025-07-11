@@ -7,18 +7,17 @@ as required by the story specifications.
 
 import asyncio
 import contextlib
-import logging
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from modules.user_management.domain.entities.ml_credentials import MLCredentials
+from modules.user_management.domain.ports.logging.protocols import UserLoggerProtocol
 from modules.user_management.domain.ports.ml_credentials_repository_protocol import (
     MLCredentialsRepositoryProtocol,
 )
 from modules.user_management.domain.ports.ml_oauth_service_protocol import (
     MLOAuthServiceProtocol,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class TokenRefreshScheduler:
@@ -33,6 +32,7 @@ class TokenRefreshScheduler:
         self,
         oauth_service: MLOAuthServiceProtocol,
         credentials_repository: MLCredentialsRepositoryProtocol,
+        logger: UserLoggerProtocol,
         refresh_interval_minutes: int = 30,  # Check every 30 minutes
     ):
         """
@@ -41,23 +41,25 @@ class TokenRefreshScheduler:
         Args:
             oauth_service: ML OAuth service for token refresh
             credentials_repository: Repository for finding credentials
+            logger: Logger protocol for logging operations
             refresh_interval_minutes: How often to check for tokens to refresh
         """
         self._oauth_service = oauth_service
         self._credentials_repository = credentials_repository
+        self._logger = logger
         self._refresh_interval = refresh_interval_minutes * 60  # Convert to seconds
         self._running = False
-        self._task: asyncio.Task | None = None
+        self._task: asyncio.Task[Any] | None = None
 
     async def start(self) -> None:
         """Start the token refresh scheduler."""
         if self._running:
-            logger.warning("Token refresh scheduler is already running")
+            self._logger.warning("Token refresh scheduler is already running")
             return
 
         self._running = True
         self._task = asyncio.create_task(self._run_scheduler())
-        logger.info("Token refresh scheduler started")
+        self._logger.info("Token refresh scheduler started")
 
     async def stop(self) -> None:
         """Stop the token refresh scheduler."""
@@ -71,7 +73,7 @@ class TokenRefreshScheduler:
                 await self._task
             self._task = None
 
-        logger.info("Token refresh scheduler stopped")
+        self._logger.info("Token refresh scheduler stopped")
 
     async def _run_scheduler(self) -> None:
         """Main scheduler loop."""
@@ -79,7 +81,7 @@ class TokenRefreshScheduler:
             try:
                 await self._refresh_expiring_tokens()
             except Exception as e:
-                logger.error(f"Error in token refresh scheduler: {e}")
+                self._logger.error(f"Error in token refresh scheduler: {e}")
 
             # Wait for the next check interval
             await asyncio.sleep(self._refresh_interval)
@@ -99,10 +101,10 @@ class TokenRefreshScheduler:
             )
 
             if not expiring_credentials:
-                logger.debug("No tokens need refreshing at this time")
+                self._logger.debug("No tokens need refreshing at this time")
                 return
 
-            logger.info(
+            self._logger.info(
                 f"Found {len(expiring_credentials)} credentials that need token refresh"
             )
 
@@ -116,13 +118,13 @@ class TokenRefreshScheduler:
                         await self._refresh_single_token(credentials)
                         refreshed_count += 1
                     else:
-                        logger.debug(
+                        self._logger.debug(
                             f"Skipping refresh for credential {credentials.id}"
                         )
 
                 except Exception as e:
                     failed_count += 1
-                    logger.error(
+                    self._logger.error(
                         f"Failed to refresh token for credential {credentials.id}: {e}"
                     )
 
@@ -131,17 +133,17 @@ class TokenRefreshScheduler:
                         credentials.mark_invalid(f"Automatic refresh failed: {e}")
                         await self._credentials_repository.save(credentials)
                     except Exception as save_error:
-                        logger.error(
+                        self._logger.error(
                             f"Failed to mark credential as invalid: {save_error}"
                         )
 
             if refreshed_count > 0 or failed_count > 0:
-                logger.info(
+                self._logger.info(
                     f"Token refresh completed: {refreshed_count} successful, {failed_count} failed"
                 )
 
         except Exception as e:
-            logger.error(f"Error finding expiring tokens: {e}")
+            self._logger.error(f"Error finding expiring tokens: {e}")
 
     async def _should_refresh_token(self, credentials: MLCredentials) -> bool:
         """
@@ -155,19 +157,21 @@ class TokenRefreshScheduler:
         """
         # Skip if refresh token is expired
         if credentials.is_refresh_token_expired:
-            logger.warning(f"Refresh token expired for credential {credentials.id}")
+            self._logger.warning(
+                f"Refresh token expired for credential {credentials.id}"
+            )
             return False
 
         # Skip if credential is marked as invalid
         if not credentials.ml_is_valid:
-            logger.debug(
+            self._logger.debug(
                 f"Credential {credentials.id} is marked as invalid, skipping refresh"
             )
             return False
 
         # Check if we're at the 5.5-hour refresh threshold
         if not credentials.should_refresh_token:
-            logger.debug(f"Credential {credentials.id} doesn't need refresh yet")
+            self._logger.debug(f"Credential {credentials.id} doesn't need refresh yet")
             return False
 
         return True
@@ -179,19 +183,19 @@ class TokenRefreshScheduler:
         Args:
             credentials: ML credentials to refresh
         """
-        logger.info(f"Refreshing tokens for credential {credentials.id}")
+        self._logger.info(f"Refreshing tokens for credential {credentials.id}")
 
         try:
             # Refresh the token
             updated_credentials = await self._oauth_service.refresh_token(credentials)
 
-            logger.info(
+            self._logger.info(
                 f"Successfully refreshed tokens for credential {credentials.id}. "
                 f"New expiry: {updated_credentials.ml_expires_at}"
             )
 
         except Exception as e:
-            logger.error(
+            self._logger.error(
                 f"Failed to refresh tokens for credential {credentials.id}: {e}"
             )
             raise
@@ -205,7 +209,7 @@ class TokenRefreshScheduler:
         """
         return await self._oauth_service.process_expired_tokens()
 
-    async def get_refresh_status(self) -> dict:
+    async def get_refresh_status(self) -> dict[str, Any]:
         """
         Get status information about token refresh.
 
@@ -238,7 +242,7 @@ class TokenRefreshScheduler:
             }
 
         except Exception as e:
-            logger.error(f"Error getting refresh status: {e}")
+            self._logger.error(f"Error getting refresh status: {e}")
             return {
                 "scheduler_running": self._running,
                 "error": str(e),
@@ -261,18 +265,22 @@ class TokenRefreshScheduler:
                 UUID(credential_id)
             )
             if not credentials:
-                logger.warning(f"Credential {credential_id} not found")
+                self._logger.warning(f"Credential {credential_id} not found")
                 return False
 
             if credentials.is_refresh_token_expired:
-                logger.warning(f"Refresh token expired for credential {credential_id}")
+                self._logger.warning(
+                    f"Refresh token expired for credential {credential_id}"
+                )
                 return False
 
             await self._refresh_single_token(credentials)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to force refresh credential {credential_id}: {e}")
+            self._logger.error(
+                f"Failed to force refresh credential {credential_id}: {e}"
+            )
             return False
 
     def is_running(self) -> bool:
@@ -284,6 +292,6 @@ class TokenRefreshScheduler:
         await self.start()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
         """Async context manager exit."""
         await self.stop()

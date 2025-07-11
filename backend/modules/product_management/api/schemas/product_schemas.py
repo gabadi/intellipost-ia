@@ -4,6 +4,8 @@ Product API schemas for request and response models.
 This module contains Pydantic models for product API endpoints.
 """
 
+from typing import Any
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -21,7 +23,7 @@ class ProductImageResponse(BaseModel):
     resolution_width: int
     resolution_height: int
     is_primary: bool
-    processing_metadata: dict | None = None
+    processing_metadata: dict[str, Any] | None = None
     created_at: str
     updated_at: str
     uploaded_at: str
@@ -80,7 +82,7 @@ class CreateProductRequest(BaseModel):
 
     @field_validator("prompt_text")
     @classmethod
-    def validate_prompt_text(cls, v):
+    def validate_prompt_text(cls, v: str) -> str:
         """Validate prompt text."""
         if not v or not v.strip():
             raise ValueError("Prompt text cannot be empty")
@@ -113,7 +115,7 @@ class ErrorResponse(BaseModel):
 
     error_code: str
     message: str
-    details: dict | None = None
+    details: dict[str, Any] | None = None
 
 
 class ValidationErrorResponse(BaseModel):
@@ -121,7 +123,7 @@ class ValidationErrorResponse(BaseModel):
 
     error_code: str = "VALIDATION_ERROR"
     message: str = "Request validation failed"
-    field_errors: list[dict]
+    field_errors: list[dict[str, Any]]
 
 
 class FileUploadError(BaseModel):

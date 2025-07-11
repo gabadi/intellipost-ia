@@ -10,13 +10,19 @@
   import MLConnectionModal from '$lib/components/ml/MLConnectionModal.svelte';
   import MLConnectionStatus from '$lib/components/ml/MLConnectionStatus.svelte';
   import { mlConnectionStore, isMLConnected } from '$lib/stores/ml-connection';
+  import { get } from 'svelte/store';
 
   // Component state
   let showConnectionModal = false;
   let selectedSiteId = 'MLA';
 
   // Reactive values
-  $: isConnected = $isMLConnected;
+  let isConnected = false;
+
+  // Use get() to avoid $ syntax issues with dependency-cruiser
+  $: {
+    isConnected = get(isMLConnected);
+  }
 
   // Initialize store on mount
   onMount(() => {

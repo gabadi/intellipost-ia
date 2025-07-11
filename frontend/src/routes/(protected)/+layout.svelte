@@ -8,9 +8,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page as pageStore } from '$app/stores';
   import { authStore } from '$lib/stores/auth';
   import LoadingSpinner from '$lib/components/ui/LoadingSpinner.svelte';
+  import { get } from 'svelte/store';
 
   let isInitialized = false;
 
@@ -27,7 +28,7 @@
 
     // If not authenticated, redirect to login
     if (!authState.isAuthenticated) {
-      const currentPath = $page.url.pathname;
+      const currentPath = get(pageStore).url.pathname;
       const loginUrl = `/auth/login${currentPath !== '/' ? `?redirect=${encodeURIComponent(currentPath)}` : ''}`;
       goto(loginUrl);
     }
@@ -36,7 +37,7 @@
   // Watch for auth state changes
   $: {
     if (isInitialized && !authState.isAuthenticated) {
-      const currentPath = $page.url.pathname;
+      const currentPath = get(pageStore).url.pathname;
       const loginUrl = `/auth/login${currentPath !== '/' ? `?redirect=${encodeURIComponent(currentPath)}` : ''}`;
       goto(loginUrl);
     }

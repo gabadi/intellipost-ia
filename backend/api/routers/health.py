@@ -2,6 +2,7 @@
 
 import time
 from datetime import UTC, datetime
+from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Response
@@ -47,8 +48,8 @@ async def detailed_health_check(
     response.headers["Access-Control-Allow-Headers"] = "*"
 
     timestamp = datetime.now(UTC).isoformat()
-    services = {}
-    ml_integration = None
+    services: dict[str, Any] = {}
+    ml_integration: dict[str, Any] = {}
     overall_status = "healthy"
 
     # Check database connectivity
@@ -65,17 +66,10 @@ async def detailed_health_check(
 
     # Check authentication service
     try:
+        from api.dependencies import create_jwt_service_for_health_check
         from infrastructure.config.settings import settings
-        from modules.user_management.infrastructure.services.jose_jwt_service import (
-            JoseJWTService,
-        )
 
-        jwt_service = JoseJWTService(
-            secret_key=settings.user_jwt_secret_key,
-            algorithm=settings.user_jwt_algorithm,
-            access_token_expire_minutes=settings.user_jwt_access_token_expire_minutes,
-            refresh_token_expire_days=settings.user_jwt_refresh_token_expire_days,
-        )
+        jwt_service = create_jwt_service_for_health_check(settings)
 
         # Test JWT service by creating a test token
         test_token = jwt_service.create_access_token(uuid4())
@@ -93,9 +87,7 @@ async def detailed_health_check(
 
     # Check ML integration status
     try:
-        from modules.user_management.infrastructure.services.ml_background_tasks import (
-            get_ml_background_status,
-        )
+        from api.dependencies import get_ml_background_status
 
         ml_status = await get_ml_background_status()
         ml_integration = {

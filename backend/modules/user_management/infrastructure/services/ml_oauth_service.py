@@ -9,6 +9,7 @@ import base64
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import UUID, uuid4
 
 from modules.user_management.domain.entities.ml_credentials import MLCredentials
@@ -21,7 +22,6 @@ from modules.user_management.domain.ports.ml_credentials_repository_protocol imp
 )
 from modules.user_management.domain.ports.ml_oauth_service_protocol import (
     ConnectionStatus,
-    MLOAuthServiceProtocol,
     OAuthFlowData,
 )
 from modules.user_management.infrastructure.services.credential_encryption_service import (
@@ -35,7 +35,7 @@ from modules.user_management.infrastructure.services.mercadolibre_api_client imp
 )
 
 
-class MLOAuthService(MLOAuthServiceProtocol):
+class MLOAuthService:
     """
     MercadoLibre OAuth service implementation.
 
@@ -69,7 +69,7 @@ class MLOAuthService(MLOAuthServiceProtocol):
         self._app_secret = app_secret
 
         # State storage for CSRF protection (in production, use Redis/cache)
-        self._state_storage: dict[str, dict] = {}
+        self._state_storage: dict[str, dict[str, Any]] = {}
 
     async def initiate_oauth_flow(
         self,

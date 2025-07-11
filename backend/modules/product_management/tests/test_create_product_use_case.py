@@ -43,15 +43,31 @@ def mock_file_storage_service():
 
 
 @pytest.fixture
-def create_product_use_case(mock_product_repository, mock_file_storage_service):
-    """Create CreateProductUseCase with mocked dependencies."""
-    return CreateProductUseCase(mock_product_repository, mock_file_storage_service)
+def mock_logger():
+    """Create mock logger."""
+    logger = Mock()
+    logger.info = Mock()
+    logger.error = Mock()
+    logger.warning = Mock()
+    logger.debug = Mock()
+    logger.critical = Mock()
+    return logger
 
 
 @pytest.fixture
-def get_products_use_case(mock_product_repository):
+def create_product_use_case(
+    mock_product_repository, mock_file_storage_service, mock_logger
+):
+    """Create CreateProductUseCase with mocked dependencies."""
+    return CreateProductUseCase(
+        mock_product_repository, mock_file_storage_service, mock_logger
+    )
+
+
+@pytest.fixture
+def get_products_use_case(mock_product_repository, mock_logger):
     """Create GetProductsUseCase with mocked dependencies."""
-    return GetProductsUseCase(mock_product_repository)
+    return GetProductsUseCase(mock_product_repository, mock_logger)
 
 
 @pytest.fixture
@@ -109,8 +125,18 @@ class TestCreateProductUseCase:
             "resolution_height": 1080,
         }
 
-        mock_image_record = Mock()
-        mock_image_record.id = uuid4()
+        mock_image_record = {
+            "id": uuid4(),
+            "product_id": uuid4(),
+            "original_filename": "test.jpg",
+            "s3_key": "products/user/product/test.jpg",
+            "s3_url": "https://bucket.s3.amazonaws.com/products/user/product/test.jpg",
+            "file_size_bytes": 1024,
+            "file_format": "jpg",
+            "resolution_width": 1920,
+            "resolution_height": 1080,
+            "is_primary": True,
+        }
         mock_product_repository.create_product_image.return_value = mock_image_record
 
         # Execute use case
@@ -266,8 +292,18 @@ class TestCreateProductUseCase:
             "resolution_height": 1080,
         }
 
-        mock_image_record = Mock()
-        mock_image_record.id = uuid4()
+        mock_image_record = {
+            "id": uuid4(),
+            "product_id": uuid4(),
+            "original_filename": "valid.jpg",
+            "s3_key": "test_key",
+            "s3_url": "test_url",
+            "file_size_bytes": 1024,
+            "file_format": "jpg",
+            "resolution_width": 1920,
+            "resolution_height": 1080,
+            "is_primary": True,
+        }
         mock_product_repository.create_product_image.return_value = mock_image_record
 
         # Execute use case

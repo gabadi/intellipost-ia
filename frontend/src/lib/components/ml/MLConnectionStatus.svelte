@@ -6,6 +6,7 @@
    */
 
   import { onMount, createEventDispatcher } from 'svelte';
+  import { get } from 'svelte/store';
   import {
     mlConnectionStore,
     isMLConnected,
@@ -38,9 +39,16 @@
 
   // Reactive values
   $: connectionState = $mlConnectionStore;
-  $: isConnected = $isMLConnected;
-  $: health = $mlConnectionHealth;
-  $: userInfo = $mlUserInfo;
+  let isConnected: boolean;
+  let health: any;
+  let userInfo: any;
+
+  // Use get() to avoid $ syntax issues with dependency-cruiser
+  $: {
+    isConnected = get(isMLConnected);
+    health = get(mlConnectionHealth);
+    userInfo = get(mlUserInfo);
+  }
   $: site = connectionState.mlSiteId ? ML_SITES[connectionState.mlSiteId] : null;
   $: healthLabel = CONNECTION_HEALTH_LABELS[health] || 'Unknown';
   $: healthColor = CONNECTION_HEALTH_COLORS[health] || 'neutral';

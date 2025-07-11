@@ -4,6 +4,11 @@
   "description": "IntelliPost AI - Intelligent social media posting platform",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": "22.17.0",
+    "npm": ">=8.19.0",
+    "python": ">=3.11"
+  },
   "workspaces": [
     "frontend"
   ],
@@ -20,6 +25,9 @@
     "format": "npm run format:backend && npm run format:frontend",
     "format:backend": "cd backend && uvx ruff format .",
     "format:frontend": "npm run format --workspace=frontend",
+    "format:fix": "npm run format:fix:backend && npm run format:fix:frontend",
+    "format:fix:backend": "cd backend && uvx ruff format . && uvx ruff check --fix .",
+    "format:fix:frontend": "npm run format:fix --workspace=frontend",
     "typecheck": "npm run typecheck:backend && npm run typecheck:frontend",
     "typecheck:backend": "cd backend && uv run pyright",
     "typecheck:frontend": "npm run check --workspace=frontend",
@@ -29,7 +37,7 @@
     "arch-check": "cd backend && uvx tach check",
     "security-check": "cd backend && uvx bandit -r modules/ infrastructure/ api/ --exclude='*/tests/*,*/test_*.py,*/fixtures/*' --skip=B101,B601",
     "quality": "npm run lint && npm run typecheck && npm run arch-check && npm run security-check",
-    "ci": "npm run install:all && npm run quality && npm run test",
+    "ci": "npm run install:all && npm run format:fix && npm run quality && npm run test",
     "install:backend": "cd backend && uv sync --group test",
     "install:frontend": "npm install --workspace=frontend",
     "install:all": "npm run install:backend && npm run install:frontend",
@@ -39,10 +47,6 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "python": ">=3.11"
   },
   "repository": {
     "type": "git",

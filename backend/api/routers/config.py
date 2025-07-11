@@ -36,7 +36,7 @@ def create_config_router(settings: Settings) -> APIRouter:
 
     def _get_config_warnings(settings: Settings) -> list[str]:
         """Get configuration warnings for production deployment."""
-        warnings = []
+        warnings: list[str] = []
 
         if settings.is_production:
             if not settings.ml_app_id:
