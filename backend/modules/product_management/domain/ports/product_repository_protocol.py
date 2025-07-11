@@ -5,7 +5,7 @@ This module defines Protocol interface for product data persistence operations,
 ensuring loose coupling between domain logic and infrastructure concerns.
 """
 
-from typing import Any, Protocol
+from typing import Protocol
 from uuid import UUID
 
 from modules.product_management.domain.entities.product import Product

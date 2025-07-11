@@ -84,7 +84,7 @@ depends_on = ["modules.product_management.domain"]
 # Product Management - Domain Layer (Pure business logic, can use shared value objects)
 [[modules]]
 path = "modules.product_management.domain"
-depends_on = []
+depends_on = ["shared"]
 
 # Product Management - Application Layer (Use cases, can only depend on domain)
 [[modules]]

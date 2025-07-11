@@ -29,6 +29,13 @@ from modules.content_generation.domain.ports.ai_service_protocols import (
     MLCategoryServiceProtocol,
     TitleGenerationServiceProtocol,
 )
+from modules.content_generation.domain.value_objects.category_results import (
+    CategoryAttributes,
+)
+from modules.content_generation.domain.value_objects.ml_attributes import MLAttributes
+from modules.content_generation.domain.value_objects.validation_results import (
+    ContentValidationResult,
+)
 from shared.value_objects import PriceRange
 
 
@@ -226,7 +233,7 @@ class ContentGenerationService:
     async def validate_content_quality(
         self,
         content: GeneratedContent,
-    ) -> dict[str, Any]:
+    ) -> ContentValidationResult:
         """
         Validate content quality and provide improvement suggestions.
 
@@ -234,20 +241,10 @@ class ContentGenerationService:
             content: Generated content to validate
 
         Returns:
-            Dict containing validation results and suggestions
+            ContentValidationResult containing validation results and suggestions
         """
         # Perform comprehensive validation
         validation_result = await self._content_validation_service.validate_content(
-            content
-        )
-
-        # Check MercadoLibre compliance
-        compliance_result = await self._content_validation_service.check_ml_compliance(
-            content
-        )
-
-        # Calculate quality score
-        quality_score = await self._content_validation_service.calculate_quality_score(
             content
         )
 
@@ -256,15 +253,29 @@ class ContentGenerationService:
             await self._content_validation_service.get_improvement_suggestions(content)
         )
 
-        return {
-            "is_valid": validation_result.get("is_valid", False),
-            "validation_errors": validation_result.get("errors", []),
-            "compliance_issues": compliance_result.get("issues", []),
-            "quality_score": quality_score,
-            "meets_threshold": quality_score >= self._quality_threshold,
-            "improvement_suggestions": suggestions,
-            "quality_indicators": content.get_quality_indicators(),
-        }
+        # Enhance with improvement suggestions if not already present
+        if suggestions and not validation_result.has_suggestions:
+            validation_result = validation_result.__class__(
+                valid=validation_result.valid,
+                validation_score=validation_result.validation_score,
+                content_quality_score=validation_result.content_quality_score,
+                readability_score=validation_result.readability_score,
+                grammar_score=validation_result.grammar_score,
+                validation_errors=validation_result.validation_errors,
+                validation_warnings=validation_result.validation_warnings,
+                validation_suggestions=suggestions,
+                word_count=validation_result.word_count,
+                character_count=validation_result.character_count,
+                sentence_count=validation_result.sentence_count,
+                seo_score=validation_result.seo_score,
+                keyword_density=validation_result.keyword_density,
+                title_optimization=validation_result.title_optimization,
+                validation_timestamp=validation_result.validation_timestamp,
+                validation_engine=validation_result.validation_engine,
+                validation_version=validation_result.validation_version,
+            )
+
+        return validation_result
 
     async def regenerate_content(
         self,
@@ -384,7 +395,7 @@ class ContentGenerationService:
         self,
         content: GeneratedContent,
         enhancement_data: EnhancementData,
-    ) -> dict[str, Any]:
+    ) -> MLAttributes:
         """Enhance the attributes of existing content."""
         # Convert enhancement data to ProductFeatures for compatibility
         if enhancement_data.custom_attributes:
@@ -400,16 +411,34 @@ class ContentGenerationService:
             category_id=content.ml_category_id,
         )
 
-        # Merge with existing attributes
+        # Merge with existing attributes if needed
         if hasattr(content.ml_attributes, "to_dict"):
             current_attributes = content.ml_attributes.to_dict()
-        else:
-            current_attributes = (
-                content.ml_attributes if isinstance(content.ml_attributes, dict) else {}
-            )
-        merged_attributes = {**current_attributes, **enhanced_attributes}
+            merged_dict = {
+                **current_attributes,
+                **enhanced_attributes.mapped_attributes,
+            }
 
-        return merged_attributes
+            # Create new MLAttributes with merged data
+            enhanced_attributes = MLAttributes(
+                category_id=enhanced_attributes.category_id,
+                mapped_attributes=merged_dict,
+                confidence_score=enhanced_attributes.confidence_score,
+                required_attributes=enhanced_attributes.required_attributes,
+                optional_attributes=enhanced_attributes.optional_attributes,
+                mapped_count=len(merged_dict),
+                missing_required=enhanced_attributes.missing_required,
+                completeness_score=enhanced_attributes.completeness_score,
+                accuracy_score=enhanced_attributes.accuracy_score,
+                relevance_score=enhanced_attributes.relevance_score,
+                mapping_warnings=enhanced_attributes.mapping_warnings,
+                mapping_suggestions=enhanced_attributes.mapping_suggestions,
+                mapping_timestamp=enhanced_attributes.mapping_timestamp,
+                mapping_engine=enhanced_attributes.mapping_engine,
+                mapping_version=enhanced_attributes.mapping_version,
+            )
+
+        return enhanced_attributes
 
     def _increment_version(self, content: GeneratedContent) -> int:
         """Increment the version number for regenerated content."""
@@ -418,8 +447,8 @@ class ContentGenerationService:
     async def validate_category_compatibility(
         self,
         category_id: str,
-        product_features: ProductFeatures | dict[str, Any],
-    ) -> dict[str, Any]:
+        product_features: ProductFeatures,
+    ) -> ContentValidationResult:
         """
         Validate if a category is compatible with product features.
 
@@ -428,12 +457,8 @@ class ContentGenerationService:
             product_features: Extracted product features
 
         Returns:
-            Dict containing validation results
+            ContentValidationResult containing validation results
         """
-        # Convert dict to ProductFeatures if needed
-        if isinstance(product_features, dict):
-            product_features = ProductFeatures.from_dict_legacy(product_features)
-
         return await self._ml_category_service.validate_category(
             category_id=category_id,
             product_features=product_features,
@@ -442,7 +467,7 @@ class ContentGenerationService:
     async def get_category_requirements(
         self,
         category_id: str,
-    ) -> dict[str, Any]:
+    ) -> CategoryAttributes:
         """
         Get requirements for a specific category.
 
@@ -450,7 +475,7 @@ class ContentGenerationService:
             category_id: MercadoLibre category ID
 
         Returns:
-            Dict containing category requirements
+            CategoryAttributes containing category requirements
         """
         return await self._ml_category_service.get_category_attributes(category_id)
 

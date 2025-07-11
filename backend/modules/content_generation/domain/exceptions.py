@@ -471,3 +471,30 @@ class EntityAlreadyExistsError(RepositoryError):
                 "entity_id": entity_id,
             }
         )
+
+
+class TypeSafetyViolationError(ContentGenerationError):
+    """Raised when type safety is violated in service layer."""
+
+    def __init__(
+        self,
+        message: str,
+        service_name: str,
+        method_name: str,
+        expected_type: str,
+        actual_type: str,
+        **kwargs: Any,
+    ):
+        super().__init__(message, **kwargs)
+        self.service_name = service_name
+        self.method_name = method_name
+        self.expected_type = expected_type
+        self.actual_type = actual_type
+        self.details.update(
+            {
+                "service_name": service_name,
+                "method_name": method_name,
+                "expected_type": expected_type,
+                "actual_type": actual_type,
+            }
+        )

@@ -204,7 +204,7 @@ class PriceRange(BaseValueObject):
         errors = []
 
         # Validate min_price
-        if not isinstance(self.min_price, (int, float)):
+        if not isinstance(self.min_price, int | float):
             errors.append(InvalidFieldTypeError("min_price", self.min_price, "float"))
         elif self.min_price < 0:
             errors.append(
@@ -214,7 +214,7 @@ class PriceRange(BaseValueObject):
             )
 
         # Validate max_price
-        if not isinstance(self.max_price, (int, float)):
+        if not isinstance(self.max_price, int | float):
             errors.append(InvalidFieldTypeError("max_price", self.max_price, "float"))
         elif self.max_price < 0:
             errors.append(
@@ -247,8 +247,8 @@ class PriceRange(BaseValueObject):
 
         # Validate min <= max
         if (
-            isinstance(self.min_price, (int, float))
-            and isinstance(self.max_price, (int, float))
+            isinstance(self.min_price, int | float)
+            and isinstance(self.max_price, int | float)
             and self.min_price > self.max_price
         ):
             errors.append(
@@ -267,14 +267,14 @@ class PriceRange(BaseValueObject):
     def validate_field(self, field_name: str, field_value: Any) -> None:
         """Validate a specific field."""
         if field_name == "min_price":
-            if not isinstance(field_value, (int, float)):
+            if not isinstance(field_value, int | float):
                 raise InvalidFieldTypeError(field_name, field_value, "float")
             if field_value < 0:
                 raise InvalidFieldValueError(
                     field_name, field_value, "Minimum price must be non-negative"
                 )
         elif field_name == "max_price":
-            if not isinstance(field_value, (int, float)):
+            if not isinstance(field_value, int | float):
                 raise InvalidFieldTypeError(field_name, field_value, "float")
             if field_value < 0:
                 raise InvalidFieldValueError(
@@ -375,7 +375,7 @@ class PriceRange(BaseValueObject):
         Returns:
             New PriceRange with expanded values
         """
-        if not isinstance(percentage, (int, float)) or percentage < 0:
+        if not isinstance(percentage, int | float) or percentage < 0:
             raise InvalidFieldValueError(
                 "percentage", percentage, "Percentage must be a non-negative number"
             )
@@ -421,12 +421,12 @@ class PriceRange(BaseValueObject):
         Returns:
             New PriceRange instance
         """
-        if not isinstance(price, (int, float)) or price < 0:
+        if not isinstance(price, int | float) or price < 0:
             raise InvalidFieldValueError(
                 "price", price, "Price must be a non-negative number"
             )
 
-        if not isinstance(variance_percentage, (int, float)) or variance_percentage < 0:
+        if not isinstance(variance_percentage, int | float) or variance_percentage < 0:
             raise InvalidFieldValueError(
                 "variance_percentage",
                 variance_percentage,

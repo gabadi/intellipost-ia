@@ -5,7 +5,7 @@ This module defines Protocol interfaces for AI-related services,
 ensuring loose coupling between domain logic and AI service implementations.
 """
 
-from typing import Any, Protocol
+from typing import Protocol
 from uuid import UUID
 
 from modules.content_generation.domain.entities.confidence_score import ConfidenceScore
@@ -14,10 +14,11 @@ from modules.content_generation.domain.entities.generated_content import (
 )
 from modules.content_generation.domain.entities.product_features import ProductFeatures
 from modules.content_generation.domain.value_objects.category_results import (
-    CategoryPredictionResult,
     CategoryAttributes,
     CategoryInfo,
+    CategoryPredictionResult,
 )
+from modules.content_generation.domain.value_objects.ml_attributes import MLAttributes
 from modules.content_generation.domain.value_objects.price_results import (
     PriceEstimationResult,
     TitleValidationResult,
@@ -57,7 +58,9 @@ class AIContentGeneratorProtocol(Protocol):
         """Calculate confidence scores for generated content."""
         ...
 
-    async def validate_content(self, content: GeneratedContent) -> ContentValidationResult:
+    async def validate_content(
+        self, content: GeneratedContent
+    ) -> ContentValidationResult:
         """Validate generated content against quality standards."""
         ...
 
@@ -165,7 +168,9 @@ class TitleGenerationServiceProtocol(Protocol):
         """Generate MercadoLibre-optimized title."""
         ...
 
-    async def validate_title(self, title: str, category_id: str) -> TitleValidationResult:
+    async def validate_title(
+        self, title: str, category_id: str
+    ) -> TitleValidationResult:
         """Validate title against MercadoLibre requirements."""
         ...
 
@@ -218,12 +223,12 @@ class AttributeMappingServiceProtocol(Protocol):
 
     async def map_attributes(
         self, product_features: ProductFeatures, category_id: str
-    ) -> dict[str, Any]:
+    ) -> MLAttributes:
         """Map product features to MercadoLibre attributes."""
         ...
 
     async def validate_attributes(
-        self, attributes: dict[str, Any], category_id: str
+        self, attributes: MLAttributes, category_id: str
     ) -> ContentValidationResult:
         """Validate attributes against MercadoLibre requirements."""
         ...
@@ -237,7 +242,7 @@ class AttributeMappingServiceProtocol(Protocol):
         ...
 
     async def calculate_attribute_confidence(
-        self, attributes: dict[str, Any], product_features: ProductFeatures
+        self, attributes: MLAttributes, product_features: ProductFeatures
     ) -> float:
         """Calculate confidence score for mapped attributes."""
         ...
@@ -246,11 +251,15 @@ class AttributeMappingServiceProtocol(Protocol):
 class ContentValidationServiceProtocol(Protocol):
     """Protocol for content validation services."""
 
-    async def validate_content(self, content: GeneratedContent) -> ContentValidationResult:
+    async def validate_content(
+        self, content: GeneratedContent
+    ) -> ContentValidationResult:
         """Validate generated content comprehensively."""
         ...
 
-    async def check_ml_compliance(self, content: GeneratedContent) -> MLComplianceResult:
+    async def check_ml_compliance(
+        self, content: GeneratedContent
+    ) -> MLComplianceResult:
         """Check if content complies with MercadoLibre policies."""
         ...
 

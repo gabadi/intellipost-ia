@@ -4,7 +4,6 @@ SQLAlchemy implementation of ProductRepositoryProtocol.
 This module provides PostgreSQL persistence for Product entities using SQLAlchemy.
 """
 
-from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
@@ -118,7 +117,7 @@ class SQLAlchemyProductRepository:
         self.session.add(image_model)
         await self.session.flush()
         await self.session.refresh(image_model)
-        
+
         # Return domain entity
         return image_model.to_domain()
 

@@ -267,10 +267,9 @@ class ProductImageModel(Base):
         """Convert SQLAlchemy model to domain entity."""
         # Create resolution value object
         resolution = ProductImageResolution(
-            width=self.resolution_width,
-            height=self.resolution_height
+            width=self.resolution_width, height=self.resolution_height
         )
-        
+
         # Create metadata value object
         metadata_dict = self.processing_metadata or {}
         metadata = ProductImageMetadata(
@@ -287,7 +286,7 @@ class ProductImageModel(Base):
             compression_ratio=metadata_dict.get("compression_ratio"),
             file_hash=metadata_dict.get("file_hash"),
         )
-        
+
         return ProductImage(
             id=self.id,
             product_id=self.product_id,
@@ -325,7 +324,7 @@ class ProductImageModel(Base):
             "compression_ratio": image.metadata.compression_ratio,
             "file_hash": image.metadata.file_hash,
         }
-        
+
         return cls(
             id=image.id,
             product_id=image.product_id,

@@ -41,12 +41,12 @@ class InvalidProductImageError(ProductDomainError):
     """Raised when product image validation fails."""
 
     def __init__(
-        self, 
-        reason: str, 
-        product_id: str | None = None, 
+        self,
+        reason: str,
+        product_id: str | None = None,
         image_id: str | None = None,
         field_name: str | None = None,
-        field_value: str | None = None
+        field_value: str | None = None,
     ) -> None:
         message = f"Invalid product image: {reason}"
         if image_id:

@@ -40,6 +40,9 @@ from modules.content_generation.domain.ports.logging.protocols import (
 from modules.content_generation.domain.services.value_object_migration_service import (
     ValueObjectMigrationService,
 )
+from modules.content_generation.domain.value_objects.category_results import (
+    CategoryPredictionResult,
+)
 from shared.value_objects import PriceRange
 
 
@@ -145,7 +148,7 @@ class GenerateContentUseCase:
             input_images=[img.s3_key for img in images],
             input_prompt=prompt,
             category_hint=category_hint,
-            price_range=price_range or {},
+            price_range=price_range,
             target_audience=target_audience,
             estimated_completion_seconds=30,
             created_at=datetime.now(UTC),
@@ -262,11 +265,11 @@ class GenerateContentUseCase:
 
         return {
             "content_id": str(content_id),
-            "is_valid": validation_results["is_valid"],
-            "validation_errors": validation_results["errors"],
-            "validation_warnings": validation_results["warnings"],
-            "is_compliant": compliance_results["is_compliant"],
-            "compliance_issues": compliance_results["issues"],
+            "is_valid": validation_results.valid,
+            "validation_errors": validation_results.validation_errors,
+            "validation_warnings": validation_results.validation_warnings,
+            "is_compliant": compliance_results.compliant,
+            "compliance_issues": compliance_results.policy_violations,
             "quality_score": quality_score,
             "meets_threshold": quality_score >= self.quality_threshold,
             "improvement_suggestions": suggestions,
@@ -374,7 +377,11 @@ class GenerateContentUseCase:
                     EntityNotFoundError,
                 )
 
-                raise EntityNotFoundError(f"Generated content not found: {content_id}")
+                raise EntityNotFoundError(
+                    f"Generated content not found: {content_id}",
+                    "GeneratedContent",
+                    str(content_id),
+                )
             return content
         except Exception as e:
             self.logger.error(f"Error getting generated content {content_id}: {e}")
@@ -423,25 +430,25 @@ class GenerateContentUseCase:
         # Step 4: Title Generation
         ai_generation.update_progress(ProcessingStep.TITLE_GENERATION, 50.0)
         title_info = await self._generate_title(
-            product_features, category_info["category_id"]
+            product_features, category_info.predicted_category.category_id
         )
 
         # Step 5: Description Generation
         ai_generation.update_progress(ProcessingStep.DESCRIPTION_GENERATION, 65.0)
         description_info = await self._generate_description(
-            product_features, category_info["category_id"]
+            product_features, category_info.predicted_category.category_id
         )
 
         # Step 6: Attribute Mapping
         ai_generation.update_progress(ProcessingStep.ATTRIBUTE_MAPPING, 75.0)
         attribute_info = await self._map_attributes(
-            product_features, category_info["category_id"]
+            product_features, category_info.predicted_category.category_id
         )
 
         # Step 7: Price Estimation
         ai_generation.update_progress(ProcessingStep.PRICE_ESTIMATION, 80.0)
         price_info = await self._estimate_price(
-            product_features, category_info["category_id"], price_range
+            product_features, category_info.predicted_category.category_id, price_range
         )
 
         # Step 8: Quality Validation
@@ -461,11 +468,14 @@ class GenerateContentUseCase:
             generated_content
         )
 
-        if not validation_results["is_valid"]:
+        if not validation_results.valid:
             raise InvalidContentError(
-                f"Generated content failed validation: {validation_results['errors']}",
+                f"Generated content failed validation: {validation_results.validation_errors}",
                 content_type="complete_listing",
-                validation_errors=validation_results["errors"],
+                validation_errors={
+                    f"error_{i}": err
+                    for i, err in enumerate(validation_results.validation_errors)
+                },
             )
 
         # Step 9: Content Finalization
@@ -526,7 +536,7 @@ class GenerateContentUseCase:
         self,
         product_features: ProductFeatures,
         category_hint: str | None = None,
-    ) -> dict[str, Any]:
+    ) -> CategoryPredictionResult:
         """Detect MercadoLibre category."""
         try:
             category_prediction = await self.category_service.predict_category(
@@ -535,30 +545,48 @@ class GenerateContentUseCase:
 
             # Validate category
             validation_results = await self.category_service.validate_category(
-                category_prediction["category_id"], product_features
+                category_prediction.predicted_category.category_id, product_features
             )
 
-            if not validation_results["is_valid"]:
+            if not validation_results.valid:
                 self.logger.warning(
-                    f"Category validation failed: {validation_results['validation_errors']}"
+                    f"Category validation failed: {validation_results.validation_errors}"
                 )
                 # Use fallback category
-                category_prediction = {
-                    "category_id": "MLA1144",  # Default to general electronics
-                    "category_name": "Electrónicos, Audio y Video",
-                    "confidence": 0.5,
-                }
+                from modules.content_generation.domain.value_objects.category_results import (
+                    CategoryInfo,
+                    CategoryPredictionResult,
+                )
+
+                fallback_category = CategoryInfo(
+                    category_id="MLA1144", category_name="Electrónicos, Audio y Video"
+                )
+                category_prediction = CategoryPredictionResult(
+                    predicted_category=fallback_category,
+                    confidence_score=0.5,
+                    prediction_quality="low",
+                    needs_human_review=True,
+                )
 
             return category_prediction
 
         except CategoryDetectionError as e:
             self.logger.error(f"Category detection failed: {e}")
             # Return default category
-            return {
-                "category_id": "MLA1144",
-                "category_name": "Electrónicos, Audio y Video",
-                "confidence": 0.3,
-            }
+            from modules.content_generation.domain.value_objects.category_results import (
+                CategoryInfo,
+                CategoryPredictionResult,
+            )
+
+            fallback_category = CategoryInfo(
+                category_id="MLA1144", category_name="Electrónicos, Audio y Video"
+            )
+            return CategoryPredictionResult(
+                predicted_category=fallback_category,
+                confidence_score=0.3,
+                prediction_quality="low",
+                needs_human_review=True,
+            )
 
     async def _generate_title(
         self,
@@ -701,26 +729,28 @@ class GenerateContentUseCase:
             )
 
             # Apply price range constraints if provided
+            estimated_price = float(price_estimation.estimated_price)
             if price_range:
-                min_price = price_range.min_price
-                max_price = price_range.max_price
+                min_price = float(price_range.min_price)
+                max_price = float(price_range.max_price)
 
-                estimated_price = price_estimation.get("estimated_price", 0)
                 if estimated_price < min_price:
                     estimated_price = min_price
                 elif estimated_price > max_price:
                     estimated_price = max_price
 
-                price_estimation["estimated_price"] = estimated_price
-
-            return price_estimation
+            return {
+                "estimated_price": estimated_price,
+                "confidence": price_estimation.confidence_score,
+                "reasoning": f"ML estimation with {price_estimation.model_version}",
+            }
 
         except Exception as e:
             self.logger.error(f"Price estimation failed: {e}")
             # Return fallback price
             fallback_price = 10000.0  # Default price in ARS
             if price_range:
-                fallback_price = price_range.min_price
+                fallback_price = float(price_range.min_price)
 
             return {
                 "estimated_price": fallback_price,
@@ -733,7 +763,7 @@ class GenerateContentUseCase:
         product_id: UUID,
         title_info: dict[str, Any],
         description_info: dict[str, Any],
-        category_info: dict[str, Any],
+        category_info: CategoryPredictionResult,
         attribute_info: dict[str, Any],
         price_info: dict[str, Any],
         product_features: ProductFeatures,
@@ -744,7 +774,7 @@ class GenerateContentUseCase:
         confidence_scores = {
             "title": title_info["confidence"],
             "description": description_info["confidence"],
-            "category": category_info["confidence"],
+            "category": category_info.confidence_score,
             "attributes": attribute_info["confidence"],
             "price": price_info["confidence"],
         }
@@ -757,8 +787,8 @@ class GenerateContentUseCase:
             product_id=product_id,
             title=title_info["title"],
             description=description_info["description"],
-            ml_category_id=category_info["category_id"],
-            ml_category_name=category_info["category_name"],
+            ml_category_id=category_info.predicted_category.category_id,
+            ml_category_name=category_info.predicted_category.category_name,
             ml_title=title_info["title"][:60],  # Ensure ML title fits limit
             ml_price=price_info["estimated_price"],
             ml_currency_id="ARS",
@@ -926,14 +956,30 @@ class GenerateContentUseCase:
             product_features, content.ml_category_id
         )
 
-        # Merge with existing attributes (convert to dict first if it's a value object)
+        # Merge with existing attributes
         if hasattr(content.ml_attributes, "to_dict"):
-            current_attributes = content.ml_attributes.to_dict()
+            current_attributes_dict = content.ml_attributes.to_dict()
         else:
-            current_attributes = (
+            current_attributes_dict = (
                 content.ml_attributes if isinstance(content.ml_attributes, dict) else {}
             )
-        merged_attributes = {**current_attributes, **enhanced_attributes}
+
+        # enhanced_attributes is already MLAttributes, get its dict representation
+        enhanced_attributes_dict = enhanced_attributes.to_dict()
+
+        # Merge attributes dictionaries
+        merged_attributes_dict = {**current_attributes_dict, **enhanced_attributes_dict}
+
+        # Convert to MLAttributes for the service call
+        from modules.content_generation.domain.value_objects.ml_attributes import (
+            MLAttributes,
+        )
+
+        merged_attributes = MLAttributes(
+            category_id=content.ml_category_id,
+            mapped_attributes=merged_attributes_dict,
+            confidence_score=0.8,  # Default confidence for merged attributes
+        )
 
         # Calculate new confidence
         attribute_confidence = (
@@ -958,7 +1004,7 @@ class GenerateContentUseCase:
             ml_condition=content.ml_condition,
             ml_listing_type_id=content.ml_listing_type_id,
             ml_attributes=self.migration_service.migrate_ml_attributes(
-                merged_attributes
+                merged_attributes.mapped_attributes
             ),
             ml_sale_terms=content.ml_sale_terms,
             ml_shipping=content.ml_shipping,

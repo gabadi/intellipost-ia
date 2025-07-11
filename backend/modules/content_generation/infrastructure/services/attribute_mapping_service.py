@@ -5,24 +5,27 @@ This module provides specialized attribute mapping for MercadoLibre categories,
 ensuring proper category-specific attribute detection and validation.
 """
 
-from dataclasses import dataclass
-from typing import Any, cast
+from dataclasses import dataclass, field
+from typing import Any
 
 from modules.content_generation.domain.entities import ProductFeatures
 from modules.content_generation.domain.exceptions import (
     AttributeMappingError,
     AttributeValidationError,
 )
-from modules.content_generation.domain.value_objects.ml_attributes import MLAttributes
-from modules.content_generation.domain.value_objects.validation_results import ContentValidationResult
 from modules.content_generation.domain.ports.logging.protocols import (
     ContentLoggerProtocol,
+)
+from modules.content_generation.domain.value_objects.ml_attributes import MLAttributes
+from modules.content_generation.domain.value_objects.validation_results import (
+    ContentValidationResult,
 )
 
 
 @dataclass(frozen=True)
 class AttributeValidationResult:
     """Internal attribute validation result data structure."""
+
     is_valid: bool
     error: str | None = None
 
@@ -30,6 +33,7 @@ class AttributeValidationResult:
 @dataclass(frozen=True)
 class AttributeInfo:
     """Internal attribute information data structure."""
+
     attribute_id: str
     attribute_type: str
     required: bool
@@ -41,6 +45,7 @@ class AttributeInfo:
 @dataclass(frozen=True)
 class CategoryAttributeInfo:
     """Internal category attribute information data structure."""
+
     category_id: str
     required_attributes: list[str]
     optional_attributes: list[str]
@@ -51,6 +56,7 @@ class CategoryAttributeInfo:
 @dataclass(frozen=True)
 class AttributeSuggestion:
     """Internal attribute suggestion data structure."""
+
     attribute_id: str
     suggestion_type: str
     suggested_value: str | None
@@ -60,6 +66,7 @@ class AttributeSuggestion:
 @dataclass(frozen=True)
 class AttributeValidationRules:
     """Attribute validation rules data structure."""
+
     attribute_type: str = "string"
     max_length: int | None = None
     required: bool = False
@@ -70,6 +77,7 @@ class AttributeValidationRules:
 @dataclass(frozen=True)
 class CategoryConfig:
     """Category configuration data structure."""
+
     required_attributes: list[str]
     optional_attributes: list[str]
     attribute_mappings: dict[str, str]
@@ -95,7 +103,12 @@ class AttributeMappingService:
         self.category_attributes: dict[str, CategoryConfig] = {
             "MLA1055": CategoryConfig(  # Celulares y Teléfonos
                 required_attributes=["BRAND", "MODEL", "OPERATING_SYSTEM"],
-                optional_attributes=["COLOR", "STORAGE_CAPACITY", "RAM_MEMORY", "SCREEN_SIZE"],
+                optional_attributes=[
+                    "COLOR",
+                    "STORAGE_CAPACITY",
+                    "RAM_MEMORY",
+                    "SCREEN_SIZE",
+                ],
                 attribute_mappings={
                     "brand": "BRAND",
                     "model": "MODEL",
@@ -108,7 +121,12 @@ class AttributeMappingService:
             ),
             "MLA1144": CategoryConfig(  # Cámaras y Accesorios
                 required_attributes=["BRAND", "MODEL", "CAMERA_TYPE"],
-                optional_attributes=["COLOR", "MEGAPIXELS", "OPTICAL_ZOOM", "DIGITAL_ZOOM"],
+                optional_attributes=[
+                    "COLOR",
+                    "MEGAPIXELS",
+                    "OPTICAL_ZOOM",
+                    "DIGITAL_ZOOM",
+                ],
                 attribute_mappings={
                     "brand": "BRAND",
                     "model": "MODEL",
@@ -157,7 +175,12 @@ class AttributeMappingService:
             ),
             "MLA1000": CategoryConfig(  # Electrónicos, Audio y Video
                 required_attributes=["BRAND", "MODEL"],
-                optional_attributes=["COLOR", "POWER_CONSUMPTION", "CONNECTIVITY", "FEATURES"],
+                optional_attributes=[
+                    "COLOR",
+                    "POWER_CONSUMPTION",
+                    "CONNECTIVITY",
+                    "FEATURES",
+                ],
                 attribute_mappings={
                     "brand": "BRAND",
                     "model": "MODEL",
@@ -338,7 +361,9 @@ class AttributeMappingService:
                     mapped_count=len(default_attributes),
                     missing_required=[],
                     completeness_score=0.3,
-                    mapping_warnings=["No category configuration found, using default mapping"],
+                    mapping_warnings=[
+                        "No category configuration found, using default mapping"
+                    ],
                 )
 
             mapped_attributes: dict[str, Any] = {}
@@ -371,9 +396,15 @@ class AttributeMappingService:
 
             # Calculate confidence and completeness scores
             total_required = len(required_attrs)
-            mapped_required = len([attr for attr in required_attrs if attr in validated_attributes])
-            completeness_score = mapped_required / total_required if total_required > 0 else 1.0
-            confidence_score = min(0.9, completeness_score + 0.1)  # Base confidence on completeness
+            mapped_required = len(
+                [attr for attr in required_attrs if attr in validated_attributes]
+            )
+            completeness_score = (
+                mapped_required / total_required if total_required > 0 else 1.0
+            )
+            confidence_score = min(
+                0.9, completeness_score + 0.1
+            )  # Base confidence on completeness
 
             # Create mapping warnings
             warnings = []
@@ -451,9 +482,7 @@ class AttributeMappingService:
             required_attrs = category_config.required_attributes
             for attr_id in required_attrs:
                 if attr_id not in attr_dict:
-                    validation_errors.append(
-                        f"Required attribute {attr_id} is missing"
-                    )
+                    validation_errors.append(f"Required attribute {attr_id} is missing")
                 else:
                     # Validate attribute value
                     attr_validation = self._validate_attribute_value(
@@ -483,8 +512,12 @@ class AttributeMappingService:
 
             # Calculate validation score based on completeness and errors
             is_valid = len(validation_errors) == 0
-            required_present = len([attr for attr in required_attrs if attr in attr_dict])
-            completeness = required_present / len(required_attrs) if required_attrs else 1.0
+            required_present = len(
+                [attr for attr in required_attrs if attr in attr_dict]
+            )
+            completeness = (
+                required_present / len(required_attrs) if required_attrs else 1.0
+            )
             validation_score = max(0.1, completeness - (len(validation_errors) * 0.1))
 
             return ContentValidationResult(
@@ -584,7 +617,7 @@ class AttributeMappingService:
             total_weight += weight
 
         calculated_confidence = confidence / total_weight if total_weight > 0 else 0.0
-        
+
         # Return weighted average of base confidence and calculated confidence
         return (base_confidence * 0.4) + (calculated_confidence * 0.6)
 
@@ -651,7 +684,7 @@ class AttributeMappingService:
         if rules:
             # Apply max length
             if rules.max_length and len(value) > rules.max_length:
-                value = value[:rules.max_length]
+                value = value[: rules.max_length]
 
             # Apply allowed values constraint
             if rules.allowed_values:
@@ -682,7 +715,9 @@ class AttributeMappingService:
 
         return validated_attributes
 
-    def _validate_attribute_value(self, attr_id: str, value: Any) -> AttributeValidationResult:
+    def _validate_attribute_value(
+        self, attr_id: str, value: Any
+    ) -> AttributeValidationResult:
         """Validate a single attribute value."""
         rules = self.attribute_validation_rules.get(attr_id)
 
@@ -698,7 +733,9 @@ class AttributeMappingService:
 
         # Check type
         if rules.attribute_type == "string" and not isinstance(value, str):
-            return AttributeValidationResult(is_valid=False, error=f"Attribute {attr_id} must be a string")
+            return AttributeValidationResult(
+                is_valid=False, error=f"Attribute {attr_id} must be a string"
+            )
 
         # Check max length
         if rules.max_length and len(str(value)) > rules.max_length:
@@ -793,7 +830,9 @@ class AttributeMappingService:
             validation_method=rules.validation_method,
         )
 
-    def get_category_attribute_info(self, category_id: str) -> CategoryAttributeInfo | None:
+    def get_category_attribute_info(
+        self, category_id: str
+    ) -> CategoryAttributeInfo | None:
         """Get attribute information for a specific category."""
         category_config = self.category_attributes.get(category_id)
         if not category_config:
@@ -804,7 +843,8 @@ class AttributeMappingService:
             required_attributes=category_config.required_attributes,
             optional_attributes=category_config.optional_attributes,
             attribute_mappings=category_config.attribute_mappings,
-            total_attributes=len(category_config.required_attributes) + len(category_config.optional_attributes),
+            total_attributes=len(category_config.required_attributes)
+            + len(category_config.optional_attributes),
         )
 
     def suggest_missing_attributes(

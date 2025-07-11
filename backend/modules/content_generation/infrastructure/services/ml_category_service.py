@@ -7,7 +7,7 @@ to detect and validate product categories, avoiding penalties from AI guessing.
 
 import asyncio
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlencode
 
@@ -21,80 +21,31 @@ from modules.content_generation.domain.exceptions import (
     ExternalServiceError,
     MercadoLibreAPIError,
 )
+from modules.content_generation.domain.ports.logging.protocols import (
+    ContentLoggerProtocol,
+)
 from modules.content_generation.domain.value_objects.category_results import (
     CategoryAttributes,
     CategoryInfo,
     CategoryPredictionResult,
 )
-from modules.content_generation.domain.value_objects.validation_results import ContentValidationResult
-from modules.content_generation.domain.ports.logging.protocols import (
-    ContentLoggerProtocol,
+from modules.content_generation.domain.value_objects.validation_results import (
+    ContentValidationResult,
 )
-
-
-@dataclass(frozen=True)
-class CategorySearchResult:
-    """Internal category search result data structure."""
-    category_id: str
-    category_name: str
-    probability: float
-    path_from_root: list[CategoryPathNode]
 
 
 @dataclass(frozen=True)
 class CategoryPathNode:
     """Category path node structure."""
+
     category_id: str
     category_name: str
-
-
-@dataclass(frozen=True)
-class CategoryDetailData:
-    """Internal category detail data structure."""
-    category_id: str
-    category_name: str
-    description: str | None = None
-    path_from_root: list[CategoryPathNode] = field(default_factory=list)
-    children_categories: list[CategoryPathNode] = field(default_factory=list)
-    settings: ServiceSettings = field(default_factory=ServiceSettings)
-    attribute_types: list[AttributeTypeInfo] = field(default_factory=list)
-    
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for legacy compatibility."""
-        return {
-            "id": self.category_id,
-            "name": self.category_name,
-            "description": self.description,
-            "path_from_root": [{"id": node.category_id, "name": node.category_name} for node in self.path_from_root],
-            "children_categories": [{"id": node.category_id, "name": node.category_name} for node in self.children_categories],
-            "settings": {
-                "cache_enabled": self.settings.cache_enabled,
-                "timeout_seconds": self.settings.timeout_seconds,
-                "max_retries": self.settings.max_retries,
-            },
-            "attribute_types": [
-                {
-                    "id": attr.attribute_id,
-                    "type": attr.value_type,
-                    "required": attr.required,
-                    "validation": attr.validation_rules
-                } for attr in self.attribute_types
-            ]
-        }
-
-
-@dataclass(frozen=True)
-class HTTPRequestData:
-    """Internal HTTP request data structure."""
-    method: str
-    url: str
-    params: dict[str, Any] | None = None
-    data: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
 class ServiceSettings:
     """Service configuration settings."""
+
     cache_enabled: bool = True
     timeout_seconds: int = 30
     max_retries: int = 3
@@ -105,10 +56,74 @@ class ServiceSettings:
 @dataclass(frozen=True)
 class AttributeTypeInfo:
     """Attribute type information structure."""
+
     attribute_id: str
     value_type: str
     required: bool = False
     validation_rules: dict[str, str] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class CategorySearchResult:
+    """Internal category search result data structure."""
+
+    category_id: str
+    category_name: str
+    probability: float
+    path_from_root: list[CategoryPathNode]
+
+
+@dataclass(frozen=True)
+class CategoryDetailData:
+    """Internal category detail data structure."""
+
+    category_id: str
+    category_name: str
+    description: str | None = None
+    path_from_root: list[CategoryPathNode] = field(default_factory=list)
+    children_categories: list[CategoryPathNode] = field(default_factory=list)
+    settings: ServiceSettings = field(default_factory=ServiceSettings)
+    attribute_types: list[AttributeTypeInfo] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for legacy compatibility."""
+        return {
+            "id": self.category_id,
+            "name": self.category_name,
+            "description": self.description,
+            "path_from_root": [
+                {"id": node.category_id, "name": node.category_name}
+                for node in self.path_from_root
+            ],
+            "children_categories": [
+                {"id": node.category_id, "name": node.category_name}
+                for node in self.children_categories
+            ],
+            "settings": {
+                "cache_enabled": self.settings.cache_enabled,
+                "timeout_seconds": self.settings.timeout_seconds,
+                "max_retries": self.settings.max_retries,
+            },
+            "attribute_types": [
+                {
+                    "id": attr.attribute_id,
+                    "type": attr.value_type,
+                    "required": attr.required,
+                    "validation": attr.validation_rules,
+                }
+                for attr in self.attribute_types
+            ],
+        }
+
+
+@dataclass(frozen=True)
+class HTTPRequestData:
+    """Internal HTTP request data structure."""
+
+    method: str
+    url: str
+    params: dict[str, Any] | None = None
+    data: dict[str, Any] | None = None
 
 
 class MLCategoryService:
@@ -196,7 +211,9 @@ class MLCategoryService:
                 self.logger.debug("Category prediction cache hit")
                 cached_result = self.prediction_cache[cache_key]
                 # Convert cached dict back to CategoryPredictionResult
-                return await self._dict_to_category_prediction_result(cached_result, product_features)
+                return await self._dict_to_category_prediction_result(
+                    cached_result, product_features
+                )
 
             # Search for categories based on product features
             search_results = await self._search_categories_by_features(product_features)
@@ -220,8 +237,10 @@ class MLCategoryService:
             )
 
             # Create CategoryInfo for predicted category
-            predicted_category = await self._create_category_info_from_dict(best_category.to_dict())
-            
+            predicted_category = await self._create_category_info_from_dict(
+                best_category.to_dict()
+            )
+
             # Create alternative predictions
             alternative_predictions = []
             for cat in top_candidates[1:3]:  # Top 2 alternatives
@@ -230,24 +249,29 @@ class MLCategoryService:
                     cat, product_features, search_results
                 )
                 alternative_predictions.append((alt_category, alt_confidence))
-            
+
             # Create feature importance mapping
             feature_importance = {}
             features_dict = product_features.to_dict_legacy()
             total_features = len(features_dict)
             if total_features > 0:
                 base_importance = 1.0 / total_features
-                for feature_name in features_dict.keys():
+                for feature_name in features_dict:
                     # Assign higher importance to core features
                     if feature_name in ["brand", "model", "category"]:
                         feature_importance[feature_name] = min(base_importance * 2, 1.0)
                     else:
                         feature_importance[feature_name] = base_importance
-            
+
             # Determine prediction quality
-            prediction_quality = "high" if confidence_score >= 0.8 else \
-                                "medium" if confidence_score >= 0.6 else "low"
-            
+            prediction_quality = (
+                "high"
+                if confidence_score >= 0.8
+                else "medium"
+                if confidence_score >= 0.6
+                else "low"
+            )
+
             # Create the result value object
             result = CategoryPredictionResult(
                 predicted_category=predicted_category,
@@ -258,14 +282,17 @@ class MLCategoryService:
                 feature_importance=feature_importance,
                 analyzed_attributes=CategoryAttributes(),  # Empty for now, will be populated later
                 prediction_quality=prediction_quality,
-                needs_human_review=confidence_score < 0.6
+                needs_human_review=confidence_score < 0.6,
             )
 
             # Cache the result (convert to dict for caching)
             cache_result = {
                 "category_id": best_category.category_id,
                 "category_name": best_category.category_name,
-                "category_path": [{"id": node.category_id, "name": node.category_name} for node in best_category.path_from_root],
+                "category_path": [
+                    {"id": node.category_id, "name": node.category_name}
+                    for node in best_category.path_from_root
+                ],
                 "confidence": confidence_score,
                 "alternatives": [
                     {
@@ -324,7 +351,9 @@ class MLCategoryService:
                     valid=False,
                     validation_score=0.0,
                     content_quality_score=0.0,
-                    validation_errors=["Category does not allow listings (not a leaf category)"],
+                    validation_errors=[
+                        "Category does not allow listings (not a leaf category)"
+                    ],
                     validation_engine="ml_category_service",
                 )
 
@@ -350,14 +379,20 @@ class MLCategoryService:
             )
 
             is_valid = len(validation_errors) == 0
-            validation_score = compatibility_score if is_valid else max(0.1, compatibility_score - 0.3)
+            validation_score = (
+                compatibility_score if is_valid else max(0.1, compatibility_score - 0.3)
+            )
 
             return ContentValidationResult(
                 valid=is_valid,
                 validation_score=validation_score,
                 content_quality_score=validation_score,
                 validation_errors=validation_errors,
-                validation_warnings=[f"Missing {len(missing_attributes)} required attributes"] if missing_attributes else [],
+                validation_warnings=[
+                    f"Missing {len(missing_attributes)} required attributes"
+                ]
+                if missing_attributes
+                else [],
                 validation_engine="ml_category_service",
             )
 
@@ -487,12 +522,18 @@ class MLCategoryService:
                     # Convert path_from_root to typed nodes
                     path_nodes = []
                     for path_item in result.get("path_from_root", []):
-                        if isinstance(path_item, dict) and "id" in path_item and "name" in path_item:
-                            path_nodes.append(CategoryPathNode(
-                                category_id=path_item["id"],
-                                category_name=path_item["name"]
-                            ))
-                    
+                        if (
+                            isinstance(path_item, dict)
+                            and "id" in path_item
+                            and "name" in path_item
+                        ):
+                            path_nodes.append(
+                                CategoryPathNode(
+                                    category_id=path_item["id"],
+                                    category_name=path_item["name"],
+                                )
+                            )
+
                     categories.append(
                         CategorySearchResult(
                             category_id=result.get("id", ""),
@@ -607,12 +648,14 @@ class MLCategoryService:
                     continue
 
                 # Convert CategoryInfo result to CategoryDetailData
-                if hasattr(result, 'category_id'):  # CategoryInfo object
+                if hasattr(result, "category_id"):  # CategoryInfo object
                     detailed_category = CategoryDetailData(
                         category_id=result.category_id,
                         category_name=result.category_name,
                         description=result.description,
-                        path_from_root=categories[i].path_from_root,  # Use search result path
+                        path_from_root=categories[
+                            i
+                        ].path_from_root,  # Use search result path
                     )
                 else:
                     # Fallback: create minimal CategoryDetailData
@@ -621,7 +664,7 @@ class MLCategoryService:
                         category_name=categories[i].category_name,
                         path_from_root=categories[i].path_from_root,
                     )
-                    
+
                 detailed_categories.append(detailed_category)
 
             return detailed_categories
@@ -684,7 +727,6 @@ class MLCategoryService:
         confidence += 0.1
 
         return min(confidence, 1.0)
-
 
     def _calculate_compatibility_score(
         self,
@@ -815,33 +857,39 @@ class MLCategoryService:
         """Async context manager exit."""
         await self.close()
 
-    async def _create_category_info_from_dict(self, category_dict: dict[str, Any]) -> CategoryInfo:
+    async def _create_category_info_from_dict(
+        self, category_dict: dict[str, Any]
+    ) -> CategoryInfo:
         """Create CategoryInfo value object from API response dict."""
         try:
             # Extract basic info
             category_id = category_dict.get("id", "")
             category_name = category_dict.get("name", "")
-            
+
             # Extract path information
             path_from_root = category_dict.get("path_from_root", [])
-            category_path = " > ".join([cat.get("name", "") for cat in path_from_root]) if path_from_root else None
-            
+            category_path = (
+                " > ".join([cat.get("name", "") for cat in path_from_root])
+                if path_from_root
+                else None
+            )
+
             # Determine parent and level
             parent_category_id = None
             level = 0
             if path_from_root and len(path_from_root) > 1:
                 parent_category_id = path_from_root[-2].get("id")
                 level = len(path_from_root) - 1
-            
+
             # Extract settings
-            settings = category_dict.get("settings", {})
+            category_dict.get("settings", {})
             is_leaf_category = not category_dict.get("children_categories", [])
-            
+
             # For now, we'll populate basic attributes
             # In a full implementation, we'd extract these from the ML API response
             allowed_attributes = []
             required_attributes = []
-            
+
             # Extract attributes from category data if available
             if "attribute_types" in category_dict:
                 for attr in category_dict["attribute_types"]:
@@ -850,7 +898,7 @@ class MLCategoryService:
                         allowed_attributes.append(attr_id)
                         if attr.get("required", False):
                             required_attributes.append(attr_id)
-            
+
             return CategoryInfo(
                 category_id=category_id,
                 category_name=category_name,
@@ -862,32 +910,36 @@ class MLCategoryService:
                 allowed_attributes=allowed_attributes,
                 required_attributes=required_attributes,
                 ml_category_id=category_id,
-                external_mappings={"mercadolibre": category_id}
+                external_mappings={"mercadolibre": category_id},
             )
-            
+
         except Exception as e:
             self.logger.error(f"Error creating CategoryInfo from dict: {e}")
             # Return a minimal valid CategoryInfo
             return CategoryInfo(
                 category_id=category_dict.get("id", "unknown"),
                 category_name=category_dict.get("name", "Unknown Category"),
-                is_leaf_category=True
+                is_leaf_category=True,
             )
 
-    async def _dict_to_category_attributes(self, attributes_dict: dict[str, Any]) -> CategoryAttributes:
+    async def _dict_to_category_attributes(
+        self, attributes_dict: dict[str, Any]
+    ) -> CategoryAttributes:
         """Convert API response dict to CategoryAttributes value object."""
         try:
-            from modules.content_generation.domain.value_objects.category_results import CategoryAttribute
-            
+            from modules.content_generation.domain.value_objects.category_results import (
+                CategoryAttribute,
+            )
+
             attributes = []
             api_attributes = attributes_dict.get("attributes", [])
-            
+
             for attr_data in api_attributes:
                 attr_id = attr_data.get("id", "")
                 attr_name = attr_data.get("name", attr_id)
                 attr_type = self._map_api_attribute_type(attr_data.get("type", "text"))
                 required = attr_data.get("required", False)
-                
+
                 # Create CategoryAttribute
                 category_attr = CategoryAttribute(
                     name=attr_name,
@@ -896,24 +948,21 @@ class MLCategoryService:
                     confidence=1.0,  # High confidence for official API attributes
                     importance_weight=0.8 if required else 0.5,
                     source="mercadolibre_api",
-                    extraction_method="api_call"
+                    extraction_method="api_call",
                 )
                 attributes.append(category_attr)
-            
+
             return CategoryAttributes(
-                attributes=attributes,
-                extraction_source="mercadolibre_api"
+                attributes=attributes, extraction_source="mercadolibre_api"
             )
-            
+
         except Exception as e:
             self.logger.error(f"Error creating CategoryAttributes from dict: {e}")
             # Return empty CategoryAttributes
             return CategoryAttributes(extraction_source="mercadolibre_api")
 
     async def _dict_to_category_prediction_result(
-        self, 
-        cached_dict: dict[str, Any], 
-        product_features: ProductFeatures
+        self, cached_dict: dict[str, Any], product_features: ProductFeatures
     ) -> CategoryPredictionResult:
         """Convert cached dict back to CategoryPredictionResult."""
         try:
@@ -921,20 +970,26 @@ class MLCategoryService:
             main_category_info = CategoryInfo(
                 category_id=cached_dict.get("category_id", ""),
                 category_name=cached_dict.get("category_name", ""),
-                category_path=" > ".join([cat["name"] for cat in cached_dict.get("category_path", [])]) if cached_dict.get("category_path") else None,
-                is_leaf_category=True  # Assume leaf category for predictions
+                category_path=" > ".join(
+                    [cat["name"] for cat in cached_dict.get("category_path", [])]
+                )
+                if cached_dict.get("category_path")
+                else None,
+                is_leaf_category=True,  # Assume leaf category for predictions
             )
-            
+
             # Create alternative predictions
             alternative_predictions = []
             for alt in cached_dict.get("alternatives", []):
                 alt_category_info = CategoryInfo(
                     category_id=alt.get("category_id", ""),
                     category_name=alt.get("category_name", ""),
-                    is_leaf_category=True
+                    is_leaf_category=True,
                 )
-                alternative_predictions.append((alt_category_info, alt.get("confidence", 0.0)))
-            
+                alternative_predictions.append(
+                    (alt_category_info, alt.get("confidence", 0.0))
+                )
+
             # Create feature importance from features used
             feature_importance = {}
             features_used = cached_dict.get("features_used", [])
@@ -942,11 +997,16 @@ class MLCategoryService:
                 base_importance = 1.0 / len(features_used)
                 for feature in features_used:
                     feature_importance[feature] = base_importance
-            
+
             confidence_score = cached_dict.get("confidence", 0.0)
-            prediction_quality = "high" if confidence_score >= 0.8 else \
-                                "medium" if confidence_score >= 0.6 else "low"
-            
+            prediction_quality = (
+                "high"
+                if confidence_score >= 0.8
+                else "medium"
+                if confidence_score >= 0.6
+                else "low"
+            )
+
             return CategoryPredictionResult(
                 predicted_category=main_category_info,
                 confidence_score=confidence_score,
@@ -956,33 +1016,35 @@ class MLCategoryService:
                 feature_importance=feature_importance,
                 analyzed_attributes=CategoryAttributes(),
                 prediction_quality=prediction_quality,
-                needs_human_review=confidence_score < 0.6
+                needs_human_review=confidence_score < 0.6,
             )
-            
+
         except Exception as e:
-            self.logger.error(f"Error converting cached dict to CategoryPredictionResult: {e}")
+            self.logger.error(
+                f"Error converting cached dict to CategoryPredictionResult: {e}"
+            )
             # Return a minimal valid result
             return CategoryPredictionResult(
                 predicted_category=CategoryInfo(
                     category_id="unknown",
                     category_name="Unknown Category",
-                    is_leaf_category=True
+                    is_leaf_category=True,
                 ),
                 confidence_score=0.0,
                 prediction_quality="unknown",
-                needs_human_review=True
+                needs_human_review=True,
             )
 
     def _map_api_attribute_type(self, api_type: str) -> str:
         """Map API attribute type to our standardized types."""
         type_mapping = {
             "string": "text",
-            "text": "text", 
+            "text": "text",
             "number": "numeric",
             "integer": "numeric",
             "float": "numeric",
             "boolean": "boolean",
             "list": "list",
-            "array": "list"
+            "array": "list",
         }
         return type_mapping.get(api_type.lower(), "text")
