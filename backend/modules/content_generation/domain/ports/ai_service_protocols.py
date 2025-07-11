@@ -13,6 +13,19 @@ from modules.content_generation.domain.entities.generated_content import (
     GeneratedContent,
 )
 from modules.content_generation.domain.entities.product_features import ProductFeatures
+from modules.content_generation.domain.value_objects.category_results import (
+    CategoryPredictionResult,
+    CategoryAttributes,
+    CategoryInfo,
+)
+from modules.content_generation.domain.value_objects.price_results import (
+    PriceEstimationResult,
+    TitleValidationResult,
+)
+from modules.content_generation.domain.value_objects.validation_results import (
+    ContentValidationResult,
+    MLComplianceResult,
+)
 from shared.value_objects import PriceRange
 
 
@@ -44,7 +57,7 @@ class AIContentGeneratorProtocol(Protocol):
         """Calculate confidence scores for generated content."""
         ...
 
-    async def validate_content(self, content: GeneratedContent) -> dict[str, Any]:
+    async def validate_content(self, content: GeneratedContent) -> ContentValidationResult:
         """Validate generated content against quality standards."""
         ...
 
@@ -74,7 +87,7 @@ class AIContentGeneratorProtocol(Protocol):
         product_features: ProductFeatures,
         category_id: str,
         condition: str = "new",
-    ) -> dict[str, Any]:
+    ) -> PriceEstimationResult:
         """Estimate product price based on features and category."""
         ...
 
@@ -90,21 +103,21 @@ class MLCategoryServiceProtocol(Protocol):
 
     async def predict_category(
         self, product_features: ProductFeatures, category_hint: str | None = None
-    ) -> dict[str, Any]:
+    ) -> CategoryPredictionResult:
         """Predict MercadoLibre category from product features."""
         ...
 
     async def validate_category(
         self, category_id: str, product_features: ProductFeatures
-    ) -> dict[str, Any]:
+    ) -> ContentValidationResult:
         """Validate if category is appropriate for product."""
         ...
 
-    async def get_category_attributes(self, category_id: str) -> dict[str, Any]:
+    async def get_category_attributes(self, category_id: str) -> CategoryAttributes:
         """Get required and optional attributes for a category."""
         ...
 
-    async def get_category_info(self, category_id: str) -> dict[str, Any]:
+    async def get_category_info(self, category_id: str) -> CategoryInfo:
         """Get detailed information about a category."""
         ...
 
@@ -152,7 +165,7 @@ class TitleGenerationServiceProtocol(Protocol):
         """Generate MercadoLibre-optimized title."""
         ...
 
-    async def validate_title(self, title: str, category_id: str) -> dict[str, Any]:
+    async def validate_title(self, title: str, category_id: str) -> TitleValidationResult:
         """Validate title against MercadoLibre requirements."""
         ...
 
@@ -183,7 +196,7 @@ class DescriptionGenerationServiceProtocol(Protocol):
 
     async def validate_description(
         self, description: str, category_id: str
-    ) -> dict[str, Any]:
+    ) -> ContentValidationResult:
         """Validate description against quality standards."""
         ...
 
@@ -211,7 +224,7 @@ class AttributeMappingServiceProtocol(Protocol):
 
     async def validate_attributes(
         self, attributes: dict[str, Any], category_id: str
-    ) -> dict[str, Any]:
+    ) -> ContentValidationResult:
         """Validate attributes against MercadoLibre requirements."""
         ...
 
@@ -233,11 +246,11 @@ class AttributeMappingServiceProtocol(Protocol):
 class ContentValidationServiceProtocol(Protocol):
     """Protocol for content validation services."""
 
-    async def validate_content(self, content: GeneratedContent) -> dict[str, Any]:
+    async def validate_content(self, content: GeneratedContent) -> ContentValidationResult:
         """Validate generated content comprehensively."""
         ...
 
-    async def check_ml_compliance(self, content: GeneratedContent) -> dict[str, Any]:
+    async def check_ml_compliance(self, content: GeneratedContent) -> MLComplianceResult:
         """Check if content complies with MercadoLibre policies."""
         ...
 

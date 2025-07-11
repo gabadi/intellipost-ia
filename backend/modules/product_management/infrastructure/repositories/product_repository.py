@@ -5,13 +5,20 @@ This module provides PostgreSQL persistence for Product entities using SQLAlchem
 """
 
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from modules.product_management.domain.entities.product import Product
+from modules.product_management.domain.entities.product_image import ProductImage
+from modules.product_management.domain.value_objects.product_image_metadata import (
+    ProductImageMetadata,
+)
+from modules.product_management.domain.value_objects.product_image_resolution import (
+    ProductImageResolution,
+)
 from modules.product_management.infrastructure.models.product_model import (
     ProductImageModel,
     ProductModel,
@@ -86,45 +93,36 @@ class SQLAlchemyProductRepository:
         s3_url: str,
         file_size_bytes: int,
         file_format: str,
-        resolution_width: int,
-        resolution_height: int,
+        resolution: ProductImageResolution,
         is_primary: bool = False,
-        processing_metadata: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
+        metadata: ProductImageMetadata | None = None,
+    ) -> ProductImage:
         """Create a new product image."""
-        image_model = ProductImageModel.from_upload_data(
+        # Create domain entity first
+        image_id = uuid4()
+        image = ProductImage.create_from_upload(
+            id=image_id,
             product_id=product_id,
             original_filename=original_filename,
             s3_key=s3_key,
             s3_url=s3_url,
             file_size_bytes=file_size_bytes,
             file_format=file_format,
-            resolution_width=resolution_width,
-            resolution_height=resolution_height,
+            resolution=resolution,
             is_primary=is_primary,
-            processing_metadata=processing_metadata,
+            metadata=metadata,
         )
 
+        # Convert to model and persist
+        image_model = ProductImageModel.from_domain(image)
         self.session.add(image_model)
         await self.session.flush()
         await self.session.refresh(image_model)
-        return {
-            "id": str(image_model.id),
-            "product_id": str(image_model.product_id),
-            "original_filename": image_model.original_filename,
-            "s3_key": image_model.s3_key,
-            "s3_url": image_model.s3_url,
-            "file_size_bytes": image_model.file_size_bytes,
-            "file_format": image_model.file_format,
-            "resolution_width": image_model.resolution_width,
-            "resolution_height": image_model.resolution_height,
-            "is_primary": image_model.is_primary,
-            "processing_metadata": image_model.processing_metadata,
-            "created_at": image_model.created_at.isoformat(),
-            "updated_at": image_model.updated_at.isoformat(),
-        }
+        
+        # Return domain entity
+        return image_model.to_domain()
 
-    async def get_product_images(self, product_id: UUID) -> list[dict[str, Any]]:
+    async def get_product_images(self, product_id: UUID) -> list[ProductImage]:
         """Get all images for a product."""
         stmt = (
             select(ProductImageModel)
@@ -135,24 +133,40 @@ class SQLAlchemyProductRepository:
         )
         result = await self.session.execute(stmt)
         image_models = result.scalars().all()
-        return [
-            {
-                "id": str(image_model.id),
-                "product_id": str(image_model.product_id),
-                "original_filename": image_model.original_filename,
-                "s3_key": image_model.s3_key,
-                "s3_url": image_model.s3_url,
-                "file_size_bytes": image_model.file_size_bytes,
-                "file_format": image_model.file_format,
-                "resolution_width": image_model.resolution_width,
-                "resolution_height": image_model.resolution_height,
-                "is_primary": image_model.is_primary,
-                "processing_metadata": image_model.processing_metadata,
-                "created_at": image_model.created_at.isoformat(),
-                "updated_at": image_model.updated_at.isoformat(),
-            }
-            for image_model in image_models
-        ]
+        return [image_model.to_domain() for image_model in image_models]
+
+    async def get_product_image_by_id(self, image_id: UUID) -> ProductImage | None:
+        """Get a specific product image by ID."""
+        stmt = select(ProductImageModel).where(ProductImageModel.id == image_id)
+        result = await self.session.execute(stmt)
+        image_model = result.scalar_one_or_none()
+        return image_model.to_domain() if image_model else None
+
+    async def update_product_image(self, image: ProductImage) -> ProductImage:
+        """Update an existing product image."""
+        stmt = select(ProductImageModel).where(ProductImageModel.id == image.id)
+        result = await self.session.execute(stmt)
+        image_model = result.scalar_one()
+
+        # Update model from domain entity
+        updated_model = ProductImageModel.from_domain(image)
+        image_model.original_filename = updated_model.original_filename
+        image_model.s3_key = updated_model.s3_key
+        image_model.s3_url = updated_model.s3_url
+        image_model.original_s3_url = updated_model.original_s3_url
+        image_model.processed_s3_url = updated_model.processed_s3_url
+        image_model.file_size_bytes = updated_model.file_size_bytes
+        image_model.file_format = updated_model.file_format
+        image_model.resolution_width = updated_model.resolution_width
+        image_model.resolution_height = updated_model.resolution_height
+        image_model.is_primary = updated_model.is_primary
+        image_model.processing_metadata = updated_model.processing_metadata
+        image_model.updated_at = updated_model.updated_at
+        image_model.processed_at = updated_model.processed_at
+
+        await self.session.flush()
+        await self.session.refresh(image_model)
+        return image_model.to_domain()
 
     async def set_primary_image(self, product_id: UUID, image_id: UUID) -> bool:
         """Set a specific image as primary for a product."""

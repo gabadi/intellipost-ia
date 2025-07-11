@@ -5,6 +5,7 @@ This module provides specialized attribute mapping for MercadoLibre categories,
 ensuring proper category-specific attribute detection and validation.
 """
 
+from dataclasses import dataclass
 from typing import Any, cast
 
 from modules.content_generation.domain.entities import ProductFeatures
@@ -12,9 +13,66 @@ from modules.content_generation.domain.exceptions import (
     AttributeMappingError,
     AttributeValidationError,
 )
+from modules.content_generation.domain.value_objects.ml_attributes import MLAttributes
+from modules.content_generation.domain.value_objects.validation_results import ContentValidationResult
 from modules.content_generation.domain.ports.logging.protocols import (
     ContentLoggerProtocol,
 )
+
+
+@dataclass(frozen=True)
+class AttributeValidationResult:
+    """Internal attribute validation result data structure."""
+    is_valid: bool
+    error: str | None = None
+
+
+@dataclass(frozen=True)
+class AttributeInfo:
+    """Internal attribute information data structure."""
+    attribute_id: str
+    attribute_type: str
+    required: bool
+    max_length: int | None = None
+    allowed_values: list[str] | None = None
+    validation_method: str | None = None
+
+
+@dataclass(frozen=True)
+class CategoryAttributeInfo:
+    """Internal category attribute information data structure."""
+    category_id: str
+    required_attributes: list[str]
+    optional_attributes: list[str]
+    attribute_mappings: dict[str, str]
+    total_attributes: int
+
+
+@dataclass(frozen=True)
+class AttributeSuggestion:
+    """Internal attribute suggestion data structure."""
+    attribute_id: str
+    suggestion_type: str
+    suggested_value: str | None
+    confidence: float
+
+
+@dataclass(frozen=True)
+class AttributeValidationRules:
+    """Attribute validation rules data structure."""
+    attribute_type: str = "string"
+    max_length: int | None = None
+    required: bool = False
+    allowed_values: list[str] = field(default_factory=list)
+    validation_method: str | None = None
+
+
+@dataclass(frozen=True)
+class CategoryConfig:
+    """Category configuration data structure."""
+    required_attributes: list[str]
+    optional_attributes: list[str]
+    attribute_mappings: dict[str, str]
 
 
 class AttributeMappingService:
@@ -34,11 +92,11 @@ class AttributeMappingService:
         self.logger = logger
 
         # MercadoLibre category attribute mappings
-        self.category_attributes: dict[str, dict[str, Any]] = {
-            "MLA1055": {  # Celulares y Teléfonos
-                "required": ["BRAND", "MODEL", "OPERATING_SYSTEM"],
-                "optional": ["COLOR", "STORAGE_CAPACITY", "RAM_MEMORY", "SCREEN_SIZE"],
-                "mappings": {
+        self.category_attributes: dict[str, CategoryConfig] = {
+            "MLA1055": CategoryConfig(  # Celulares y Teléfonos
+                required_attributes=["BRAND", "MODEL", "OPERATING_SYSTEM"],
+                optional_attributes=["COLOR", "STORAGE_CAPACITY", "RAM_MEMORY", "SCREEN_SIZE"],
+                attribute_mappings={
                     "brand": "BRAND",
                     "model": "MODEL",
                     "color": "COLOR",
@@ -47,11 +105,11 @@ class AttributeMappingService:
                     "screen_size": "SCREEN_SIZE",
                     "os": "OPERATING_SYSTEM",
                 },
-            },
-            "MLA1144": {  # Cámaras y Accesorios
-                "required": ["BRAND", "MODEL", "CAMERA_TYPE"],
-                "optional": ["COLOR", "MEGAPIXELS", "OPTICAL_ZOOM", "DIGITAL_ZOOM"],
-                "mappings": {
+            ),
+            "MLA1144": CategoryConfig(  # Cámaras y Accesorios
+                required_attributes=["BRAND", "MODEL", "CAMERA_TYPE"],
+                optional_attributes=["COLOR", "MEGAPIXELS", "OPTICAL_ZOOM", "DIGITAL_ZOOM"],
+                attribute_mappings={
                     "brand": "BRAND",
                     "model": "MODEL",
                     "color": "COLOR",
@@ -59,11 +117,11 @@ class AttributeMappingService:
                     "zoom": "OPTICAL_ZOOM",
                     "type": "CAMERA_TYPE",
                 },
-            },
-            "MLA1430": {  # Ropa y Accesorios
-                "required": ["BRAND", "GENDER", "SIZE"],
-                "optional": ["COLOR", "MATERIAL", "SEASON", "STYLE"],
-                "mappings": {
+            ),
+            "MLA1430": CategoryConfig(  # Ropa y Accesorios
+                required_attributes=["BRAND", "GENDER", "SIZE"],
+                optional_attributes=["COLOR", "MATERIAL", "SEASON", "STYLE"],
+                attribute_mappings={
                     "brand": "BRAND",
                     "gender": "GENDER",
                     "size": "SIZE",
@@ -72,11 +130,11 @@ class AttributeMappingService:
                     "season": "SEASON",
                     "style": "STYLE",
                 },
-            },
-            "MLA1276": {  # Hogar, Muebles y Jardín
-                "required": ["BRAND", "ITEM_CONDITION"],
-                "optional": ["COLOR", "MATERIAL", "DIMENSIONS", "WEIGHT"],
-                "mappings": {
+            ),
+            "MLA1276": CategoryConfig(  # Hogar, Muebles y Jardín
+                required_attributes=["BRAND", "ITEM_CONDITION"],
+                optional_attributes=["COLOR", "MATERIAL", "DIMENSIONS", "WEIGHT"],
+                attribute_mappings={
                     "brand": "BRAND",
                     "condition": "ITEM_CONDITION",
                     "color": "COLOR",
@@ -84,11 +142,11 @@ class AttributeMappingService:
                     "dimensions": "DIMENSIONS",
                     "weight": "WEIGHT",
                 },
-            },
-            "MLA1168": {  # Deportes y Fitness
-                "required": ["BRAND", "SPORT_TYPE"],
-                "optional": ["COLOR", "SIZE", "MATERIAL", "GENDER"],
-                "mappings": {
+            ),
+            "MLA1168": CategoryConfig(  # Deportes y Fitness
+                required_attributes=["BRAND", "SPORT_TYPE"],
+                optional_attributes=["COLOR", "SIZE", "MATERIAL", "GENDER"],
+                attribute_mappings={
                     "brand": "BRAND",
                     "sport": "SPORT_TYPE",
                     "color": "COLOR",
@@ -96,11 +154,11 @@ class AttributeMappingService:
                     "material": "MATERIAL",
                     "gender": "GENDER",
                 },
-            },
-            "MLA1000": {  # Electrónicos, Audio y Video
-                "required": ["BRAND", "MODEL"],
-                "optional": ["COLOR", "POWER_CONSUMPTION", "CONNECTIVITY", "FEATURES"],
-                "mappings": {
+            ),
+            "MLA1000": CategoryConfig(  # Electrónicos, Audio y Video
+                required_attributes=["BRAND", "MODEL"],
+                optional_attributes=["COLOR", "POWER_CONSUMPTION", "CONNECTIVITY", "FEATURES"],
+                attribute_mappings={
                     "brand": "BRAND",
                     "model": "MODEL",
                     "color": "COLOR",
@@ -108,27 +166,27 @@ class AttributeMappingService:
                     "connectivity": "CONNECTIVITY",
                     "features": "FEATURES",
                 },
-            },
+            ),
         }
 
         # Attribute validation rules
-        self.attribute_validation_rules: dict[str, dict[str, Any]] = {
-            "BRAND": {
-                "type": "string",
-                "max_length": 50,
-                "required": True,
-                "validation": "brand_validation",
-            },
-            "MODEL": {
-                "type": "string",
-                "max_length": 100,
-                "required": True,
-                "validation": "model_validation",
-            },
-            "COLOR": {
-                "type": "string",
-                "max_length": 30,
-                "allowed_values": [
+        self.attribute_validation_rules: dict[str, AttributeValidationRules] = {
+            "BRAND": AttributeValidationRules(
+                attribute_type="string",
+                max_length=50,
+                required=True,
+                validation_method="brand_validation",
+            ),
+            "MODEL": AttributeValidationRules(
+                attribute_type="string",
+                max_length=100,
+                required=True,
+                validation_method="model_validation",
+            ),
+            "COLOR": AttributeValidationRules(
+                attribute_type="string",
+                max_length=30,
+                allowed_values=[
                     "Negro",
                     "Blanco",
                     "Gris",
@@ -143,26 +201,26 @@ class AttributeMappingService:
                     "Dorado",
                     "Plateado",
                 ],
-                "validation": "color_validation",
-            },
-            "SIZE": {
-                "type": "string",
-                "max_length": 20,
-                "validation": "size_validation",
-            },
-            "MATERIAL": {
-                "type": "string",
-                "max_length": 50,
-                "validation": "material_validation",
-            },
-            "ITEM_CONDITION": {
-                "type": "string",
-                "allowed_values": ["Nuevo", "Usado", "Reacondicionado"],
-                "validation": "condition_validation",
-            },
-            "STORAGE_CAPACITY": {
-                "type": "string",
-                "allowed_values": [
+                validation_method="color_validation",
+            ),
+            "SIZE": AttributeValidationRules(
+                attribute_type="string",
+                max_length=20,
+                validation_method="size_validation",
+            ),
+            "MATERIAL": AttributeValidationRules(
+                attribute_type="string",
+                max_length=50,
+                validation_method="material_validation",
+            ),
+            "ITEM_CONDITION": AttributeValidationRules(
+                attribute_type="string",
+                allowed_values=["Nuevo", "Usado", "Reacondicionado"],
+                validation_method="condition_validation",
+            ),
+            "STORAGE_CAPACITY": AttributeValidationRules(
+                attribute_type="string",
+                allowed_values=[
                     "16 GB",
                     "32 GB",
                     "64 GB",
@@ -171,11 +229,11 @@ class AttributeMappingService:
                     "512 GB",
                     "1 TB",
                 ],
-                "validation": "storage_validation",
-            },
-            "RAM_MEMORY": {
-                "type": "string",
-                "allowed_values": [
+                validation_method="storage_validation",
+            ),
+            "RAM_MEMORY": AttributeValidationRules(
+                attribute_type="string",
+                allowed_values=[
                     "1 GB",
                     "2 GB",
                     "3 GB",
@@ -185,13 +243,13 @@ class AttributeMappingService:
                     "12 GB",
                     "16 GB",
                 ],
-                "validation": "memory_validation",
-            },
-            "OPERATING_SYSTEM": {
-                "type": "string",
-                "allowed_values": ["Android", "iOS", "Windows", "Otro"],
-                "validation": "os_validation",
-            },
+                validation_method="memory_validation",
+            ),
+            "OPERATING_SYSTEM": AttributeValidationRules(
+                attribute_type="string",
+                allowed_values=["Android", "iOS", "Windows", "Otro"],
+                validation_method="os_validation",
+            ),
         }
 
         # Common attribute value mappings
@@ -249,7 +307,7 @@ class AttributeMappingService:
         self,
         product_features: ProductFeatures,
         category_id: str,
-    ) -> dict[str, Any]:
+    ) -> MLAttributes:
         """
         Map product features to MercadoLibre attributes.
 
@@ -258,7 +316,7 @@ class AttributeMappingService:
             category_id: MercadoLibre category ID
 
         Returns:
-            Dict containing mapped attributes
+            MLAttributes containing mapped attributes
 
         Raises:
             AttributeMappingError: If attribute mapping fails
@@ -270,13 +328,25 @@ class AttributeMappingService:
                 self.logger.warning(
                     f"No attribute mapping found for category: {category_id}"
                 )
-                return self._create_default_attributes(product_features)
+                default_attributes = self._create_default_attributes(product_features)
+                return MLAttributes(
+                    category_id=category_id,
+                    mapped_attributes=default_attributes,
+                    confidence_score=0.3,  # Low confidence for default mapping
+                    required_attributes=[],
+                    optional_attributes=[],
+                    mapped_count=len(default_attributes),
+                    missing_required=[],
+                    completeness_score=0.3,
+                    mapping_warnings=["No category configuration found, using default mapping"],
+                )
 
             mapped_attributes: dict[str, Any] = {}
+            missing_required: list[str] = []
 
             # Map required attributes
-            required_attrs = cast("list[str]", category_config["required"])
-            mappings = cast("dict[str, str]", category_config["mappings"])
+            required_attrs = category_config.required_attributes
+            mappings = category_config.attribute_mappings
             for attr_id in required_attrs:
                 value = self._extract_attribute_value(
                     attr_id, product_features, mappings
@@ -284,10 +354,11 @@ class AttributeMappingService:
                 if value:
                     mapped_attributes[attr_id] = value
                 else:
+                    missing_required.append(attr_id)
                     self.logger.warning(f"Missing required attribute: {attr_id}")
 
             # Map optional attributes
-            optional_attrs = cast("list[str]", category_config["optional"])
+            optional_attrs = category_config.optional_attributes
             for attr_id in optional_attrs:
                 value = self._extract_attribute_value(
                     attr_id, product_features, mappings
@@ -298,11 +369,34 @@ class AttributeMappingService:
             # Validate all mapped attributes
             validated_attributes = self._validate_mapped_attributes(mapped_attributes)
 
+            # Calculate confidence and completeness scores
+            total_required = len(required_attrs)
+            mapped_required = len([attr for attr in required_attrs if attr in validated_attributes])
+            completeness_score = mapped_required / total_required if total_required > 0 else 1.0
+            confidence_score = min(0.9, completeness_score + 0.1)  # Base confidence on completeness
+
+            # Create mapping warnings
+            warnings = []
+            if missing_required:
+                warnings.append(f"Missing {len(missing_required)} required attributes")
+
             self.logger.info(
                 f"Mapped {len(validated_attributes)} attributes for category {category_id}"
             )
 
-            return validated_attributes
+            return MLAttributes(
+                category_id=category_id,
+                mapped_attributes=validated_attributes,
+                confidence_score=confidence_score,
+                required_attributes=required_attrs,
+                optional_attributes=optional_attrs,
+                mapped_count=len(validated_attributes),
+                missing_required=missing_required,
+                completeness_score=completeness_score,
+                accuracy_score=0.8,  # Fixed score, could be enhanced with validation
+                relevance_score=0.8,  # Fixed score, could be enhanced with validation
+                mapping_warnings=warnings,
+            )
 
         except Exception as e:
             self.logger.error(
@@ -316,24 +410,24 @@ class AttributeMappingService:
 
     async def validate_attributes(
         self,
-        attributes: dict[str, Any],
+        attributes: MLAttributes,
         category_id: str,
-    ) -> dict[str, Any]:
+    ) -> ContentValidationResult:
         """
         Validate attributes against MercadoLibre requirements.
 
         Args:
-            attributes: Attributes to validate
+            attributes: MLAttributes to validate
             category_id: MercadoLibre category ID
 
         Returns:
-            Dict containing validation results
+            ContentValidationResult containing validation results
 
         Raises:
             AttributeValidationError: If validation fails
         """
         try:
-            validation_errors: dict[str, str] = {}
+            validation_errors: list[str] = []
             warnings: list[str] = []
 
             # Get category configuration
@@ -342,60 +436,65 @@ class AttributeMappingService:
                 warnings.append(
                     f"No validation rules found for category: {category_id}"
                 )
-                return {
-                    "is_valid": True,
-                    "validation_errors": validation_errors,
-                    "warnings": warnings,
-                }
+                return ContentValidationResult(
+                    valid=True,
+                    validation_score=0.7,
+                    content_quality_score=0.7,
+                    validation_warnings=warnings,
+                    validation_engine="attribute_mapping_service",
+                )
+
+            # Use the mapped attributes from the MLAttributes object
+            attr_dict = attributes.mapped_attributes
 
             # Validate required attributes
-            required_attrs = cast("list[str]", category_config["required"])
+            required_attrs = category_config.required_attributes
             for attr_id in required_attrs:
-                if attr_id not in attributes:
-                    validation_errors[attr_id] = (
+                if attr_id not in attr_dict:
+                    validation_errors.append(
                         f"Required attribute {attr_id} is missing"
                     )
                 else:
                     # Validate attribute value
                     attr_validation = self._validate_attribute_value(
-                        attr_id, attributes[attr_id]
+                        attr_id, attr_dict[attr_id]
                     )
-                    if not attr_validation["is_valid"]:
-                        validation_errors[attr_id] = attr_validation["error"]
+                    if not attr_validation.is_valid:
+                        validation_errors.append(f"{attr_id}: {attr_validation.error}")
 
             # Validate optional attributes
-            optional_attrs = cast("list[str]", category_config["optional"])
+            optional_attrs = category_config.optional_attributes
             for attr_id in optional_attrs:
-                if attr_id in attributes:
+                if attr_id in attr_dict:
                     attr_validation = self._validate_attribute_value(
-                        attr_id, attributes[attr_id]
+                        attr_id, attr_dict[attr_id]
                     )
-                    if not attr_validation["is_valid"]:
-                        validation_errors[attr_id] = attr_validation["error"]
+                    if not attr_validation.is_valid:
+                        validation_errors.append(f"{attr_id}: {attr_validation.error}")
 
             # Check for unknown attributes
-            required_attrs = cast("list[str]", category_config["required"])
-            optional_attrs = cast("list[str]", category_config["optional"])
             known_attributes = set(required_attrs + optional_attrs)
-            unknown_attributes = set(attributes.keys()) - known_attributes
+            unknown_attributes = set(attr_dict.keys()) - known_attributes
 
             if unknown_attributes:
                 warnings.append(
                     f"Unknown attributes: {', '.join(list(unknown_attributes))}"
                 )
 
-            return {
-                "is_valid": len(validation_errors) == 0,
-                "validation_errors": validation_errors,
-                "warnings": warnings,
-                "validated_attributes": len(attributes),
-                "required_attributes_present": len(
-                    [attr for attr in required_attrs if attr in attributes]
-                ),
-                "optional_attributes_present": len(
-                    [attr for attr in optional_attrs if attr in attributes]
-                ),
-            }
+            # Calculate validation score based on completeness and errors
+            is_valid = len(validation_errors) == 0
+            required_present = len([attr for attr in required_attrs if attr in attr_dict])
+            completeness = required_present / len(required_attrs) if required_attrs else 1.0
+            validation_score = max(0.1, completeness - (len(validation_errors) * 0.1))
+
+            return ContentValidationResult(
+                valid=is_valid,
+                validation_score=validation_score,
+                content_quality_score=validation_score,
+                validation_errors=validation_errors,
+                validation_warnings=warnings,
+                validation_engine="attribute_mapping_service",
+            )
 
         except Exception as e:
             self.logger.error(
@@ -426,7 +525,7 @@ class AttributeMappingService:
         if not category_config:
             return []
 
-        return cast("list[str]", category_config["required"])
+        return category_config.required_attributes
 
     async def get_optional_attributes(
         self,
@@ -445,42 +544,49 @@ class AttributeMappingService:
         if not category_config:
             return []
 
-        return cast("list[str]", category_config["optional"])
+        return category_config.optional_attributes
 
     async def calculate_attribute_confidence(
         self,
-        attributes: dict[str, Any],
+        attributes: MLAttributes,
         product_features: ProductFeatures,
     ) -> float:
         """
         Calculate confidence score for mapped attributes.
 
         Args:
-            attributes: Mapped attributes
+            attributes: MLAttributes containing mapped attributes
             product_features: Original product features
 
         Returns:
             Confidence score (0.0 to 1.0)
         """
-        if not attributes:
+        # Use the confidence score already calculated in MLAttributes
+        # but enhance it with product features analysis
+        base_confidence = attributes.confidence_score
+
+        if not attributes.mapped_attributes:
             return 0.0
 
         confidence = 0.0
         total_weight = 0.0
 
-        for attr_id, attr_value in attributes.items():
+        for attr_id, attr_value in attributes.mapped_attributes.items():
             # Calculate confidence for each attribute
             attr_confidence = self._calculate_single_attribute_confidence(
                 attr_id, attr_value, product_features
             )
 
             # Weight required attributes higher
-            weight = 0.7 if self._is_required_attribute(attr_id) else 0.3
+            weight = 0.7 if attr_id in attributes.required_attributes else 0.3
 
             confidence += attr_confidence * weight
             total_weight += weight
 
-        return confidence / total_weight if total_weight > 0 else 0.0
+        calculated_confidence = confidence / total_weight if total_weight > 0 else 0.0
+        
+        # Return weighted average of base confidence and calculated confidence
+        return (base_confidence * 0.4) + (calculated_confidence * 0.6)
 
     def _extract_attribute_value(
         self,
@@ -540,24 +646,23 @@ class AttributeMappingService:
             return ""
 
         # Get validation rules for this attribute
-        rules = self.attribute_validation_rules.get(attr_id, {})
+        rules = self.attribute_validation_rules.get(attr_id)
 
-        # Apply max length
-        max_length = rules.get("max_length")
-        if max_length and len(value) > max_length:
-            value = value[:max_length]
+        if rules:
+            # Apply max length
+            if rules.max_length and len(value) > rules.max_length:
+                value = value[:rules.max_length]
 
-        # Apply allowed values constraint
-        allowed_values = rules.get("allowed_values")
-        if allowed_values:
-            # Find closest match
-            value_lower = value.lower()
-            for allowed_value in allowed_values:
-                if (
-                    allowed_value.lower() == value_lower
-                    or allowed_value.lower() in value_lower
-                ):
-                    return allowed_value
+            # Apply allowed values constraint
+            if rules.allowed_values:
+                # Find closest match
+                value_lower = value.lower()
+                for allowed_value in rules.allowed_values:
+                    if (
+                        allowed_value.lower() == value_lower
+                        or allowed_value.lower() in value_lower
+                    ):
+                        return allowed_value
 
         return value.strip()
 
@@ -568,51 +673,48 @@ class AttributeMappingService:
         for attr_id, attr_value in attributes.items():
             validation_result = self._validate_attribute_value(attr_id, attr_value)
 
-            if validation_result["is_valid"]:
+            if validation_result.is_valid:
                 validated_attributes[attr_id] = attr_value
             else:
                 self.logger.warning(
-                    f"Invalid attribute {attr_id}: {validation_result['error']}"
+                    f"Invalid attribute {attr_id}: {validation_result.error}"
                 )
 
         return validated_attributes
 
-    def _validate_attribute_value(self, attr_id: str, value: Any) -> dict[str, Any]:
+    def _validate_attribute_value(self, attr_id: str, value: Any) -> AttributeValidationResult:
         """Validate a single attribute value."""
-        rules = self.attribute_validation_rules.get(attr_id, {})
+        rules = self.attribute_validation_rules.get(attr_id)
 
         if not rules:
-            return {"is_valid": True}
+            return AttributeValidationResult(is_valid=True)
 
         # Check if value is empty for required attribute
-        if rules.get("required", False) and not value:
-            return {
-                "is_valid": False,
-                "error": f"Required attribute {attr_id} cannot be empty",
-            }
+        if rules.required and not value:
+            return AttributeValidationResult(
+                is_valid=False,
+                error=f"Required attribute {attr_id} cannot be empty",
+            )
 
         # Check type
-        expected_type = rules.get("type", "string")
-        if expected_type == "string" and not isinstance(value, str):
-            return {"is_valid": False, "error": f"Attribute {attr_id} must be a string"}
+        if rules.attribute_type == "string" and not isinstance(value, str):
+            return AttributeValidationResult(is_valid=False, error=f"Attribute {attr_id} must be a string")
 
         # Check max length
-        max_length = rules.get("max_length")
-        if max_length and len(str(value)) > max_length:
-            return {
-                "is_valid": False,
-                "error": f"Attribute {attr_id} exceeds maximum length of {max_length}",
-            }
+        if rules.max_length and len(str(value)) > rules.max_length:
+            return AttributeValidationResult(
+                is_valid=False,
+                error=f"Attribute {attr_id} exceeds maximum length of {rules.max_length}",
+            )
 
         # Check allowed values
-        allowed_values = rules.get("allowed_values")
-        if allowed_values and str(value) not in allowed_values:
-            return {
-                "is_valid": False,
-                "error": f"Attribute {attr_id} must be one of: {', '.join(allowed_values)}",
-            }
+        if rules.allowed_values and str(value) not in rules.allowed_values:
+            return AttributeValidationResult(
+                is_valid=False,
+                error=f"Attribute {attr_id} must be one of: {', '.join(rules.allowed_values)}",
+            )
 
-        return {"is_valid": True}
+        return AttributeValidationResult(is_valid=True)
 
     def _calculate_single_attribute_confidence(
         self,
@@ -629,13 +731,12 @@ class AttributeMappingService:
 
         # Higher confidence for validated values
         validation_result = self._validate_attribute_value(attr_id, attr_value)
-        if validation_result["is_valid"]:
+        if validation_result.is_valid:
             confidence += 0.3
 
         # Higher confidence for values that match allowed values
-        rules = self.attribute_validation_rules.get(attr_id, {})
-        allowed_values = rules.get("allowed_values")
-        if allowed_values and str(attr_value) in allowed_values:
+        rules = self.attribute_validation_rules.get(attr_id)
+        if rules and rules.allowed_values and str(attr_value) in rules.allowed_values:
             confidence += 0.2
 
         return min(confidence, 1.0)
@@ -643,7 +744,7 @@ class AttributeMappingService:
     def _is_required_attribute(self, attr_id: str) -> bool:
         """Check if attribute is required in any category."""
         for category_config in self.category_attributes.values():
-            if attr_id in category_config["required"]:
+            if attr_id in category_config.required_attributes:
                 return True
         return False
 
@@ -672,71 +773,75 @@ class AttributeMappingService:
 
         return default_attributes
 
-    def get_attribute_info(self, attr_id: str) -> dict[str, Any]:
+    def get_attribute_info(self, attr_id: str) -> AttributeInfo:
         """Get information about a specific attribute."""
-        rules = self.attribute_validation_rules.get(attr_id, {})
+        rules = self.attribute_validation_rules.get(attr_id)
 
-        return {
-            "id": attr_id,
-            "type": rules.get("type", "string"),
-            "required": rules.get("required", False),
-            "max_length": rules.get("max_length"),
-            "allowed_values": rules.get("allowed_values"),
-            "validation_method": rules.get("validation"),
-        }
+        if not rules:
+            return AttributeInfo(
+                attribute_id=attr_id,
+                attribute_type="string",
+                required=False,
+            )
 
-    def get_category_attribute_info(self, category_id: str) -> dict[str, Any]:
+        return AttributeInfo(
+            attribute_id=attr_id,
+            attribute_type=rules.attribute_type,
+            required=rules.required,
+            max_length=rules.max_length,
+            allowed_values=rules.allowed_values,
+            validation_method=rules.validation_method,
+        )
+
+    def get_category_attribute_info(self, category_id: str) -> CategoryAttributeInfo | None:
         """Get attribute information for a specific category."""
         category_config = self.category_attributes.get(category_id)
         if not category_config:
-            return {}
+            return None
 
-        return {
-            "category_id": category_id,
-            "required_attributes": category_config["required"],
-            "optional_attributes": category_config["optional"],
-            "attribute_mappings": category_config["mappings"],
-            "total_attributes": len(
-                cast("list[str]", category_config["required"])
-                + cast("list[str]", category_config["optional"])
-            ),
-        }
+        return CategoryAttributeInfo(
+            category_id=category_id,
+            required_attributes=category_config.required_attributes,
+            optional_attributes=category_config.optional_attributes,
+            attribute_mappings=category_config.attribute_mappings,
+            total_attributes=len(category_config.required_attributes) + len(category_config.optional_attributes),
+        )
 
     def suggest_missing_attributes(
         self,
         current_attributes: dict[str, Any],
         category_id: str,
         product_features: ProductFeatures,
-    ) -> list[dict[str, Any]]:
+    ) -> list[AttributeSuggestion]:
         """Suggest missing attributes that could be added."""
-        suggestions: list[dict[str, Any]] = []
+        suggestions: list[AttributeSuggestion] = []
 
         category_config = self.category_attributes.get(category_id)
         if not category_config:
             return suggestions
 
         # Check for missing required attributes
-        required_attrs = cast("list[str]", category_config["required"])
+        required_attrs = category_config.required_attributes
         for attr_id in required_attrs:
             if attr_id not in current_attributes:
                 # Try to extract from product features
-                mappings = cast("dict[str, str]", category_config["mappings"])
+                mappings = category_config.attribute_mappings
                 potential_value = self._extract_attribute_value(
                     attr_id, product_features, mappings
                 )
 
                 suggestions.append(
-                    {
-                        "attribute_id": attr_id,
-                        "type": "required",
-                        "suggested_value": potential_value,
-                        "confidence": 0.8 if potential_value else 0.3,
-                    }
+                    AttributeSuggestion(
+                        attribute_id=attr_id,
+                        suggestion_type="required",
+                        suggested_value=potential_value,
+                        confidence=0.8 if potential_value else 0.3,
+                    )
                 )
 
         # Check for missing optional attributes
-        optional_attrs = cast("list[str]", category_config["optional"])
-        mappings = cast("dict[str, str]", category_config["mappings"])
+        optional_attrs = category_config.optional_attributes
+        mappings = category_config.attribute_mappings
         for attr_id in optional_attrs:
             if attr_id not in current_attributes:
                 potential_value = self._extract_attribute_value(
@@ -745,12 +850,12 @@ class AttributeMappingService:
 
                 if potential_value:
                     suggestions.append(
-                        {
-                            "attribute_id": attr_id,
-                            "type": "optional",
-                            "suggested_value": potential_value,
-                            "confidence": 0.6,
-                        }
+                        AttributeSuggestion(
+                            attribute_id=attr_id,
+                            suggestion_type="optional",
+                            suggested_value=potential_value,
+                            confidence=0.6,
+                        )
                     )
 
         return suggestions
